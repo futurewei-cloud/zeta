@@ -1,4 +1,4 @@
-Welcome to Mizar!
+Welcome to Zeta!
 
 ## Introduction
 
@@ -9,13 +9,12 @@ Please make sure to read and observe our [Code of Conduct](/CODE_OF_CONDUCT.md)
 ### Getting Started
 
 - Fork the repository on GitHub
-- Read the [Getting Started](https://github.com/futurewei-cloud/Mizar/wiki/Getting-Started) wiki page for build, usage, and test instructions.
+- Read the [Getting Started](https://github.com/futurewei-cloud/zeta/wiki/Getting-Started) wiki page for build, usage, and test instructions.
 
 ### Your First Contribution
 
-We are here to help you! Once you familiarize yourself with Mizar, we will discuss your contribution and get your work reviewed and merged.
+We are here to help you! Once you familiarize yourself with Zeta, we will discuss your contribution and get your work reviewed and merged.
 
-If you have any questions, contact us on our [Slack Channel](https://join.slack.com/t/mizar-group/shared_invite/enQtNzUzOTYxOTM0ODY2LTE2OWYyN2Q2MjU3ZDFmNGUwZDlmYzNmNzk3MDRjNDMwMDQwMmQ3MDNlOWE3MzIzODAyYjQwZWMwYzY2ZmQzNmU).
 
 ## Contributing
 
@@ -29,7 +28,7 @@ This is a rough outline of what a contributor's workflow looks like:
 - Make commits of logical units.
 - Make sure commit messages are in the proper format (see below).
 - Push changes in a topic branch to a personal fork of the repository.
-- Submit a pull request to [mizar](https://github.com/futurewei-cloud/mizar).
+- Submit a pull request to [zeta](https://github.com/futurewei-cloud/zeta).
 - The PR must receive approvals from two team members including at least one maintainer.
 
 
@@ -90,9 +89,9 @@ We are following the Linux kernel coding style. The  .clang-format  file concret
 
 ### Documentation and Design Documents
 
-We rely on [Mizar's Github wiki](https://github.com/futurewei-cloud/Mizar/wiki) for documentation.  Being a git repository ensures that documents and designs are reviewed and facilitate onboarding.
+We rely on [Zeta's Github wiki](https://github.com/futurewei-cloud/Zeta/wiki) for documentation.  Being a git repository ensures that documents and designs are reviewed and facilitate onboarding.
 
-To update the documentation/design, clone the wiki locally https://github.com/futurewei-cloud/Mizar.wiki.git, and create a pull request for your changes and send it to the team for review.
+To update the documentation/design, clone the wiki locally https://github.com/futurewei-cloud/Zeta.wiki.git, and create a pull request for your changes and send it to the team for review.
 
 ### Versioning
 
@@ -107,7 +106,7 @@ We love feedback! If you would like to help us improve or wants to file a bug, p
 
 ### Testing
 
-Mizar includes unit and functional tests. We strive to maintain code test coverage as high as possible, particularly for the userspace part of the code. Unit tests do not cover the XDP programs.
+Zeta includes unit and functional tests. We strive to maintain code test coverage as high as possible, particularly for the userspace part of the code. Unit tests do not cover the XDP programs.
 
 1. When contributing new code, please make sure that:
 1. Unit tests cover almost all your code
