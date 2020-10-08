@@ -1122,70 +1122,70 @@ Documentation.
 <span id="_Toc51759824" class="anchor"></span>Figure 7 Op Scenario:
 Between Instances
 
-![](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/liangbin-pub/zeta/main/docs/design/puml/zeta_sdd_packet_normal_between_instances.puml)
+![](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/futurewei-cloud/zeta/main/docs/design/puml/zeta_sdd_packet_normal_between_instances.puml)
 
 ### 6.2 Compute Instance to instance Direct Path
 
 <span id="_Toc51759825" class="anchor"></span>Figure 8 Op Scenario:
 Between Instances
 
-![](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/liangbin-pub/zeta/main/docs/design/puml/zeta_sdd_packet_normal_between_instances_directpath.puml)
+![](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/futurewei-cloud/zeta/main/docs/design/puml/zeta_sdd_packet_normal_between_instances_directpath.puml)
 
 ### 6.3 External Client Accesses Scaled Service
 
 <span id="_Toc51759826" class="anchor"></span>Figure 9 Op Scenario:
 Access Service from Internet
 
-![](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/liangbin-pub/zeta/main/docs/design/puml/zeta_sdd_packet_normal_internet_to_service.puml)
+![](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/futurewei-cloud/zeta/main/docs/design/puml/zeta_sdd_packet_normal_internet_to_service.puml)
 
 ### 6.4 Instance ARP Request
 
 <span id="_Toc51759827" class="anchor"></span>Figure 10 Op Scenario:
 Instance ARP request
 
-![](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/liangbin-pub/zeta/main/docs/design/puml/zeta_sdd_packet_normal_arp_request.puml)
+![](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/futurewei-cloud/zeta/main/docs/design/puml/zeta_sdd_packet_normal_arp_request.puml)
 
 ### 6.5 ZGC Gateway Node Failure
 
 <span id="_Toc51759828" class="anchor"></span>Figure 11 Op Scenario: Zeta
 Gateway Node Failure
 
-![](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/liangbin-pub/zeta/main/docs/design/puml/zeta_sdd_packet_failure_fwd.puml)
+![](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/futurewei-cloud/zeta/main/docs/design/puml/zeta_sdd_packet_failure_fwd.puml)
 
 ### 6.6 Destination Compute Node Failure
 
 <span id="_Toc51759829" class="anchor"></span>Figure 12 Op Scenario:
 Destination Compute Node Failure
 
-![](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/liangbin-pub/zeta/main/docs/design/puml/zeta_sdd_packet_failure_dest_host.puml)
+![](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/futurewei-cloud/zeta/main/docs/design/puml/zeta_sdd_packet_failure_dest_host.puml)
 
 ### 6.7 Destination Regular Instance Failure
 
 <span id="_Toc51759830" class="anchor"></span>Figure 13 Op Scenario:
 Destination Regular Instance Failure
 
-![](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/liangbin-pub/zeta/main/docs/design/puml/zeta_sdd_packet_failure_dest_instance.puml)
+![](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/futurewei-cloud/zeta/main/docs/design/puml/zeta_sdd_packet_failure_dest_instance.puml)
 
 ### 6.8 Destination Service Instance Failure
 
 <span id="_Toc51759831" class="anchor"></span>Figure 14 Op Scenario:
 Destination Service Instance Failure
 
-![](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/liangbin-pub/zeta/main/docs/design/puml/zeta_sdd_packet_failure_dest_service_instance.puml)
+![](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/futurewei-cloud/zeta/main/docs/design/puml/zeta_sdd_packet_failure_dest_service_instance.puml)
 
 ### 6.9 Control Plane Add OVS Default ZGC Rules
 
 <span id="_Toc51759832" class="anchor"></span>Figure 15 Op Scenario:
 Control Plane Add OVS Default ZGC Rules
 
-![](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/liangbin-pub/zeta/main/docs/design/puml/zeta_sdd_control_ovs_default_gateway_rules.puml)
+![](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/futurewei-cloud/zeta/main/docs/design/puml/zeta_sdd_control_ovs_default_gateway_rules.puml)
 
 ### 6.10 Control Plane Add Compute Instance
 
 <span id="_Toc51759833" class="anchor"></span>Figure 16 Op Scenario:
 Control Plane Add Compute Instance
 
-![](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/liangbin-pub/zeta/main/docs/design/puml/zeta_sdd_control_add_compute_instance.puml)
+![](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/futurewei-cloud/zeta/main/docs/design/puml/zeta_sdd_control_add_compute_instance.puml)
 
 ## 7 Initial Release
 
