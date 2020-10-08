@@ -20,6 +20,6 @@
 # THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 FROM fwnetworking/python_base:latest
-COPY . /var/mizar/
-RUN pip3 install /var/mizar/
-CMD mizard
+COPY . /var/zeta/
+RUN pip3 install /var/zeta/
+CMD zetad

@@ -1,6 +1,6 @@
 #/bin/bash
 
-SCRIPTS_DIR='/var/mizar/test/scripts'
+SCRIPTS_DIR='/var/zeta/test/scripts'
 
 python3 $SCRIPTS_DIR/httpd_hostname.py &
 python3 $SCRIPTS_DIR/tcp_hostname.py &

@@ -22,23 +22,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mizar-operator
+  name: zeta-operator
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: mizar-operator
+      app: zeta-operator
   template:
     metadata:
       labels:
-        app: mizar-operator
-        mizar: operator
+        app: zeta-operator
     spec:
-      serviceAccountName: mizar-operator
+      serviceAccountName: zeta-operator
       terminationGracePeriodSeconds: 0
       hostNetwork: true
       containers:
         - image: fwnetworking/endpointopr:latest
-          name: mizar-operator
+          name: zeta-operator
           securityContext:
             privileged: true

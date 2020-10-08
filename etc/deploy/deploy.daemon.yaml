@@ -22,58 +22,58 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: mizar-operator
+  name: zeta-operator
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: cluster-admin
 subjects:
   - kind: ServiceAccount
-    name: mizar-operator
+    name: zeta-operator
     namespace: default
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: mizar-operator
+  name: zeta-operator
 ---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: mizar-daemon
+  name: zeta-daemon
   namespace: default
 spec:
   selector:
     matchLabels:
-      job: mizar-daemon
+      job: zeta-daemon
   template:
     metadata:
       labels:
-        job: mizar-daemon
+        job: zeta-daemon
     spec:
       hostPID: true
       restartPolicy: Always
-      serviceAccountName: mizar-operator
+      serviceAccountName: zeta-operator
       hostNetwork: true
       tolerations:
         - operator: Exists
           effect: NoSchedule
       volumes:
-        - name: mizar
+        - name: zeta
           hostPath:
             path: /var
             type: Directory
       initContainers:
-        - image: fwnetworking/mizar:latest
+        - image: fwnetworking/zeta:latest
           name: node-init
           command: [./node-init.sh]
           securityContext:
             privileged: true
           volumeMounts:
-            - name: mizar
+            - name: zeta
               mountPath: /home
       containers:
         - image: fwnetworking/dropletd:latest
-          name: mizar-daemon
+          name: zeta-daemon
           securityContext:
             privileged: true

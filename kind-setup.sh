@@ -56,8 +56,8 @@ function check_ready() {
 }
 
 CWD=$(pwd)
-KINDCONF="${HOME}/mizar/build/tests/kind/config"
-MIZARCONF="${HOME}/mizar/build/tests/mizarcni.config"
+KINDCONF="${HOME}/zeta/build/tests/kind/config"
+ZETACONF="${HOME}/zeta/build/tests/zeta.config"
 KINDHOME="${HOME}/.kube/config"
 USER=${1:-user}
 NODES=${2:-3}
@@ -85,7 +85,7 @@ docker image build -t $DOCKER_ACC/kindnode:latest -f k8s/kind/Dockerfile .
 source k8s/kind/create_cluster.sh $KINDCONF $USER $NODES
 
 api_ip=`docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' kind-control-plane`
-sed "s/server: https:\/\/127.0.0.1:[[:digit:]]\+/server: https:\/\/$api_ip:6443/" $KINDCONF > $MIZARCONF
+sed "s/server: https:\/\/127.0.0.1:[[:digit:]]\+/server: https:\/\/$api_ip:6443/" $KINDCONF > $ZETACONF
 ln -snf $KINDCONF $KINDHOME
 
 source install/create_crds.sh $CWD

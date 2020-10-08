@@ -22,26 +22,31 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mizar-operator
+  name: zeta-operator
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: mizar-operator
+      app: zeta-operator
   template:
     metadata:
       labels:
-        app: mizar-operator
-        mizar: operator
+        app: zeta-operator
     spec:
-      serviceAccountName: mizar-operator
+      serviceAccountName: zeta-operator
       hostNetwork: true
       tolerations:
         - operator: Exists
           effect: NoSchedule
       containers:
         - image: python:3.7
-          name: mizar-operator
-          command: [ "/bin/bash", "-c", "--", "while true; do ls /etc/luigi/luigi.cfg && kopf run --standalone /var/mizar/mizar/operator.py; sleep 3; done;" ]
+          name: zeta-operator
+          command:
+            [
+              "/bin/bash",
+              "-c",
+              "--",
+              "while true; do ls /etc/luigi/luigi.cfg && kopf run --standalone /var/zeta/zeta/operator.py; sleep 3; done;",
+            ]
           securityContext:
             privileged: true

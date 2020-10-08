@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 
-modules := src test teste2e mizar
+modules := src test teste2e zeta
 build := build
 
 CC = gcc
@@ -84,7 +84,7 @@ update_modules:
 
 install:
 	cp build/bin/* /usr/bin
-	ln -s /home/ubuntu/mizar/build/xdp /trn_xdp
+	ln -s /home/ubuntu/zeta/build/xdp /trn_xdp
 	ln -s /sys/fs/bpf /bpffs
 
 -include $(patsubst %, %/module.mk, $(modules))
@@ -116,7 +116,7 @@ lcov:gcov
 	@echo "see lcov/report/index.html"
 
 .PHONY: mgmt_tests
-mizar::
+zeta::
 
 dirmake:
 	mkdir -p core

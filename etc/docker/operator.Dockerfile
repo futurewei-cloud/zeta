@@ -20,8 +20,8 @@
 # THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 FROM fwnetworking/python_base:latest
-COPY . /var/mizar/
-RUN pip3 install /var/mizar/
-RUN ln -snf /var/mizar/build/bin /trn_bin
+COPY . /var/zeta/
+RUN pip3 install /var/zeta/
+RUN ln -snf /var/zeta/build/bin /trn_bin
 COPY etc/luigi.cfg /etc/luigi/luigi.cfg
-CMD kopf run --standalone /var/mizar/mizar/operator.py
+CMD kopf run --standalone /var/zeta/zeta/operator.py

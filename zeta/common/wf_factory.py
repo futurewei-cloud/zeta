@@ -19,25 +19,8 @@
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 # THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: zeta-operator
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: zeta-operator
-  template:
-    metadata:
-      labels:
-        app: zeta-operator
-    spec:
-      serviceAccountName: zeta-operator
-      terminationGracePeriodSeconds: 0
-      hostNetwork: true
-      containers:
-        - image: localhost:5000/endpointopr:latest
-          name: zeta-operator
-          securityContext:
-            privileged: true
+from zeta.dp.zeta.workflows.zeta_wf_factory import ZetaWorkflowFactory
+
+
+def wffactory():
+    return ZetaWorkflowFactory()

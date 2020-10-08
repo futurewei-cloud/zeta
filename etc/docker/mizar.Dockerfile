@@ -22,5 +22,5 @@
 
 FROM debian
 COPY etc/docker/node-init.sh /
-COPY . /var/mizar
+COPY . /var/zeta
 RUN chmod u+x node-init.sh

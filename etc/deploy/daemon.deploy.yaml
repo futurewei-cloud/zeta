@@ -23,27 +23,27 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: mizar-daemon
+  name: zeta-daemon
   namespace: default
 spec:
   selector:
     matchLabels:
-      job: mizar-daemon
+      job: zeta-daemon
   template:
     metadata:
       labels:
-        job: mizar-daemon
+        job: zeta-daemon
     spec:
       tolerations:
         # The daemon shall run on the master node
         - key: node-role.kubernetes.io/master
           effect: NoSchedule
-      serviceAccountName: mizar-operator
+      serviceAccountName: zeta-operator
       terminationGracePeriodSeconds: 0
       hostNetwork: true
       hostPID: true
       containers:
         - image: fwnetworking/dropletd:latest
-          name: mizar-daemon
+          name: zeta-daemon
           securityContext:
             privileged: true

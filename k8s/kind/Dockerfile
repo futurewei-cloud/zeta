@@ -20,10 +20,7 @@
 # THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 FROM fwnetworking/kindnode:latest
-COPY . /var/mizar/
-RUN pip3 install /var/mizar/
-RUN ln -snf /var/mizar/build/bin /trn_bin
-RUN ln -snf /var/mizar/build/xdp /trn_xdp
-RUN ln -snf /var/mizar/etc/cni/10-mizarcni.conf /etc/cni/net.d/10-mizarcni.conf
-RUN ln -snf /var/mizar/mizar/cni.py /opt/cni/bin/mizarcni
-RUN ln -snf /var/mizar/build/tests/mizarcni.config /etc/mizarcni.config
+COPY . /var/zeta/
+RUN pip3 install /var/zeta/
+RUN ln -snf /var/zeta/build/bin /trn_bin
+RUN ln -snf /var/zeta/build/xdp /trn_xdp

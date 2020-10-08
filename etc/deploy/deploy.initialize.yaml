@@ -22,52 +22,58 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: mizar-operator
+  name: zeta-operator
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: cluster-admin
 subjects:
   - kind: ServiceAccount
-    name: mizar-operator
+    name: zeta-operator
     namespace: default
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: mizar-operator
+  name: zeta-operator
 ---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: mizar-initialize
+  name: zeta-initialize
   namespace: default
 spec:
   selector:
     matchLabels:
-      job: mizar-initialize
+      job: zeta-initialize
   template:
     metadata:
       labels:
-        job: mizar-initialize
+        job: zeta-initialize
     spec:
       hostPID: true
       restartPolicy: Always
-      serviceAccountName: mizar-operator
+      serviceAccountName: zeta-operator
       tolerations:
         - operator: Exists
           effect: NoSchedule
       volumes:
-        - name: mizar
+        - name: zeta
           hostPath:
             path: /var
             type: Directory
       containers:
         - image: debian:latest
-          name: mizar-initialize
-          command: [ "/bin/bash", "-c", "--", "while true; do chmod 755/tmp/script-to-run.sh; /tmp/script-to-run.sh; rm -rf /tmp/script-to-run.sh; sleep 3; done;" ]
+          name: zeta-initialize
+          command:
+            [
+              "/bin/bash",
+              "-c",
+              "--",
+              "while true; do chmod 755/tmp/script-to-run.sh; /tmp/script-to-run.sh; rm -rf /tmp/script-to-run.sh; sleep 3; done;",
+            ]
           securityContext:
             privileged: true
           volumeMounts:
-            - name: mizar
+            - name: zeta
               mountPath: /home

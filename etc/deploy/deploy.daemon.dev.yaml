@@ -22,27 +22,28 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: mizar-daemon
+  name: zeta-daemon
   namespace: default
 spec:
   selector:
     matchLabels:
-      job: mizar-daemon
+      job: zeta-daemon
   template:
     metadata:
       labels:
-        job: mizar-daemon
+        job: zeta-daemon
     spec:
       hostPID: true
       restartPolicy: Always
-      serviceAccountName: mizar-operator
+      serviceAccountName: zeta-operator
       hostNetwork: true
       tolerations:
         - operator: Exists
           effect: NoSchedule
       containers:
         - image: python:3.7
-          name: mizar-daemon
-          command: [ "/bin/bash", "-c", "--", "while true; do mizard; sleep 3; done;" ]
+          name: zeta-daemon
+          command:
+            ["/bin/bash", "-c", "--", "while true; do zetad; sleep 3; done;"]
           securityContext:
             privileged: true

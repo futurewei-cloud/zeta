@@ -46,7 +46,7 @@ RUN pip3 install luigi==2.8.12
 RUN pip3 install grpcio
 RUN pip3 install protobuf
 RUN pip3 install fs
-RUN mkdir -p /var/mizar/
+RUN mkdir -p /var/zeta/
 RUN mkdir -p /opt/cni/bin
 RUN mkdir -p /etc/cni/net.d
 RUN ln -snf /sys/fs/bpf /bpffs

@@ -28,6 +28,6 @@ RUN apt-get install -y net-tools
 RUN apt-get install -y tcpdump
 RUN apt-get install -y ethtool
 RUN apt-get install -y sudo
-COPY teste2e/ /var/mizar/test
+COPY teste2e/ /var/zeta/test
 EXPOSE 8000 9001 5001
-CMD /var/mizar/test/scripts/run_servers.sh
+CMD /var/zeta/test/scripts/run_servers.sh

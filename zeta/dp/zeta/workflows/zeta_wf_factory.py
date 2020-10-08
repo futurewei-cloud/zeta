@@ -19,25 +19,25 @@
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 # THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: zeta-operator
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: zeta-operator
-  template:
-    metadata:
-      labels:
-        app: zeta-operator
-    spec:
-      serviceAccountName: zeta-operator
-      terminationGracePeriodSeconds: 0
-      hostNetwork: true
-      containers:
-        - image: localhost:5000/endpointopr:latest
-          name: zeta-operator
-          securityContext:
-            privileged: true
+import luigi
+from zeta.common.workflow import *
+
+from zeta.dp.zeta.workflows.droplets.bootstrap import *
+from zeta.dp.zeta.workflows.droplets.create import *
+from zeta.dp.zeta.workflows.droplets.provisioned import *
+from zeta.dp.zeta.workflows.droplets.delete import *
+
+
+class ZetaWorkflowFactory():
+
+    def DropletOperatorStart(self, param):
+        return DropletOperatorStart(param=param)
+
+    def DropletCreate(self, param):
+        return DropletCreate(param=param)
+
+    def DropletProvisioned(self, param):
+        return DropletProvisioned(param=param)
+
+    def DropletDelete(self, param):
+        return DropletDelete(param=param)
