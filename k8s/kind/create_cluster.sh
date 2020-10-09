@@ -70,8 +70,6 @@ done
 cat <<EOF | kind create cluster --name kind --kubeconfig ${KINDCONF} --config=-
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
-networking:
-  disableDefaultCNI: true
 ${PATCH}
 nodes:
   - role: control-plane

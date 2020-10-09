@@ -1,5 +1,3 @@
-#!/bin/bash
-
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2020 The Authors.
 
@@ -21,22 +19,25 @@
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 # THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-DIR=${1:-.}
-USER=${2:-dev}
-DOCKER_ACC=${3:-"localhost:5000"}
-YAML_FILE="dev.daemon.deploy.yaml"
+import logging
+from zeta.common.workflow import *
+from zeta.dp.zeta.operators.droplets.droplets_operator import *
+logger = logging.getLogger()
 
-if [[ "$USER" == "user" || "$USER" == "final" ]]; then
-    DOCKER_ACC="fwnetworking"
-    YAML_FILE="daemon.deploy.yaml"
-fi
+droplet_opr = DropletOperator()
 
-# Build the daemon image
-if [[ "$USER" == "dev" || "$USER" == "final" ]]; then
-    docker image build -t $DOCKER_ACC/dropletd:latest -f $DIR/etc/docker/daemon.Dockerfile $DIR
-    docker image push $DOCKER_ACC/dropletd:latest
-fi
 
-# Delete existing deployment and deploy
-kubectl delete daemonset.apps/zeta-daemon 2> /tmp/kubetctl.err
-kubectl apply -f $DIR/etc/deploy/$YAML_FILE
+class k8sDropletDelete(WorkflowTask):
+
+    def requires(self):
+        logger.info("Requires {task}".format(task=self.__class__.__name__))
+        return []
+
+    def run(self):
+
+        logger.info("Run {task}".format(task=self.__class__.__name__))
+        droplet = droplet_opr.store.get_droplet(self.param.name)
+        logger.info("Deleting Droplet {}".format(self.param.name))
+        droplet.delete_obj()
+
+        self.finalize()

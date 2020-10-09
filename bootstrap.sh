@@ -24,7 +24,7 @@ kernel_ver=`uname -r`
 echo "Running kernel version: $kernel_ver"
 
 if [ "$kernel_ver" != "5.6.0-rc2" ]; then
-	echo "Mizar requires an updated kernel: linux-5.6-rc2 for TCP to function correctly. Current version is $kernel_ver"
+	echo "Zeta requires an updated kernel: linux-5.6-rc2 for TCP to function correctly. Current version is $kernel_ver"
 
 	read -p "Execute kernel update script (y/n)?" choice
 	case "$choice" in

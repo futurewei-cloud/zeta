@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2020 The Authors.
 
@@ -21,49 +19,31 @@
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 # THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import subprocess
+import kopf
 import logging
-import time
-import asyncio
-import os.path
-import time
-from kopf import cli
-from zeta.common.wf_param import *
-from zeta.dp.zeta.workflows.droplets.triggers import *
-from zeta.dp.zeta.workflows.builtins.nodes.triggers import *
-import grpc
-import threading
-from google.protobuf import empty_pb2
-from concurrent import futures
-from kubernetes import client, config
-import socket
+import luigi
+from zeta.common.common import *
 from zeta.common.constants import *
-
+from zeta.common.wf_factory import *
+from zeta.common.wf_param import *
 logger = logging.getLogger()
-LOCK: asyncio.Lock
-POOL_WORKERS = 10
 
 
-@kopf.on.startup()
-async def on_startup(logger, **kwargs):
-    start_time = time.time()
-    global LOCK
-    LOCK = asyncio.Lock()
+@kopf.on.resume('', 'v1', 'nodes', retries=OBJ_DEFAULTS.kopf_max_retries)
+@kopf.on.update('', 'v1', 'nodes', retries=OBJ_DEFAULTS.kopf_max_retries)
+@kopf.on.create('', 'v1', 'nodes', retries=OBJ_DEFAULTS.kopf_max_retries)
+async def droplet_opr_on_node(body, spec, **kwargs):
     param = HandlerParam()
-    config.load_incluster_config()
-    sched = 'luigid --background --port 8082 --pidfile /var/run/luigi/luigi.pid --logdir /var/log/luigi --state-path /var/lib/luigi/luigi.state'
-    subprocess.call(sched, shell=True)
-    while not os.path.exists("/var/run/luigi/luigi.pid"):
-        pass
-    with open('/var/run/luigi/luigi.pid', 'r') as f:
-        pid = f.read()
-    # Wait for daemon to run
-    while not os.path.exists("/proc/{}".format(pid)):
-        pass
-    logger.info("Running luigid central scheduler pid={}!".format(pid))
+    param.name = kwargs['name']
+    param.body = body
+    param.spec = spec
+    run_workflow(wffactory().k8sDropletCreate(param=param))
 
-    start_time = time.time()
 
-    run_workflow(wffactory().DropletOperatorStart(param=param))
-
-    logger.info("Bootstrap time:  %s seconds ---" % (time.time() - start_time))
+@kopf.on.delete('', 'v1', 'nodes', retries=OBJ_DEFAULTS.kopf_max_retries)
+async def droplet_opr_on_node_delete(body, spec, **kwargs):
+    param = HandlerParam()
+    param.name = kwargs['name']
+    param.body = body
+    param.spec = spec
+    run_workflow(wffactory().k8sDropletDelete(param=param))

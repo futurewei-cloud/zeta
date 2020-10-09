@@ -1,5 +1,3 @@
-#!/bin/bash
-
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2020 The Authors.
 
@@ -21,22 +19,6 @@
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 # THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-DIR=${1:-.}
-USER=${2:-dev}
-DOCKER_ACC=${3:-"localhost:5000"}
-YAML_FILE="dev.daemon.deploy.yaml"
-
-if [[ "$USER" == "user" || "$USER" == "final" ]]; then
-    DOCKER_ACC="fwnetworking"
-    YAML_FILE="daemon.deploy.yaml"
-fi
-
-# Build the daemon image
-if [[ "$USER" == "dev" || "$USER" == "final" ]]; then
-    docker image build -t $DOCKER_ACC/dropletd:latest -f $DIR/etc/docker/daemon.Dockerfile $DIR
-    docker image push $DOCKER_ACC/dropletd:latest
-fi
-
-# Delete existing deployment and deploy
-kubectl delete daemonset.apps/zeta-daemon 2> /tmp/kubetctl.err
-kubectl apply -f $DIR/etc/deploy/$YAML_FILE
+import logging
+from zeta.common.workflow import *
+logger = logging.getLogger()

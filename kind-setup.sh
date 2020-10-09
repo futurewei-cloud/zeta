@@ -39,7 +39,7 @@ function get_status() {
 
 # Checks for status Provisioned of array of objects
 function check_ready() {
-    objects=("droplets" "vpcs" "subnets" "dividers" "bouncers")
+    objects=("droplets")
     sum=0
     for i in "${objects[@]}"
     do

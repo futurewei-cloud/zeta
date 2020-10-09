@@ -24,3 +24,4 @@ COPY . /var/zeta/
 RUN pip3 install /var/zeta/
 RUN ln -snf /var/zeta/build/bin /trn_bin
 RUN ln -snf /var/zeta/build/xdp /trn_xdp
+RUN ln -snf /var/mizar/build/tests/zeta.config /etc/zeta.config

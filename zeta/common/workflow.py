@@ -81,38 +81,6 @@ class WorkflowTask(luigi.Task):
 class WorkflowFactory(ABC):
 
     @abstractmethod
-    def VpcOperatorStart(self, param):
-        pass
-
-    @abstractmethod
-    def VpcCreate(self, param):
-        pass
-
-    @abstractmethod
-    def VpcProvisioned(self, param):
-        pass
-
-    @abstractmethod
-    def VpcDelete(self, param):
-        pass
-
-    @abstractmethod
-    def DividerOperatorStart(self, param):
-        pass
-
-    @abstractmethod
-    def DividerCreate(self, param):
-        pass
-
-    @abstractmethod
-    def DividerProvisioned(self, param):
-        pass
-
-    @abstractmethod
-    def DividerDelete(self, param):
-        pass
-
-    @abstractmethod
     def DropletOperatorStart(self, param):
         pass
 
@@ -129,57 +97,9 @@ class WorkflowFactory(ABC):
         pass
 
     @abstractmethod
-    def NetOperatorStart(self, param):
-        pass
-
-    @abstractmethod
-    def NetCreate(self, param):
-        pass
-
-    @abstractmethod
-    def NetProvisioned(self, param):
-        pass
-
-    @abstractmethod
-    def NetDelete(self, param):
-        pass
-
-    @abstractmethod
-    def BouncerOperatorStart(self, param):
-        pass
-
-    @abstractmethod
-    def BouncerCreate(self, param):
-        pass
-
-    @abstractmethod
-    def BouncerProvisioned(self, param):
-        pass
-
-    @abstractmethod
-    def BouncerDelete(self, param):
-        pass
-
-    @abstractmethod
-    def k8sServiceCreate(self, param):
-        pass
-
-    @abstractmethod
-    def k8sEndpointsUpdate(self, param):
-        pass
-
-    @abstractmethod
-    def k8sEndpointsDelete(self, param):
-        pass
-
-    @abstractmethod
     def k8sDropletCreate(self, param):
         pass
 
     @abstractmethod
-    def k8sPodCreate(self, param):
-        pass
-
-    @abstractmethod
-    def k8sPodDelete(self, param):
+    def k8sDropletDelete(self, param):
         pass
