@@ -4,6 +4,9 @@ Zeta is a distributed platform for developing and deploying complex, elastic, an
 network services expansion, maintenance, configuration, and failure domain from the data-center network. Zeta’s programming and deployment models allow rapid upgrade of network services and the introduction of new services
 with an optimized cost model. Although being a shared platform for multiple network services, both stateless and state-full services can scale independently.
 
+# Getting Started
+Please see our getting started guide [here](docs/user/getting_started.md).
+
 # Introduction
 Hardware-based middleboxes are expensive, inextensible, and difficult to operate and scale in a cloud environment.
 a naive approach of deploying existing software-based middleboxes in virtual machines or containers to replace

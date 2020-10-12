@@ -55,6 +55,7 @@ function check_ready() {
     fi
 }
 
+make
 CWD=$(pwd)
 KINDCONF="${HOME}/zeta/build/tests/kind/config"
 ZETACONF="${HOME}/zeta/build/tests/zeta.config"
