@@ -124,6 +124,12 @@ Table of Contents
 
 [6.10 Control Plane Add Compute Instance](#610-control-plane-add-compute-instance)
 
+[6.11 Zeta Management Plane DFT Workflows](#611-zeta-management-plane-dft-workflows)
+
+[6.12 Zeta Management Plane Chain Workflows](#612-zeta-management-plane-chain-workflows)
+
+[6.13 Zeta Management Plane FTN Workflows](#613-zeta-management-plane-ftn-workflows)
+
 [7. Initial Release](#7-initial-release)
 
 [7.1 Use Cases](#71-use-cases)
@@ -208,6 +214,11 @@ List of Figures
 
 [Figure 16 Op Scenario: Control Plane Add Compute Instance](#_Toc51759833)
 
+[Figure 17 Mgmt Scenario: DFT Create Workflow](#_Toc51759834)
+
+[Figure 18 Mgmt Scenario: Chain Create Workflow](#_Toc51759835)
+
+[Figure 19 Mgmt Scenario: FTN Create Workflow](#_Toc51759836)
 
 List of Tables
 
@@ -1096,7 +1107,11 @@ Best Practice
 5.  Environment and Initial Configuration
 
 #### 4.4.3 Zeta Control Plane installation
+1. Clone Zeta from [Github](https://github.com/futurewei-cloud/zeta)
 
+2. Run the bootstrap.sh script to install the prerequisites for Zeta.
+
+3. Zeta will be installed on all nodes via the deployment step.
 ##### 4.4.3.1 K8S Cluster Setup
 
 ##### 4.4.3.2 Zeta Control Plan deployment
@@ -1186,6 +1201,27 @@ Control Plane Add OVS Default ZGC Rules
 Control Plane Add Compute Instance
 
 ![](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/futurewei-cloud/zeta/main/docs/design/puml/zeta_sdd_control_add_compute_instance.puml)
+
+### 6.11 Zeta Management Plane DFT Workflows
+
+<span id="_Toc51759834" class="anchor"></span>Figure 17 Mgmt Scenario:
+DFT Create Workflow
+
+![](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/futurewei-cloud/zeta/main/docs/design/puml/mgmt_create_dft.puml)
+
+### 6.12 Zeta Management Plane Chain Workflows
+
+<span id="_Toc51759835" class="anchor"></span>Figure 18 Mgmt Scenario:
+Chain Create Workflow
+
+![](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/futurewei-cloud/zeta/main/docs/design/puml/mgmt_create_chain.puml)
+
+### 6.13 Zeta Management Plane FTN Workflows
+
+<span id="_Toc51759836" class="anchor"></span>Figure 19 Mgmt Scenario:
+FTN Create workflow
+
+![](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/futurewei-cloud/zeta/main/docs/design/puml/mgmt_create_ftn.puml)
 
 ## 7 Initial Release
 

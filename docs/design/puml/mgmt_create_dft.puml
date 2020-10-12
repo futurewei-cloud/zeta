@@ -1,0 +1,47 @@
+@startuml
+
+' SPDX-License-Identifier: MIT
+' Copyright (c) 2020 The Authors.
+
+' Authors: Phu Tran          <@phudtran>
+
+' Permission is hereby granted, free of charge, to any person obtaining a copy
+' of this software and associated documentation files (the "Software"), to deal
+' in the Software without restriction, including without limitation the rights
+' to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+' copies of the Software, and to permit persons to whom the Software is
+' furnished to do so, subject to the following conditions:The above copyright
+' notice and this permission notice shall be included in all copies or
+' substantial portions of the Software.THE SOFTWARE IS PROVIDED "AS IS",
+' WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+' TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+' NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+' FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+' TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
+' THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+skinparam monochrome true
+autonumber
+database API_Server
+collections DFT_Operator
+collections Chain_Operator
+collections FTN_Operator
+collections Forwarder_Operator
+
+==DFT Created==
+rnote over API_Server: ==DFT Status: Init
+DFT_Operator --> API_Server: Sees DFT Status: Init
+Group for n Chains
+DFT_Operator --> API_Server: Creates Chain Object
+end
+DFT_Operator -> DFT_Operator: Generate Maglev Table
+DFT_Operator -> Chain_Operator: Update the nodes in each chain about all nodes.
+Chain_Operator -> FTN_Operator: Update all the nodes in the chain.
+FTN_Operator -> FTN_Operator: Update node
+DFT_Operator -> Forwarder_Operator: Update all Forwarders about the DFT Table
+DFT_Operator --> API_Server: update status Provisioned
+rnote over API_Server: ==DFT Status: Provisioned
+DFT_Operator -> DFT_Operator: Update cache
+==DFT Ready==
+
+@enduml

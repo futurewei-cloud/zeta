@@ -1,0 +1,44 @@
+@startuml
+
+' SPDX-License-Identifier: MIT
+' Copyright (c) 2020 The Authors.
+
+' Authors: Phu Tran          <@phudtran>
+
+' Permission is hereby granted, free of charge, to any person obtaining a copy
+' of this software and associated documentation files (the "Software"), to deal
+' in the Software without restriction, including without limitation the rights
+' to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+' copies of the Software, and to permit persons to whom the Software is
+' furnished to do so, subject to the following conditions:The above copyright
+' notice and this permission notice shall be included in all copies or
+' substantial portions of the Software.THE SOFTWARE IS PROVIDED "AS IS",
+' WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+' TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+' NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+' FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+' TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
+' THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+skinparam monochrome true
+autonumber
+database API_Server
+collections Chain_Operator
+collections Forwarder_Operator
+
+==Chain Created==
+rnote over API_Server: ==Chain Status: Init
+Chain_Operator --> API_Server: Sees Chain Status Init
+Group for m FTN replicas
+Chain_Operator --> API_Server: Creates FTN Object
+end
+Chain_Operator -> Chain_Operator: Assign Head and Tail to the Chain
+Group for all Forwarders
+Chain_Operator --> Forwarder_Operator: Update Forwarder about chain.
+end
+Chain_Operator --> API_Server: update status Provisioned
+rnote over API_Server: ==Chain Status: Provisioned
+Chain_Operator -> Chain_Operator: Update cache
+==Chain Ready==
+
+@enduml
