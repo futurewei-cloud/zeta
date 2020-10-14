@@ -15,7 +15,6 @@ setup(
         'netaddr',
         'ipaddress',
         'pyroute2',
-        'rpyc',
         'kubernetes==11.0.0',
         'luigi==2.8.12',
         'grpcio',
