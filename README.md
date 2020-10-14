@@ -1,4 +1,4 @@
-# Zeta
+# Zeta [![Build Status](https://travis-ci.org/futurewei-cloud/zeta.svg?branch=main)](https://travis-ci.org/futurewei-cloud/zeta)
 
 Zeta is a distributed platform for developing and deploying complex, elastic, and highly available multi-tenant network services. By migrating existing hardware gateways functionality to Zeta, a cloud provider can decouple
 network services expansion, maintenance, configuration, and failure domain from the data-center network. Zeta’s programming and deployment models allow rapid upgrade of network services and the introduction of new services
