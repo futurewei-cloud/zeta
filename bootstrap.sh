@@ -11,10 +11,20 @@ sudo apt-get install -y \
 
 sudo apt install docker.io
 sudo pip3 install netaddr docker scapy
+sudo pip3 install grpcio-tools
 sudo systemctl unmask docker.service
 sudo systemctl unmask docker.socket
 sudo systemctl start docker
 sudo systemctl enable docker
+
+ver=$(curl -s https://api.github.com/repos/kubernetes-sigs/kind/releases/latest | grep -oP '"tag_name": "\K(.*)(?=")')
+curl -Lo kind "https://github.com/kubernetes-sigs/kind/releases/download/$ver/kind-$(uname)-amd64"
+chmod +x ./kind
+sudo mv ./kind /usr/local/bin
+
+curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+chmod +x ./kubectl
+sudo mv ./kubectl /usr/local/bin/kubectl
 
 sudo docker build -f ./test/Dockerfile -t buildbox:v2 ./test
 
