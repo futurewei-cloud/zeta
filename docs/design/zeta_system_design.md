@@ -22,7 +22,7 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 # Zeta System Design Document
 
-Version 0.3
+Version 0.4
 
 Table of Contents
 
@@ -170,6 +170,46 @@ Table of Contents
 
 [7.3 External APIs](#73-external-apis)
 
+[7.3.1 ZGC REST APIs](#731-zgc-rest-apis)
+
+[7.3.1.1 Create ZGC](#7311-create-zgc)
+
+[7.3.1.2 Update ZGC by ID](#7312-update-zgc-by-id)
+
+[7.3.1.3 Get ZGCs](#7313-get-zgcs)
+
+[7.3.1.4 Get ZGC by ID](#7314-get-zgc-by-id)
+
+[7.3.1.5 Get ZGC by Project ID](#7315-get-zgc-by-project-id)
+
+[7.3.1.6 Delete ZGC](#7316-delete-zgc)
+
+[7.3.2 Project REST APIs](#732-project-rest-apis)
+
+[7.3.2.1 Add Project](#7321-add-project)
+
+[7.3.2.2 Delete Project](#7322-delete-project)
+
+[7.3.3 Node REST APIs](#733-node-rest-apis)
+
+[7.3.3.1 Add ZGC Node](#7331-add-zgc-node)
+
+[7.3.3.2 Delete ZGC Node](#7332-delete-zgc-node)
+
+[7.3.4 Compute Instance REST APIs](#734-compute-instance-rest-apis)
+
+[7.3.4.1 Add Compute Instance](#7341-add-compute-instance)
+
+[7.3.4.2 Get Compute Instance](#7342-get-compute-instance)
+
+[7.3.4.3 Delete Compute Instance](#7343-delete-compute-instance)
+
+[7.3.5 In-Band Operation](#735-in-band-operation)
+
+[7.3.5.1 Flow Injection](#7351-flow-injection)
+
+[7.3.5.2 Flow Deletion](#7352-flow-deletion)
+
 [7.4 Control Workflows](#74-control-workflows)
 
 [Appendix A: Record of Changes](#_Toc490026795)
@@ -220,6 +260,7 @@ List of Figures
 
 [Figure 19 Mgmt Scenario: FTN Create Workflow](#_Toc51759836)
 
+[Figure 20 Zeta In-Band Operation Frame](#_Toc513133)
 List of Tables
 
 [Table 1 Roles and Responsibilities](#_Toc51312298)
@@ -232,11 +273,15 @@ List of Tables
 
 [Table 5 - System Parameters](#_Ref441754491)
 
-[Table 6 - Record of Changes](#_Toc444160465)
+[Table 6 - Flow Injection Op](#_Toc51312765)
 
-[Table 7 - Glossary](#_Ref441754492)
+[Table 7 - Flow Deletion Op](#_Toc51312766)
 
-[Table 8 – Review Comments](#_Toc398804287)
+[Table 8 - Record of Changes](#_Toc444160465)
+
+[Table 9 - Glossary](#_Ref441754492)
+
+[Table 10 – Review Comments](#Toc398804287)
 
 ## 1 Introduction
 
@@ -263,8 +308,6 @@ Responsibilities
 | Team Lead – USTC      | Gongming Zhao |         |
 | Team Lead - Mizar     |               |         |
 | Team Lead – Alcor     | Liguang Xie   |         |
-
-Roles and Responsibilities
 
 ### 1.3 Terminology and Abbreviations
 
@@ -446,7 +489,6 @@ will be addressed in Chapter 3.2.
 Success Factors
 
 <table>
-<caption>Roles and Responsibilities</caption>
 <tbody>
 <tr class="odd">
 <td>Success Factor</td>
@@ -1463,17 +1505,477 @@ System parameters required and generalized to support use cases defined above - 
 
 ### 7.3 External APIs
 
-External API definition based on uses cases and related system parameters - To be completed.
+External API definitions are based on phase I use cases and related system parameters.
+#### 7.3.1 ZGC REST APIs
+
+##### 7.3.1.1 Create ZGC
+- Privilege: Sys Admin
+- Method: POST
+- Request: /zgcs
+- Request Parameter:
+  - PathVariable: None
+  - Body: json
+- Response:
+  - Response Code:
+    - Normal: 201 (created)
+    - Error: 400, 404, 500, 503
+  - Body: json
+- Example:
+    ```json
+    Request: http://localhost:8080/zgcs
+        data:
+        {
+            "name": "ZGC_test",
+            "description": "ZGC 1",
+            "cidr": "192.168.0.0/28",
+            "port_ibo": "8300",
+            "overlay_type": "vxlan"
+        }
+    Response:
+        data:
+        {
+            "id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
+            "name": "ZGC_test",
+            "description": "ZGC 1",
+            "cidr": "192.168.0.0/28",
+            "port_ibo": "8300",
+            "overlay_type": "vxlan",
+            "projs": []
+        }
+    ```
+
+##### 7.3.1.2 Update ZGC by ID
+- Privilege: Sys Admin
+- Method: PUT
+- Request: /zgcs/{zgc_id}
+- Request Parameter:
+  - PathVariable: string zgc_id
+  - Body: json
+- Response:
+  - Response Code:
+    - Normal: 200
+    - Error: 400, 404, 500, 503
+  - Body: json
+- Example:
+    ```json
+    Request: http://localhost:8080/zgcs/f81d4fae-7dec-11d0-a765-00a0c91e6bf6
+        data:
+        {
+            "id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
+            "name": "ZGC_test",
+            "description": "ZGC 1",
+            "cidr": "192.168.0.0/28",
+            "port_ibo": "8300",
+            "overlay_type": "vxlan",
+            "projs": [
+                "3dda2801-d675-4688-a63f-dcda8d327f50",
+                "3ddffee1-cf55-7788-a63f-dcda8d582f45"
+            ]
+        }
+    Response:
+        data:
+        {
+            "id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
+            "name": "ZGC_test",
+            "description": "ZGC 1",
+            "cidr": "192.168.0.0/28",
+            "port_ibo": "8300",
+            "overlay_type": "vxlan",
+            "projs": [
+                "3dda2801-d675-4688-a63f-dcda8d327f50",
+                "3ddffee1-cf55-7788-a63f-dcda8d582f45"
+            ]
+        }
+    ```
+
+##### 7.3.1.3 Get ZGCs
+- Privilege: Sys Admin
+- Method: GET
+- Request: /zgcs
+- Request Parameter:
+  - PathVariable: None
+  - Body: None
+- Response:
+  - Response Code:
+    - Normal: 200
+    - Error: 400, 404, 500
+  - Body: json
+- Example:
+    ```json
+    Request: http://localhost:8080/zgcs
+    Response:
+        data:
+        [
+            {
+                "zgc_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
+                "name": "ZGC_test1",
+                "description": "ZGC 1",
+                "cidr": "192.168.0.0/28",
+                "port_ibo": "8300",
+                "overlay_type": "vxlan",
+                "nodes": [
+                    "111d4fae-7dec-11d0-a765-00a0c9345612",
+                    "111d4fae-7dec-11d0-a765-00a0c9345999",
+                    "111d4fae-7dec-11d0-a765-00a0c9345777"
+                ],
+                "projs": [
+                    "3dda2801-d675-4688-a63f-dcda8d327f50",
+                    "3ddffee1-cf55-7788-a63f-dcda8d582f45"
+                ]
+            },
+            {
+                "zgc_id": "f81d4fae-7dec-11d0-a765-007198230934",
+                "name": "ZGC_test2",
+                "description": "ZGC 2",
+                "cidr": "192.168.1.0/28",
+                "port_ibo": "8300",
+                "overlay_type": "vxlan",
+                "projs": []
+            }
+        ]
+
+##### 7.3.1.4 Get ZGC by ID
+- Privilege: Sys Admin
+- Method: GET
+- Request: /zgcs/{zgc_id}
+- Request Parameter:
+  - PathVariable: string zgc_id
+  - Body: None
+- Response:
+  - Response Code:
+    - Normal: 200
+    - Error: 400, 404, 500
+  - Body: json
+    ```json
+    Request: http://localhost:8080/zgcs/f81d4fae-7dec-11d0-a765-00a0c91e6bf6
+    Response:
+        data:
+        {
+            "zgc_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
+            "name": "ZGC_test1",
+            "description": "ZGC 1",
+            "cidr": "192.168.0.0/28",
+            "port_ibo": "8300",
+            "overlay_type": "vxlan",
+            "nodes": [
+                "111d4fae-7dec-11d0-a765-00a0c9345612",
+                "111d4fae-7dec-11d0-a765-00a0c9345999",
+                "111d4fae-7dec-11d0-a765-00a0c9345777"
+            ],
+            "projs": [
+                "3dda2801-d675-4688-a63f-dcda8d327f50",
+                "3ddffee1-cf55-7788-a63f-dcda8d582f45"
+            ]
+        }
+
+##### 7.3.1.5 Get ZGC by Project ID
+- Privilege: Tenant Admin
+- Method: GET
+- Request: /zgcs?proj={proj_id}
+- Request Parameter:
+  - filter: string proj_id
+  - Body: None
+- Response:
+  - Response Code:
+    - Normal: 200
+    - Error: 400, 404, 500
+  - Body: json
+    ```json
+    Request: http://localhost:8080/zgcs?proj=3dda2801-d675-4688-a63f-dcda8d327f50
+    Response:
+        data:
+        {
+            "zgc_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
+            "name": "ZGC_test1",
+            "description": "ZGC 1",
+            "cidr": "192.168.0.0/28",
+            "port_ibo": "8300",
+            "overlay_type": "vxlan",
+            "nodes": [
+                "111d4fae-7dec-11d0-a765-00a0c9345612",
+                "111d4fae-7dec-11d0-a765-00a0c9345999",
+                "111d4fae-7dec-11d0-a765-00a0c9345777"
+            ],
+            "projs": [
+                "3dda2801-d675-4688-a63f-dcda8d327f50",
+                "3ddffee1-cf55-7788-a63f-dcda8d582f45"
+            ]
+        }
+
+##### 7.3.1.6 Delete ZGC
+- Privilege: Sys Admin
+- Method: DELETE
+- Request: /zgcs/{zgc_id}
+- Request Parameter:
+  - PathVariable: string zgc_id
+  - Body: None
+- Response:
+  - Response Code:
+    - Normal: 204
+    - Error: 400, 404, 500, 503
+  - Body: json
+    ```json
+    Request: http://localhost:8080/zgcs/f81d4fae-7dec-11d0-a765-00a0c91e6bf6
+    Response:
+        data: {}
+
+#### 7.3.2 Project REST APIs
+
+##### 7.3.2.1 Add Project
+- Privilege: Sys Admin
+- Method: POST
+- Request: /projs
+- Request Parameter:
+  - PathVariable: None
+  - Body: json
+- Response:
+  - Response Code:
+    - Normal: 201 (created)
+    - Error: 400, 404, 500, 503
+  - Body: json
+- Example:
+    ```json
+    Request: http://localhost:8080/projs
+        data:
+        {
+            "project_id": "3dda2801-d675-4688-a63f-dcda8d327f50",
+            "zgc_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
+        }
+    Response:
+        data:
+        {
+            "project_id": "3dda2801-d675-4688-a63f-dcda8d327f50",
+            "zgc_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
+        }
+    ```
+
+##### 7.3.2.2 Delete Project
+- Privilege: Sys Admin
+- Method: DELETE
+- Request: /projs/{project_id}
+- Request Parameter:
+  - PathVariable: string project_id
+  - Body: None
+- Response:
+  - Response Code:
+    - Normal: 204
+    - Error: 400, 404, 500, 503
+  - Body: json
+- Example:
+    ```json
+    Request: http://localhost:8080/projs/3dda2801-d675-4688-a63f-dcda8d327f50
+    Response:
+        data:
+        {
+        }
+    ```
+
+#### 7.3.3 Node REST APIs
+
+##### 7.3.3.1 Add ZGC Node
+- Privilege: Sys Admin
+- Method: POST
+- Request: /nodes
+- Request Parameter:
+  - PathVariable: None
+  - Body: json
+- Response:
+  - Response Code:
+    - Normal: 201 (created)
+    - Error: 400, 404, 500, 503
+  - Body: json
+- Example:
+    ```json
+    Request: http://localhost:8080/nodes
+        data:
+        {
+            "name": "ZGC_node1",
+            "description": "ZGC network node 1",
+            "ip_control": "172.16.0.15",
+            "zgc_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
+        }
+    Response:
+        data:
+        {
+            "id": "111d4fae-7dec-11d0-a765-00a0c9345612",
+            "name": "ZGC_node1",
+            "description": "ZGC network node 1",
+            "ip_control": "172.16.0.15",
+            "zgc_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
+        }
+    ```
+
+##### 7.3.3.2 Delete ZGC Node
+- Privilege: Sys Admin
+- Method: DELETE
+- Request: /nodes/{node_id}
+- Request Parameter:
+  - PathVariable: string node_id
+  - Body: None
+- Response:
+  - Response Code:
+    - Normal: 204
+    - Error: 400, 404, 500, 503
+  - Body: json
+- Example:
+    ```json
+    Request: http://localhost:8080/nodes/111d4fae-7dec-11d0-a765-00a0c9345612
+    Response:
+        data:
+        {
+        }
+    ```
+
+#### 7.3.4 Compute Instance REST APIs
+
+##### 7.3.4.1 Add Compute Instance
+- Privilege: Tenant Admin
+- Method: POST
+- Request: /instances
+- Request Parameter:
+  - PathVariable: None
+  - Body: json
+- Response:
+  - Response Code:
+    - Normal: 201 (created)
+    - Error: 400, 404, 500, 503
+  - Body: json
+- Example:
+    ```json
+    Request: http://localhost:8080/instances
+        data:
+        {
+            "instance_id": "333d4fae-7dec-11d0-a765-00a0c9342222",
+            "vni": "1927",
+            "vip_instance": "",
+            "ip_instance": "10.10.0.3",
+            "mac_instance": "cc:dd:ee:ff:11:22",
+            "ip_node": "192.168.10.27",
+            "mac_node": "ee:dd:ee:ff:22:11",
+            "zgc_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
+        }
+    Response:
+        data:
+        {
+            "instance_id": "333d4fae-7dec-11d0-a765-00a0c9342222",
+            "vni": "1927",
+            "vip_instance": "",
+            "ip_instance": "10.10.0.3",
+            "mac_instance": "cc:dd:ee:ff:11:22",
+            "ip_node": "192.168.10.27",
+            "mac_node": "ee:dd:ee:ff:22:11",
+            "zgc_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
+            "status": "pending"
+        }
+    ```
+
+##### 7.3.4.2 Get Compute Instance
+- Privilege: Tenant Admin
+- Method: GET
+- Request: /instances/{instance_id}
+- Request Parameter:
+  - PathVariable: string instance_id
+  - Body: None
+- Response:
+  - Response Code:
+    - Normal: 200
+    - Error: 400, 404, 500, 503
+  - Body: json
+- Example:
+    ```json
+    Request: http://localhost:8080/instances/333d4fae-7dec-11d0-a765-00a0c9342222
+    Response:
+        data:
+        {
+            "instance_id": "333d4fae-7dec-11d0-a765-00a0c9342222",
+            "vni": "1927",
+            "vip_instance": "",
+            "ip_instance": "10.10.0.3",
+            "mac_instance": "cc:dd:ee:ff:11:22",
+            "ip_node": "192.168.10.27",
+            "mac_node": "ee:dd:ee:ff:22:11",
+            "zgc_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
+            "status": "ready"
+        }
+    ```
+
+##### 7.3.4.3 Delete Compute Instance
+- Privilege: Sys Admin
+- Method: DELETE
+- Request: /instances/{instance_id}
+- Request Parameter:
+  - PathVariable: string instance_id
+  - Body: None
+- Response:
+  - Response Code:
+    - Normal: 204
+    - Error: 400, 404, 500, 503
+  - Body: json
+- Example:
+    ```json
+    Request: http://localhost:8080/instances/333d4fae-7dec-11d0-a765-00a0c9342222
+    Response:
+        data:
+        {
+        }
+    ```
+
+#### 7.3.5 In-Band Operation
+In Phase I release, this interface is only used to send in-band flow entry control
+messages to OpenFlow controller on compute node in order to support "Direct Path" feature.
+
+<span id="_Toc513133" class="anchor"></span>Figure 20 Zeta In-Band Operation Frame
+
+![](.//png/zeta_sdd_inband_operation_frame.png)
+
+#### 7.3.5.1 Flow Injection 
+- Destination Port: port_ibo (8300)
+- OP_Code: 0x0000 0000
+- OP_Data:
+
+<span id="_Toc51312765" class="anchor"></span>Table 6 Flow Injection Op
+
+| Field                 | Offset (Byte) | Value   |
+| --------------------- | ------------- | ------- |
+| Matcher_SIP           | 0             | Inner Packet SIP      |
+| Matcher_DIP           | 4             | Inner Packet DIP      |
+| Matcher_SPORT         | 8             | Inner Packet SPort    |
+| Matcher_DPORT         | 10            | Inner Packet DPort    |
+| Matcher_Protocol      | 12            | Inner Packet Protocol |
+| Matcher_VNI           | 13            | VxLAN/Geneve vni      |
+| DestInst_IP           | 16            | Destination Inst IP   |
+| DestNode_IP           | 20            | Destination Node IP   |
+| DestInst_MAC          | 24            | Destination Inst MAC  |
+| DestNode_MAC          | 30            | Destination Node MAC  |
+| Idle_Timeout          | 36            | 0 - 65536s            |
+
+#### 7.3.5.2 Flow Deletion 
+- Destination Port: port_ibo (8300)
+- OP_Code: 0x0000 0001
+- OP_Data:
+
+<span id="_Toc51312766" class="anchor"></span>Table 7 Flow Deletion Op
+
+| Field                 | Offset (Byte) | Value   |
+| --------------------- | ------------- | ------- |
+| Matcher_SIP           | 0             | Inner Packet SIP      |
+| Matcher_DIP           | 4             | Inner Packet DIP      |
+| Matcher_SPORT         | 8             | Inner Packet SPort    |
+| Matcher_DPORT         | 10            | Inner Packet DPort    |
+| Matcher_Protocol      | 12            | Inner Packet Protocol |
+| Matcher_VNI           | 13            | VxLAN/Geneve vni      |
 
 ### 7.4 Control Workflows
 
 Internal workflow definition based on uses cases, system parameters and External APIs - To be completed.
 
+
+
 <span id="_Toc490026795" class="anchor"></span>
 
 ## Appendix A: Record of Changes
 
-<span id="_Toc444160465" class="anchor"></span>Table 6 - Record of
+<span id="_Toc444160465" class="anchor"></span>Table 8 - Record of
 Changes
 
 <table>
@@ -1508,6 +2010,12 @@ Changes
 <td>Bin Liang</td>
 <td>Added Initial release scope Chapter 2.1 and Initial Release use cases Chapter 7.1</td>
 </tr>
+<tr class="odd">
+<td>0.4</td>
+<td>10/13/2020</td>
+<td>Bin Liang</td>
+<td>Added External APIs Chapter 7.3</td>
+</tr>
 </tbody>
 </table>
 
@@ -1519,7 +2027,7 @@ Instructions: Provide clear and concise definitions for terms used in
 this document that may be unfamiliar to readers of the document. Terms
 are to be listed in alphabetical order.
 
-<span id="_Ref441754492" class="anchor"></span>Table 7 - Glossary
+<span id="_Ref441754492" class="anchor"></span>Table 9 - Glossary
 
 | Term     | Acronym     | Definition     |
 | -------- | ----------- | -------------- |
@@ -1545,7 +2053,7 @@ session will capture important review and discussion outputs for the
 benefit of open community to understand the historical contexts,
 regarding some of the design and decisions make during the journey.
 
-<span id="_Toc398804287" class="anchor"></span>Table 8 – Review Comments
+<span id="_Toc398804287" class="anchor"></span>Table 10 – Review Comments
 
 | Comments | Date |
 | -------- | ---- |
