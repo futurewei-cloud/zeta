@@ -4,6 +4,17 @@ To start running Zeta, first you will need a Kubernetes cluster. Running Zeta wi
 
 ## Prerequisites
 
+### Kubernetes Cluster
+
+For a pre-existing Kubernetes cluster, simply run provided the ```deploy_mgmt.sh```.
+This script will apply all of the CRDs and deploy the operator to the cluster.
+
+### Networking Cluster
+
+TBD
+
+## Testing
+
 ### Kind (Kubernetes in Docker)
 
 The recommended way to try out Zeta is with Kind.
@@ -18,6 +29,9 @@ You can find [instructions for installing Kind on it's official site here.](http
         * [Build Essentials](https://packages.ubuntu.com/xenial/build-essential) (For code compilation)
         * [Python](https://www.python.org) (For running the management plane and tests)
         * [Docker](https://www.docker.com) (For management plane and tests)
+        * [Kind](https://kind.sigs.k8s.io) (For running testing the Zeta operator in a development environment)
+        * [Kubectl](https://kubectl.docs.kubernetes.io) (For communicating with Kubernetes)
+
     * There is also an optional kernel update included in the script if you wish to update to a compatible version
 
 #### New Kind Cluster
@@ -40,10 +54,9 @@ $ ./kind-setup.sh dev
 This script does the following:
 
 * Create a multi-node local Kubernetes cluster with Kind.
-* Build the Kind-Node, Zeta-Daemon, and Zeta-Operator docker images
+* Build the Kind-Node, and Zeta-Operator docker images
 * Apply all of the Zeta [CRDs](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/).
 * Deploy the Zeta [Operators](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/).
-* Deploy the Zeta Daemon
 
 ### Linux Kernel Update
 
