@@ -4,11 +4,6 @@ setup(
     name='zeta',
     version='0.1.0',
     packages=find_packages(include=['zeta', 'zeta.*']),
-    entry_points={
-        'console_scripts': [
-            'zetad=zeta.daemon.app:main'
-        ]
-    },
     install_requires=[
         'PyYAML',
         'kopf',

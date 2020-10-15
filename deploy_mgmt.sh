@@ -1,8 +1,9 @@
+#!/bin/bash
+
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2020 The Authors.
 
-# Authors: Catherine Lu      <@clu2xlu>
-#          Hong Chang        <@Hong-Chang>
+# Authors: Phu Tran          <@phudtran>
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -19,27 +20,9 @@
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 # THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: zeta-operator
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: zeta-operator
-  template:
-    metadata:
-      labels:
-        app: zeta-operator
-    spec:
-      serviceAccountName: zeta-operator
-      hostNetwork: true
-      tolerations:
-        - operator: Exists
-          effect: NoSchedule
-      containers:
-        - image: fwnetworking/endpointopr:latest
-          name: zeta-operator
-          securityContext:
-            privileged: true
+CWD=$(pwd)
+DEPLOY="user"
+DOCKER_ACC="fwnetworking"
+
+source install/create_crds.sh $CWD
+source install/deploy_operator.sh $CWD $DEPLOY $DOCKER_ACC

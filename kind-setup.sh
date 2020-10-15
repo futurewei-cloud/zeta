@@ -32,14 +32,14 @@ function get_status() {
         }
     }
     { print $f["STATUS"] }
-    ' | grep Provisioned > /dev/null
+    ' | grep Running > /dev/null
 
     return $?
 }
 
 # Checks for status Provisioned of array of objects
 function check_ready() {
-    objects=("droplets")
+    objects=("pods")
     sum=0
     for i in "${objects[@]}"
     do
@@ -65,6 +65,8 @@ NODES=${2:-3}
 timeout=120
 
 kind delete cluster
+docker stop local-kind-registry 2> /dev/null
+docker rm local-kind-registry
 docker network rm kind 2> /dev/null
 # All interfaces in the network have an MTU of 9000 to
 # simulate a real datacenter. Since all container traffic
@@ -88,13 +90,8 @@ source k8s/kind/create_cluster.sh $KINDCONF $USER $NODES
 api_ip=`docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' kind-control-plane`
 sed "s/server: https:\/\/127.0.0.1:[[:digit:]]\+/server: https:\/\/$api_ip:6443/" $KINDCONF > $ZETACONF
 ln -snf $KINDCONF $KINDHOME
-
 source install/create_crds.sh $CWD
-source install/create_service_account.sh $CWD $USER
-
-source install/deploy_daemon.sh $CWD $USER $DOCKER_ACC
 source install/deploy_operator.sh $CWD $USER $DOCKER_ACC
-source install/create_testimage.sh $CWD $USER $DOCKER_ACC
 
 end=$((SECONDS + $timeout))
 echo -n "Waiting for cluster to come up."

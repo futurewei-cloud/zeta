@@ -1,8 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2020 The Authors.
 
-# Authors: Sherif Abdelwahab <@zasherif>
-#          Phu Tran          <@phudtran>
+# Authors: Phu Tran <@phudtran>
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -18,7 +17,24 @@
 # FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 # THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: zeta-operator
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: zeta-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - kind: ServiceAccount
+    name: zeta-operator
+    namespace: default
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -33,11 +49,14 @@ spec:
       labels:
         app: zeta-operator
     spec:
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          effect: NoSchedule
       serviceAccountName: zeta-operator
       terminationGracePeriodSeconds: 0
       hostNetwork: true
       containers:
-        - image: fwnetworking/endpointopr:latest
+        - image: fwnetworking/zeta_opr:latest
           name: zeta-operator
           securityContext:
             privileged: true

@@ -26,17 +26,16 @@ import logging
 import time
 import asyncio
 import os.path
-import time
+import grpc
+import threading
+import socket
+import pathlib
 from kopf import cli
 from zeta.common.wf_param import *
 from zeta.dp.zeta.workflows.droplets.triggers import *
-from zeta.dp.zeta.workflows.builtins.nodes.triggers import *
-import grpc
-import threading
 from google.protobuf import empty_pb2
 from concurrent import futures
 from kubernetes import client, config
-import socket
 from zeta.common.constants import *
 
 logger = logging.getLogger()

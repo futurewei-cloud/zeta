@@ -22,9 +22,10 @@
 # THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 DIR=${1:-.}
+CRDS_FOLDER="etc/crds"
 
-# Create the CRDs
-kubectl delete droplets.zeta.com --all 2> /tmp/kubetctl.err
-
-kubectl apply -f $DIR/etc/crds/droplets.crd.yaml
-
+for crd in "$CRDS_FOLDER"/*
+do
+    kubectl delete "$crd" --all 2> /tmp/kubetctl.err
+    kubectl apply -f "$crd"
+done

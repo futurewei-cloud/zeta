@@ -34,10 +34,10 @@ fi
 
 # Build the operator image
 if [[ "$USER" == "dev" || "$USER" == "final" ]]; then
-    docker image build -t $DOCKER_ACC/endpointopr:latest -f $DIR/etc/docker/operator.Dockerfile $DIR
-    docker image push $DOCKER_ACC/endpointopr:latest
+    docker image build -t $DOCKER_ACC/zeta_opr:latest -f $DIR/etc/docker/operator.Dockerfile $DIR
+    docker image push $DOCKER_ACC/zeta_opr:latest
 fi
 
 # Delete existing deployment and deploy
-delete_pods mizar-operator deployment
+delete_pods zeta-operator deployment
 kubectl apply -f $DIR/etc/deploy/$YAML_FILE
