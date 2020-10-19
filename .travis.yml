@@ -23,4 +23,4 @@ before_script:
 jobs:
   include:
     - stage: "Compile & test"
-      script: make && make mgmt_tests
+      script: make && make mgmt test

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 
-modules := src test teste2e zeta
+modules := src test
 build := build
 
 CC = gcc
@@ -98,7 +98,7 @@ clean::
 	rm -f *.gcov
 
 .PHONY: test
-test:: lcov functest
+test:: lcov
 
 .PHONY: unittest
 unittest::
@@ -115,8 +115,17 @@ lcov:gcov
 	genhtml lcov/transit_cov_filtered.info -o lcov/report
 	@echo "see lcov/report/index.html"
 
-.PHONY: mgmt_tests
-zeta::
+.PHONY: kind
+kind:
+	./deploy/kind-setup.sh dev 1
+
+.PHONY: k8s
+k8s:
+	./deploy/deploy-mgmt.sh
+
+.PHONY: bootstrap
+bootstrap:
+	./deploy/bootstrap.sh
 
 dirmake:
 	mkdir -p core
