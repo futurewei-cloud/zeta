@@ -21,7 +21,7 @@ The recommended way to try out Zeta is with Kind.
 Kind can be used to run a multi-node Kubernetes cluster with Docker containers locally on your machine.
 You can find [instructions for installing Kind on it's official site here.](https://kind.sigs.k8s.io/docs/user/quick-start/)
 
-* Enter the zeta directory and run ```make bootstrap```.
+* Enter the zeta directory and run ```./deploy/bootstrap.sh```.
     * This script will install the neccessary components to compile Zeta, and run it's unit tests. These include
         * [Clang-7](https://clang.llvm.org) (For code compilation)
         * [Llvm-7](https://llvm.org) (For code compilation)

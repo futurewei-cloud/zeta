@@ -123,10 +123,6 @@ kind:
 k8s:
 	./deploy/deploy-mgmt.sh
 
-.PHONY: bootstrap
-bootstrap:
-	./deploy/bootstrap.sh
-
 dirmake:
 	mkdir -p core
 	mkdir -p cov
