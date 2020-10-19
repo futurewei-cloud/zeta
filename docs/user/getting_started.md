@@ -6,7 +6,7 @@ To start running Zeta, first you will need a Kubernetes cluster. Running Zeta wi
 
 ### Kubernetes Cluster
 
-For a pre-existing Kubernetes cluster, simply run provided the ```deploy_mgmt.sh```.
+For a pre-existing Kubernetes cluster, simply run provided the ```make k8s```.
 This script will apply all of the CRDs and deploy the operator to the cluster.
 
 ### Networking Cluster
@@ -21,7 +21,7 @@ The recommended way to try out Zeta is with Kind.
 Kind can be used to run a multi-node Kubernetes cluster with Docker containers locally on your machine.
 You can find [instructions for installing Kind on it's official site here.](https://kind.sigs.k8s.io/docs/user/quick-start/)
 
-* Enter the zeta directory and run the ```bootstrap.sh``` script.
+* Enter the zeta directory and run ```make bootstrap```.
     * This script will install the neccessary components to compile Zeta, and run it's unit tests. These include
         * [Clang-7](https://clang.llvm.org) (For code compilation)
         * [Llvm-7](https://llvm.org) (For code compilation)
@@ -48,7 +48,7 @@ If you are testing out Zeta with Kind, a script has been included to setup a loc
 Simply run the script below in the Zeta directory.
 
 ```
-$ ./kind-setup.sh dev
+$ make kind
 ```
 
 This script does the following:
