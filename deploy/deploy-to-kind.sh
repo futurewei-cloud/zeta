@@ -55,10 +55,12 @@ function check_ready() {
     fi
 }
 
-make
-CWD=$(pwd)
-KINDCONF="${HOME}/zeta/build/tests/kind/config"
-ZETACONF="${HOME}/zeta/build/tests/zeta.config"
+# make
+
+# Get full path of current ROOT no matter where it's placed and invoked
+ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." >/dev/null 2>&1 && pwd )"
+KINDCONF="${ROOT}/build/tests/kind/config"
+ZETACONF="${ROOT}/build/tests/zeta.config"
 KINDHOME="${HOME}/.kube/config"
 USER=${1:-user}
 NODES=${2:-3}
@@ -83,15 +85,14 @@ if [[ "$USER" == "dev" ]]; then
 else
     DOCKER_ACC="fwnetworking"
 fi
-docker image build -t $DOCKER_ACC/kindnode:latest -f deploy/k8s/kind/Dockerfile .
+docker image build -t $DOCKER_ACC/zetanode:latest -f ${ROOT}/deploy/kind/Dockerfile $ROOT
 
-source deploy/k8s/kind/create_cluster.sh $KINDCONF $USER $NODES
+source ${ROOT}/deploy/kind/create_cluster.sh $KINDCONF $USER $NODES
 
 api_ip=`docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' kind-control-plane`
 sed "s/server: https:\/\/127.0.0.1:[[:digit:]]\+/server: https:\/\/$api_ip:6443/" $KINDCONF > $ZETACONF
 ln -snf $KINDCONF $KINDHOME
-source deploy/install/create_crds.sh $CWD
-source deploy/install/deploy_operator.sh $CWD $USER $DOCKER_ACC
+source $ROOT/deploy/install/deploy_mgmt.sh $USER $DOCKER_ACC
 
 end=$((SECONDS + $timeout))
 echo -n "Waiting for cluster to come up."

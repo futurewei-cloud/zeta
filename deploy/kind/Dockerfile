@@ -1,9 +1,8 @@
-#!/bin/bash
-
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2020 The Authors.
 
-# Authors: Phu Tran          <@phudtran>
+# Authors: Sherif Abdelwahab <@zasherif>
+#          Phu Tran          <@phudtran>
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,9 +19,9 @@
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 # THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-CWD=$(pwd)
-DEPLOY="user"
-DOCKER_ACC="fwnetworking"
-
-source deploy/install/create_crds.sh $CWD
-source deploy/install/deploy_operator.sh $CWD $DEPLOY $DOCKER_ACC
+FROM localhost:5000/zetanode:latest
+COPY . /var/zeta/
+RUN pip3 install /var/zeta/deploy
+RUN ln -snf /var/zeta/build/bin /trn_bin
+RUN ln -snf /var/zeta/build/xdp /trn_xdp
+RUN ln -snf /var/zeta/build/tests/zeta.config /etc/zeta.config

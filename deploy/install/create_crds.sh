@@ -22,7 +22,7 @@
 # THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 DIR=${1:-..}
-CRDS_FOLDER="deploy/etc/crds"
+CRDS_FOLDER="$DIR/deploy/etc/crds"
 
 for crd in "$CRDS_FOLDER"/*
 do

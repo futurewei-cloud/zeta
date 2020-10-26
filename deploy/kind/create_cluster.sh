@@ -21,7 +21,10 @@
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 # THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-KINDCONF=${1:-"${PWD}/build/tests/kind/config"}
+# Get full path of current ROOT no matter where it's placed and invoked
+ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." >/dev/null 2>&1 && pwd )"
+
+KINDCONF=${1:-"${ROOT}/build/tests/kind/config"}
 USER=${2:-dev}
 NODES=${3:-1}
 

@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2020 The Authors.
 
-# Authors: Sherif Abdelwahab <@zasherif>
-#          Phu Tran          <@phudtran>
+# Authors: Phu Tran          <@phudtran>
+#          Bin Liang         <@liangbin>
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -21,23 +21,10 @@
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 # THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-DIR=${1:-..}
-USER=${2:-dev}
-DOCKER_ACC=${3:-"localhost:5000"}
-YAML_FILE="dev.operator.deploy.yaml"
-. $DIR/deploy/install/common.sh
+# Get full path of current ROOT no matter where it's placed and invoked
+ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." >/dev/null 2>&1 && pwd )"
+USER=${1:-user}
+DOCKER_ACC=${2:-fwnetworking}
 
-if [[ "$USER" == "user" || "$USER" == "final" ]]; then
-    DOCKER_ACC="fwnetworking"
-    YAML_FILE="operator.deploy.yaml"
-fi
-
-# Build the operator image
-if [[ "$USER" == "dev" || "$USER" == "final" ]]; then
-    docker image build -t $DOCKER_ACC/zeta_opr:latest -f $DIR/deploy/etc/docker/operator.Dockerfile $DIR
-    docker image push $DOCKER_ACC/zeta_opr:latest
-fi
-
-# Delete existing deployment and deploy
-delete_pods zeta-operator deployment
-kubectl apply -f $DIR/deploy/etc/deploy/$YAML_FILE
+source $ROOT/deploy/install/create_crds.sh $ROOT
+source $ROOT/deploy/install/deploy_operator.sh $ROOT $USER $DOCKER_ACC
