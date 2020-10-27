@@ -5,6 +5,7 @@
 
 # Authors: Sherif Abdelwahab <@zasherif>
 #          Phu Tran          <@phudtran>
+#          Bin Liang         <@liangbin>
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +23,7 @@
 # THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 DIR=${1:-..}
-CRDS_FOLDER="deploy/etc/crds"
+CRDS_FOLDER="$DIR/deploy/etc/crds"
 
 for crd in "$CRDS_FOLDER"/*
 do

@@ -1,8 +1,5 @@
 \#*\#
-build/bin/*
-build/tests/*
-build/xdp/*
-build/xdp_test/*
+/build
 docsite/build/*
 *~
 *.swp

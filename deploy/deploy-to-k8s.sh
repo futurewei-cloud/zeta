@@ -1,8 +1,10 @@
+#!/bin/bash
+
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2020 The Authors.
 
-# Authors: Sherif Abdelwahab <@zasherif>
-#          Phu Tran          <@phudtran>
+# Authors: Phu Tran          <@phudtran>
+#          Bin Liang         <@liangbin>
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -19,9 +21,11 @@
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 # THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-FROM fwnetworking/kindnode:latest
-COPY . /var/zeta/
-RUN pip3 install /var/zeta/deploy
-RUN ln -snf /var/zeta/build/bin /trn_bin
-RUN ln -snf /var/zeta/build/xdp /trn_xdp
-RUN ln -snf /var/zeta/build/tests/zeta.config /etc/zeta.config
+# Get full path of current ROOT no matter where it's placed and invoked
+ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." >/dev/null 2>&1 && pwd )"
+USER=${1:-user}
+DOCKER_ACC=${2:-fwnetworking}
+
+docker image build -t $DOCKER_ACC/zetanode:latest -f ${ROOT}/deploy/k8s/Dockerfile $ROOT
+
+source $ROOT/deploy/install/deploy_mgmt.sh $USER $DOCKER_ACC

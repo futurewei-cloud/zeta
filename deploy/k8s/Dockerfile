@@ -1,11 +1,8 @@
-#!/bin/bash
-
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2020 The Authors.
 
 # Authors: Sherif Abdelwahab <@zasherif>
 #          Phu Tran          <@phudtran>
-#          Bin Liang         <@liangbin>
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -22,23 +19,9 @@
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 # THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-DIR=${1:-..}
-USER=${2:-dev}
-DOCKER_ACC=${3:-"localhost:5000"}
-YAML_FILE="dev.operator.deploy.yaml"
-. $DIR/deploy/install/common.sh
-
-if [[ "$USER" == "user" || "$USER" == "final" ]]; then
-    DOCKER_ACC="fwnetworking"
-    YAML_FILE="operator.deploy.yaml"
-fi
-
-# Build the operator image
-if [[ "$USER" == "dev" || "$USER" == "final" ]]; then
-    docker image build -t $DOCKER_ACC/zeta_opr:latest -f $DIR/deploy/etc/docker/operator.Dockerfile $DIR
-    docker image push $DOCKER_ACC/zeta_opr:latest
-fi
-
-# Delete existing deployment and deploy
-delete_pods zeta-operator deployment
-kubectl apply -f $DIR/deploy/etc/deploy/$YAML_FILE
+FROM fwnetworking/zeta_node:latest
+COPY . /var/zeta/
+RUN pip3 install /var/zeta/deploy
+RUN ln -snf /var/zeta/build/bin /trn_bin
+RUN ln -snf /var/zeta/build/xdp /trn_xdp
+RUN ln -snf /var/zeta/build/tests/zeta.config /etc/zeta.config
