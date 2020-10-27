@@ -8,10 +8,11 @@
 FROM fwnetworking/zeta_dev:latest
 
 # Set container user to match host $USER to avoid messing up shared folders
+ARG USER_NAME
 ARG USER_ID
 ARG GROUP_ID
 
-RUN addgroup --gid $GROUP_ID user && \
-    adduser --disabled-password --gecos '' --uid $USER_ID --gid $GROUP_ID user
+RUN if [ $USER_ID -ne 0 ]; then addgroup --gid $GROUP_ID $USER_NAME && \
+    adduser --disabled-password --gecos '' --uid $USER_ID --gid $GROUP_ID $USER_NAME; fi
 
-USER user
+USER $USER_NAME
