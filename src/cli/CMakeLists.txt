@@ -1,3 +1,10 @@
+# SPDX-License-Identifier: MIT
+#
+# Copyright (c) 2020 The Authors.
+# Authors: Bin Liang         <@liangbin>
+#
+# Summary: cli CMake listfile for zeta project
+
 message("Processing src/cli/CMakeList.txt")
 
 file(GLOB SOURCE ${CMAKE_CURRENT_LIST_DIR}/*.c)

@@ -1,4 +1,12 @@
 #!/bin/bash
+#
+# SPDX-License-Identifier: MIT
+#
+# Copyright (c) 2020 The Authors.
+# Authors: Bin Liang         <@liangbin>
+#
+# Summary: Top level script to build and unit test zeta project in container
+#
 
 # Check if we are building flavor: debug vs release
 if [ "$1" == "release" ]; then
@@ -12,9 +20,9 @@ arch="$(uname -m)"
 
 # Get full path of build.sh script no matter where it's placed and invoked
 ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-echo "build path is $BUILD, cleanning up target folder $BUILD/_build/$FLAVOR"
+echo "Root path is $ROOT, cleanning up target folder $ROOT/build for $FLAVOR build"
 rm -rf $ROOT/build
-mkdir -p $ROOT/build/lib
+mkdir -p $ROOT/build
 
 # pull submodules just in case
 git submodule update --init --recursive

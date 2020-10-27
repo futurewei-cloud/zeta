@@ -1,3 +1,10 @@
+# SPDX-License-Identifier: MIT
+#
+# Copyright (c) 2020 The Authors.
+# Authors: Bin Liang         <@liangbin>
+#
+# Summary: mgmt CMake listfile for zeta project
+
 message("Processing src/mgmt/CMakeList.txt")
 
 set(PROTO_READY ${CMAKE_BINARY_DIR}/src/mgmt/proto.ready)

@@ -1,3 +1,10 @@
+# SPDX-License-Identifier: MIT
+#
+# Copyright (c) 2020 The Authors.
+# Authors: Bin Liang         <@liangbin>
+#
+# Summary: xdp CMake listfile for zeta project
+
 message("Processing src/xdp/CMakeList.txt")
 
 set(LLC llc-7)

@@ -1,3 +1,10 @@
+# SPDX-License-Identifier: MIT
+#
+# Copyright (c) 2020 The Authors.
+# Authors: Bin Liang         <@liangbin>
+#
+# Summary: src level CMake listfile for zeta project
+
 message("Processing src/CMakeList.txt")
 
 include(extern/extern.cmake)

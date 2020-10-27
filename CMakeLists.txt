@@ -1,3 +1,10 @@
+# SPDX-License-Identifier: MIT
+#
+# Copyright (c) 2020 The Authors.
+# Authors: Bin Liang         <@liangbin>
+#
+# Summary: Top level CMake listfile for zeta project
+
 # ----------------------------------------------------------------------------
 # Specify the version being used as well as the language
 cmake_minimum_required (VERSION 3.10)

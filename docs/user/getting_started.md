@@ -10,6 +10,14 @@ Host Linux environment:
 - [Kind](https://kind.sigs.k8s.io): tested with version 0.8.1
 - [Kubectl](https://kubectl.docs.kubernetes.io): tested with version 1.18
 
+Also please make sure your login user ID is added in docker group so you can run docker without sudo:
+```
+sudo groupadd docker
+sudo usermod -aG docker $USER
+newgrp docker 
+```
+
+
 ### Kubernetes Cluster
 
 For a pre-existing Kubernetes cluster, simply run provided script ```./deploy/deploy-mgmt.sh```.
@@ -65,7 +73,7 @@ This script does the following:
 * Apply all of the Zeta [CRDs](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/).
 * Deploy the Zeta [Operators](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/).
 
-### Deploy to Remotr K8S Cluster
+### Deploy to Remote K8S Cluster
 
 **Note**: Before proceeding with the setup script below, please make sure you have [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) installed and configured to access the remote K8S cluster.
 

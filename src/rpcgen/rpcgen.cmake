@@ -1,3 +1,10 @@
+# SPDX-License-Identifier: MIT
+#
+# Copyright (c) 2020 The Authors.
+# Authors: Bin Liang         <@liangbin>
+#
+# Summary: rpcgen CMake listfile for zeta project
+
 message("Processing src/rpcgen/CMakeList.txt")
 
 set(RPCGEN_SRC trn_rpc_protocol.x)

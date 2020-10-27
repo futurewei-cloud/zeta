@@ -1,66 +1,13 @@
-FROM ubuntu:18.04
+# SPDX-License-Identifier: MIT
+#
+# Copyright (c) 2020 The Authors.
+# Authors: Bin Liang         <@liangbin>
+#
+# Summary: Customize zeta_dev container for local build environments
 
-RUN echo "1--- installing common dependencies ---" && \
-    apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y software-properties-common && \
-	add-apt-repository ppa:ubuntu-toolchain-r/test && \
-	DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    build-essential \
-    cmake \
-    python3 \
-    python3-pip \
-    python3-setuptools \
-# Following are required for XDP development environment
-    make \
-    gcc-9 \
-	g++-9 \
-	gcc-9-multilib \
-	g++-9-multilib \
-    libssl-dev \
-    libelf-dev \
-    libcap-dev \
-    clang-7 \
-    llvm-7 \
-    libncurses5-dev \
-    git \
-    pkg-config \
-    libmnl-dev \
-    bison \
-    flex \
-    graphviz \
-# End of XDP tools 
-    rpcbind \
-    rsyslog \
-    unzip \
-    doxygen \
-    zlib1g-dev \
-    libboost-program-options-dev \
-    libboost-all-dev \
-    iproute2  \
-    net-tools \
-    iputils-ping \
-    ethtool \
-    curl \
-    netcat \
-    libcmocka-dev \
-    lcov \
-    autoconf \
-    automake \
-    dh-autoreconf \
-    libtool && \
-    apt-get clean
+FROM fwnetworking/zeta_dev:latest
 
-RUN    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 10 \
-	&& update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 20 \
-	&& update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 10 \
-	&& update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 20
-
-RUN pip3 install httpserver netaddr grpcio grpcio-tools
-
-ENV PATH=$PATH:/usr/local/share/openvswitch/scripts \
-    LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
-
- # Add host user into container for shared folders
+# Set container user to match host $USER to avoid messing up shared folders
 ARG USER_ID
 ARG GROUP_ID
 
