@@ -884,9 +884,31 @@ In cases where the packet manipulation for a flow is simple, the flow
 processing can be pushed to OVS on the initiating compute host,
 resulting host to host direct communication we call direct path.
 
-In this document, we will use logical networking model to explain
-networking concepts from user’s perspective and use Zeta’s physical
-networking model when we describe implementation details.
+In this document, we will use logical networking model to describe Zeta
+external behavior/APIs from user’s perspective and use Zeta’s physical
+networking model when we describe Zeta internal implementation details.
+
+Zeta logical networking model supports following common cloud networking
+concepts:
+* Tenant/Project - which represents an tenant administrative domain.
+* VPC - Virtual Private Cluster, which represents a private networking space
+within an administrative domain.
+  * Each Project can have multiple VPCs in it
+  * IP spaces between VPCs are independent and may overlap
+* Network - Layer 3 forwarding domain within an VPC's networking space
+  * VPC Network can communicate with outside world through provider gateway
+  * Network can include other networks to create tiers or hierarchy
+  * Each VPC have at least one network
+  * networks within a VPC can be connected or isolated
+* Subnet - Layer 2 forwarding domain within a Network
+  * Tenant/project compute instances are attached to subnet
+  * Communication within subnet are L2 switched
+  * Communication beyond subnet are L3 routed
+  * Each network have at least one subnet or child network
+* Port/Endpoint - Point where a Tenant compute instance (VM/Container)
+atteched to subnet
+  * A compute instance has at least one port
+  * A compute instance may have multiple ports, each attaches to **different** subnet
 
 ### 4.2 Hardware Architecture
 
@@ -1171,6 +1193,7 @@ Documentation.
 ### 5.1 Interface Architecture
 
 ### 5.2 Interface Detailed Design
+Please refer to [Chapter 7.3](#73-external-apis) for Phase I API design
 
 ## 6 Operational Scenarios
 
@@ -2061,4 +2084,3 @@ regarding some of the design and decisions make during the journey.
 |          |      |
 |          |      |
 |          |      |
-
