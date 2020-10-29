@@ -39,23 +39,27 @@ class CONSTANTS:
 
 
 class OBJ_STATUS:
-    obj_init = 'Init'
-    obj_provisioned = 'Provisioned'
-
-    droplet_status_init = obj_init
-    droplet_status_provisioned = obj_provisioned
+    obj_status_init = 'Init'
+    obj_status_provisioned = 'Provisioned'
 
 
 class OBJ_DEFAULTS:
     kopf_max_retries = 10
 
+    default_dft = "dft0"
+    default_n_chains = 3
+    default_n_replicas = 3
+
 
 class RESOURCES:
+    dfts = "dfts"
+    chains = "chains"
+    ftns = "ftns"
     droplets = "droplets"
 
 
 class LAMBDAS:
-    droplet_status_init = lambda body, **_: body.get('spec', {}).get(
-        'status', '') == OBJ_STATUS.droplet_status_init
-    droplet_status_provisioned = lambda body, **_: body.get('spec', {}).get(
-        'status', '') == OBJ_STATUS.droplet_status_provisioned
+    status_init = lambda body, **_: body.get('spec', {}).get(
+        'status', '') == OBJ_STATUS.obj_status_init
+    status_provisioned = lambda body, **_: body.get('spec', {}).get(
+        'status', '') == OBJ_STATUS.obj_status_provisioned

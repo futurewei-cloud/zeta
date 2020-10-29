@@ -21,7 +21,7 @@
 
 import logging
 from common.workflow import *
-from operators.droplets.droplets_operator import *
+from operators.droplets_operator import *
 
 logger = logging.getLogger()
 
@@ -36,7 +36,7 @@ class DropletDelete(WorkflowTask):
 
     def run(self):
         logger.info("Run {task}".format(task=self.__class__.__name__))
-        d = droplets_opr.store.get_droplet(self.param.name)
-        droplets_opr.store.delete_droplet(d.name)
-        d.delete_obj()
+        droplet = droplets_opr.store.get_droplet(self.param.name)
+        droplets_opr.store.delete_droplet(droplet.name)
+        droplet.delete_obj()
         self.finalize()

@@ -32,7 +32,7 @@ import socket
 import pathlib
 from kopf import cli
 from common.wf_param import *
-from workflows.droplets.triggers import *
+from common.wf_factory import *
 from google.protobuf import empty_pb2
 from concurrent import futures
 from kubernetes import client, config
@@ -65,5 +65,8 @@ async def on_startup(logger, **kwargs):
     start_time = time.time()
 
     run_workflow(wffactory().DropletOperatorStart(param=param))
+    run_workflow(wffactory().DftOperatorStart(param=param))
+    run_workflow(wffactory().ChainOperatorStart(param=param))
+    run_workflow(wffactory().FtnOperatorStart(param=param))
 
     logger.info("Bootstrap time:  %s seconds ---" % (time.time() - start_time))
