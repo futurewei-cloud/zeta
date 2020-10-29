@@ -37,6 +37,9 @@ class OprStore(object):
     def _init(self, **kwargs):
         logger.info(kwargs)
         self.droplets_store = {}
+        self.dfts_store = {}
+        self.chains_store = {}
+        self.ftns_store = {}
 
     def update_droplet(self, droplet):
         self.droplets_store[droplet.name] = droplet
@@ -68,3 +71,39 @@ class OprStore(object):
         for d in self.droplets_store.values():
             logger.info("Droplets: {}, Spec: {}".format(
                 d.name, d.get_obj_spec()))
+
+    def update_dft(self, dft):
+        self.dfts_store[dft.name] = dft
+
+    def update_chain(self, chain):
+        self.chains_store[chain.name] = chain
+
+    def update_ftn(self, ftn):
+        self.ftns_store[ftn.name] = ftn
+
+    def get_dft(self, name):
+        if name in self.dfts_store:
+            return self.dfts_store[name]
+        return None
+
+    def get_chain(self, name):
+        if name in self.chains_store:
+            return self.chains_store[name]
+        return None
+
+    def get_ftn(self, name):
+        if name in self.ftns_store:
+            return self.ftns_store[name]
+        return None
+
+    def delete_dft(self, name):
+        if name in self.dfts_store:
+            del self.dfts_store[name]
+
+    def delete_chain(self, name):
+        if name in self.chains_store:
+            del self.chains_store[name]
+
+    def delete_ftn(self, name):
+        if name in self.ftns_store:
+            del self.ftns_store[name]

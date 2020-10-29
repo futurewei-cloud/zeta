@@ -21,7 +21,7 @@
 
 import logging
 from common.workflow import *
-from operators.droplets.droplets_operator import *
+from operators.droplets_operator import *
 logger = logging.getLogger()
 
 droplets_opr = DropletOperator()
@@ -35,7 +35,6 @@ class DropletProvisioned(WorkflowTask):
 
     def run(self):
         logger.info("Run {task}".format(task=self.__class__.__name__))
-        droplet = droplets_opr.get_droplet_stored_obj(
-            self.param.name, self.param.spec)
+        droplet = droplets_opr.get_droplet_stored_obj(self.param.name)
         droplets_opr.store_update(droplet)
         self.finalize()

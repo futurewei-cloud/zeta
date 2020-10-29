@@ -1,0 +1,61 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2020 The Authors.
+
+# Authors: Phu Tran          <@phudtran>
+
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: ftns.zeta.com
+spec:
+  scope: Namespaced
+  group: zeta.com
+  versions:
+    - name: v1
+      served: true
+      storage: true
+  names:
+    kind: Ftn
+    plural: ftns
+    singular: ftn
+    shortNames:
+      - ftn
+      - ftns
+  validation:
+    openAPIV3Schema:
+      properties:
+        chains:
+          type: array
+          items:
+            type: string
+          minItems: 1
+  additionalPrinterColumns:
+    - name: dft
+      type: string
+      priority: 0
+      JSONPath: .spec.dft
+      description: The DFT that this FTN belongs to
+    - name: ip
+      type: string
+      priority: 0
+      JSONPath: .spec.ip
+      description: The IP address of ftn chain node
+    - name: droplet
+      type: string
+      priority: 0
+      JSONPath: .spec.droplet
+      description: The droplet where this ftn chain node deployed
+    - name: mac
+      type: string
+      priority: 0
+      JSONPath: .spec.mac
+      description: The Mac address of this ftn chain node
+    - name: nextnode
+      type: string
+      priority: 0
+      JSONPath: .spec.nextnode
+      description: The next replica node following this ftn chain node
+    - name: Status
+      type: string
+      priority: 0
+      JSONPath: .spec.status

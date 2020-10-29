@@ -21,7 +21,7 @@
 
 import logging
 from common.workflow import *
-from operators.droplets.droplets_operator import *
+from operators.droplets_operator import *
 logger = logging.getLogger()
 
 droplets_opr = DropletOperator()

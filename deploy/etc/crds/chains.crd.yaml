@@ -1,0 +1,41 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2020 The Authors.
+
+# Authors: Phu Tran          <@phudtran>
+
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: chains.zeta.com
+spec:
+  scope: Namespaced
+  group: zeta.com
+  versions:
+    - name: v1
+      served: true
+      storage: true
+  names:
+    kind: Chain
+    plural: chains
+    singular: chain
+    shortNames:
+      - chain
+      - chains
+  validation:
+    openAPIV3Schema:
+      properties:
+        ftns:
+          type: array
+          items:
+            type: string
+  additionalPrinterColumns:
+    - name: Head
+      type: string
+      priority: 0
+      JSONPath: .spec.head
+      description: The head of the chain
+    - name: Tail
+      type: string
+      priority: 0
+      JSONPath: .spec.tail
+      description: The tail of the chain
