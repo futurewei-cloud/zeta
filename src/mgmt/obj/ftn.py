@@ -14,8 +14,9 @@ logger = logging.getLogger()
 class Ftn(KubeObject):
 
     def __init__(self, name, obj_api, opr_store, spec=None):
-        super.__init__(name, obj_api, opr_store, spec)
-        self.resource = "ftns"
+        super().__init__(name, obj_api, opr_store, spec)
+        self.kind = "Ftn"
+        self.plural = "ftns"
         self.ftn = ""
         self.ip = ""
         self.mac = ""

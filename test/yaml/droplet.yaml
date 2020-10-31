@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2020 The Authors.
+
+# Authors: Phu Tran          <@phudtran>
+
+apiVersion: "zeta.com/v1"
+kind: Droplet
+metadata:
+  name: d0
+spec:
+  mac: "0000:0000:0000:0001"
+  ip: "10.0.0.1"
+  interface: "eth0"
+  status: "Init"

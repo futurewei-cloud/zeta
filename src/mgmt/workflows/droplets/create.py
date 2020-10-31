@@ -19,25 +19,14 @@
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 # THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import logging
 from common.workflow import *
 from operators.droplets_operator import *
-
-logger = logging.getLogger()
 
 droplets_opr = DropletOperator()
 
 
-class DropletCreate(WorkflowTask):
-
-    def requires(self):
-        logger.info("Requires {task}".format(task=self.__class__.__name__))
-        return []
-
-    def run(self):
-        logger.info("Run {task}".format(task=self.__class__.__name__))
-        droplet = droplets_opr.store_get_obj(
-            self.param.name, self.param.spec["plural"], self.param.spec)
-
-        droplets_opr.set_object_provisioned(droplet)
-        self.finalize()
+def droplet_create(droplet, name, body, spec):
+    logger.info("Creating droplet {}!".format(name))
+    if not droplet:
+        droplet = droplets_opr.get_stored_obj(name, spec)
+    return droplet

@@ -20,61 +20,23 @@
 # THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import luigi
+
 from workflows.common.bootstrap import *
-from workflows.droplets.create import *
-from workflows.droplets.provisioned import *
-from workflows.droplets.delete import *
-
-from workflows.dfts.create import *
-from workflows.dfts.provisioned import *
-from workflows.dfts.delete import *
-
-from workflows.chains.create import *
-from workflows.chains.provisioned import *
-from workflows.chains.delete import *
-
-from workflows.ftns.create import *
-from workflows.ftns.provisioned import *
-from workflows.ftns.delete import *
+from workflows.common.create import *
+from workflows.common.delete import *
+from workflows.common. provisioned import *
 
 
 class ZetaWorkflowFactory():
 
-    def DropletCreate(self, param):
-        return DropletCreate(param=param)
-
-    def DropletProvisioned(self, param):
-        return DropletProvisioned(param=param)
-
-    def DropletDelete(self, param):
-        return DropletDelete(param=param)
-
-    def DftCreate(self, param):
-        return DftCreate(param=param)
-
-    def DftProvisioned(self, param):
-        return DftProvisioned(param=param)
-
-    def DftDelete(self, param):
-        return DftDelete(param=param)
-
-    def ChainCreate(self, param):
-        return ChainCreate(param=param)
-
-    def ChainProvisioned(self, param):
-        return ChainProvisioned(param=param)
-
-    def ChainDelete(self, param):
-        return ChainDelete(param=param)
-
-    def FtnCreate(self, param):
-        return FtnCreate(param=param)
-
-    def FtnProvisioned(self, param):
-        return FtnProvisioned(param=param)
-
-    def FtnDelete(self, param):
-        return FtnDelete(param=param)
-
     def CommonOperatorStart(self, param):
         return CommonOperatorStart(param=param)
+
+    def CommonCreate(self, param):
+        return CommonCreate(param=param)
+
+    def CommonDelete(self, param):
+        return CommonDelete(param=param)
+
+    def CommonProvisioned(self, param):
+        return CommonProvisioned(param=param)

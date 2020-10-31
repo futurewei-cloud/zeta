@@ -45,7 +45,7 @@ spec:
       JSONPath: .spec.dft
       description: The Dft this chain belongs to
     - name: Size
-      type: string
+      type: integer
       priority: 0
       JSONPath: .spec.size
       description: The size of the chain

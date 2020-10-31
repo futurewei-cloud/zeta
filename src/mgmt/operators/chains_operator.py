@@ -39,3 +39,6 @@ class ChainOperator(ObjectOperator):
 
         kube_list_obj(self.obj_api, RESOURCES.chains, list_chain_obj_fn)
         self.bootstrapped = True
+
+    def get_stored_obj(self, name, spec):
+        return Chain(name, self.obj_api, self.store, spec)

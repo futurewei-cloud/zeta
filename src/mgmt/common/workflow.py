@@ -77,35 +77,21 @@ class WorkflowTask(luigi.Task):
     def run(self):
         self.finalize()
 
-    def pre_create(self):
-        pass
-
-    def post_create(self):
-        pass
-
 
 class WorkflowFactory(ABC):
 
     @abstractmethod
-    def DropletOperatorStart(self, param):
+    def CommonOperatorStart(self, param):
         pass
 
     @abstractmethod
-    def DropletCreate(self, param):
+    def CommonCreate(self, param):
         pass
 
     @abstractmethod
-    def DropletProvisioned(self, param):
+    def CommonDelete(self, param):
         pass
 
     @abstractmethod
-    def DropletDelete(self, param):
-        pass
-
-    @abstractmethod
-    def k8sDropletCreate(self, param):
-        pass
-
-    @abstractmethod
-    def k8sDropletDelete(self, param):
+    def CommonProvisioned(self, param):
         pass

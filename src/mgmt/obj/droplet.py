@@ -33,8 +33,9 @@ logger = logging.getLogger()
 class Droplet(KubeObject):
 
     def __init__(self, name, obj_api, opr_store, spec=None):
-        super.__init__(name, obj_api, opr_store, spec)
-        self.resource = "droplets"
+        super().__init__(name, obj_api, opr_store, spec)
+        self.kind = "Droplet"
+        self.plural = "droplets"
         self.ip = ""
         self.mac = ""
         self.phy_itf = 'eth0'

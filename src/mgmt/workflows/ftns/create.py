@@ -3,24 +3,14 @@
 
 # Authors: Phu Tran          <@phudtran>
 
-import logging
 from common.workflow import *
 from operators.ftns_operator import *
 
-logger = logging.getLogger()
 ftns_opr = FtnOperator()
 
 
-class FtnCreate(WorkflowTask):
-
-    def requires(self):
-        logger.info("Requires {task}".format(task=self.__class__.__name__))
-        return []
-
-    def run(self):
-        logger.info("Run {task}".format(task=self.__class__.__name__))
-        ftn = ftns_opr.store_get_obj(
-            self.param.name, self.param.spec["plural"], self.param.spec)
-
-        ftns_opr.set_object_provisioned(ftn)
-        self.finalize()
+def ftn_create(ftn, name, body, spec):
+    logger.info("Creating Ftn {}!".format(name))
+    if not ftn:
+        ftn = ftns_opr.get_stored_obj(name, spec)
+    return ftn

@@ -14,8 +14,9 @@ logger = logging.getLogger()
 class Dft(KubeObject):
 
     def __init__(self, name, obj_api, opr_store, spec=None):
-        super.__init__(name, obj_api, opr_store, spec)
-        self.resource = "dfts"
+        super().__init__(name, obj_api, opr_store, spec)
+        self.kind = "Dft"
+        self.plural = "dfts"
         self.table = []
         self.numchains = 0
         self.numchainreplicas = 0

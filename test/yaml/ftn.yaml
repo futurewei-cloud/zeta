@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2020 The Authors.
+
+# Authors: Phu Tran          <@phudtran>
+
+apiVersion: "zeta.com/v1"
+kind: Ftn
+metadata:
+  name: f0
+spec:
+  dft: "dft0"
+  droplet: "d0"
+  nextnode: "f1"
+  parentchain: "c0"
+  augmentedchain: ""
+  status: "Init"

@@ -26,6 +26,9 @@ from common.common import *
 from common.constants import *
 from common.wf_factory import *
 from common.wf_param import *
+from workflows.droplets.create import *
+from workflows.droplets.delete import *
+from workflows.droplets.provisioned import *
 
 
 @kopf.on.resume(group, version, RESOURCES.droplets, when=LAMBDAS.status_init, retries=OBJ_DEFAULTS.kopf_max_retries)
@@ -36,7 +39,8 @@ def droplet_opr_on_droplet_init(body, spec, **kwargs):
     param.name = kwargs['name']
     param.body = body
     param.spec = spec
-    run_workflow(wffactory().DropletCreate(param=param))
+    param.workflow_func = droplet_create
+    run_workflow(wffactory().CommonCreate(param=param))
 
 
 @kopf.on.resume(group, version, RESOURCES.droplets, when=LAMBDAS.status_provisioned, retries=OBJ_DEFAULTS.kopf_max_retries)
@@ -47,7 +51,8 @@ def droplet_opr_on_droplet_provisioned(body, spec, **kwargs):
     param.name = kwargs['name']
     param.body = body
     param.spec = spec
-    run_workflow(wffactory().DropletProvisioned(param=param))
+    param.workflow_func = droplet_provisioned
+    run_workflow(wffactory().CommonProvisioned(param=param))
 
 
 @kopf.on.delete(group, version, RESOURCES.droplets, retries=OBJ_DEFAULTS.kopf_max_retries)
@@ -56,4 +61,5 @@ def droplet_opr_on_droplet_delete(body, spec, **kwargs):
     param.name = kwargs['name']
     param.body = body
     param.spec = spec
-    run_workflow(wffactory().DropletDelete(param=param))
+    param.workflow_func = droplet_delete
+    run_workflow(wffactory().CommonDelete(param=param))

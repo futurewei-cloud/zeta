@@ -37,36 +37,36 @@ class OprStore(object):
     def _init(self, **kwargs):
         logger.info(kwargs)
         self.store = {}
-        self.store["droplets"] = {}
-        self.store["ftns"] = {}
-        self.store["chains"] = {}
-        self.store["dfts"] = {}
+        self.store["Droplet"] = {}
+        self.store["Ftn"] = {}
+        self.store["Chain"] = {}
+        self.store["Dft"] = {}
 
     def update_obj(self, obj):
-        if obj.resource in self.store:
-            self.store[obj.resource][obj.name] = obj
+        if obj.kind in self.store:
+            self.store[obj.kind][obj.name] = obj
         else:
-            logger.info("Unknown object type {}".format(obj.resource))
+            logger.info("Unknown object type {}".format(obj.kind))
 
-    def get_obj(self, name, resource):
-        if resource in self.store:
-            if name in self.store[resource]:
-                return self.store[resource][name]
+    def get_obj(self, name, kind):
+        if kind in self.store:
+            if name in self.store[kind]:
+                return self.store[kind][name]
             logger.info(
-                "Object {} of resource {} not found".format(resource, name))
+                "Object {} of kind {} not found".format(name, kind))
             return None
         else:
-            logger.info("Unknown object type {}".format(resource))
+            logger.info("Unknown object type {}".format(kind))
             return None
 
-    def delete_obj(self, name, resource):
-        if resource in self.store:
-            if name in self.store[resource]:
-                del self.store[resource][name]
+    def delete_obj(self, name, kind):
+        if kind in self.store:
+            if name in self.store[kind]:
+                del self.store[kind][name]
             logger.info(
-                "Object {} of resource {} not found".format(resource, name))
+                "Object {} of kind {} not found".format(kind, name))
         else:
-            logger.info("Unknown object type {}".format(resource))
+            logger.info("Unknown object type {}".format(kind))
 
     def get_droplet_by_ip(self, ip):
         for d in self.store["Droplet"]:

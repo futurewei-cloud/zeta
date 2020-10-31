@@ -11,16 +11,6 @@ logger = logging.getLogger()
 chains_opr = ChainOperator()
 
 
-class ChainProvisioned(WorkflowTask):
-
-    def requires(self):
-        logger.info("Requires {task}".format(task=self.__class__.__name__))
-        return []
-
-    def run(self):
-        logger.info("Run {task}".format(task=self.__class__.__name__))
-        chain = chains_opr.store_get_obj(
-            self.param.name, self.param.spec["plural"], self.param.spec)
-
-        chains_opr.store_update_obj(chain)
-        self.finalize()
+def chain_provisioned(chain, name, body, spec):
+    logger.info("Provisioned Chain {}!".format(name))
+    return chain

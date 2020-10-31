@@ -18,9 +18,17 @@ class KubeObject(object):
         self.obj_api = obj_api
         self.store = opr_store
         self.status = OBJ_STATUS.obj_status_init
+        self.plural = ""
+        self.kind = ""
 
     def get_name(self):
         return self.name
+
+    def get_plural(self):
+        return self.plural
+
+    def get_kind(self):
+        return self.kind
 
     def create_obj(self):
         return kube_create_obj(self)
@@ -36,3 +44,6 @@ class KubeObject(object):
 
     def set_status(self, status):
         self.status = status
+
+    def store_update_obj(self):
+        self.store.update_obj(self)

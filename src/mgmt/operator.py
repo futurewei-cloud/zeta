@@ -33,12 +33,13 @@ import pathlib
 from kopf import cli
 from common.wf_param import *
 from common.wf_factory import *
-from google.protobuf import empty_pb2
-from concurrent import futures
 from kubernetes import client, config
 from common.constants import *
 from common.common import *
-
+from workflows.droplets.triggers import *
+from workflows.ftns.triggers import *
+from workflows.chains.triggers import *
+from workflows.dfts.triggers import *
 logger = logging.getLogger()
 LOCK: asyncio.Lock
 POOL_WORKERS = 10
