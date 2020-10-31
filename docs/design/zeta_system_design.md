@@ -180,15 +180,15 @@ Table of Contents
 
 [7.3.1.4 Get ZGC by ID](#7314-get-zgc-by-id)
 
-[7.3.1.5 Get ZGC by Project ID](#7315-get-zgc-by-project-id)
+[7.3.1.5 Get ZGC by VPC ID](#7315-get-zgc-by-vpc-id)
 
 [7.3.1.6 Delete ZGC](#7316-delete-zgc)
 
-[7.3.2 Project REST APIs](#732-project-rest-apis)
+[7.3.2 VPC REST APIs](#732-vpc-rest-apis)
 
-[7.3.2.1 Add Project](#7321-add-project)
+[7.3.2.1 Add VPC](#7321-add-vpc)
 
-[7.3.2.2 Delete Project](#7322-delete-project)
+[7.3.2.2 Delete VPC](#7322-delete-vpc)
 
 [7.3.3 Node REST APIs](#733-node-rest-apis)
 
@@ -196,13 +196,13 @@ Table of Contents
 
 [7.3.3.2 Delete ZGC Node](#7332-delete-zgc-node)
 
-[7.3.4 Compute Instance REST APIs](#734-compute-instance-rest-apis)
+[7.3.4 Compute Instance Ports REST APIs](#734-compute-instance-ports-rest-apis)
 
-[7.3.4.1 Add Compute Instance](#7341-add-compute-instance)
+[7.3.4.1 Add Compute Instance Ports](#7341-add-compute-instance-ports)
 
-[7.3.4.2 Get Compute Instance](#7342-get-compute-instance)
+[7.3.4.2 Get Compute Instance Port](#7342-get-compute-instance-port)
 
-[7.3.4.3 Delete Compute Instance](#7343-delete-compute-instance)
+[7.3.4.3 Delete Compute Instance Port](#7343-delete-compute-instance-port)
 
 [7.3.5 In-Band Operation](#735-in-band-operation)
 
@@ -1563,7 +1563,7 @@ External API definitions are based on phase I use cases and related system param
             "cidr": "192.168.0.0/28",
             "port_ibo": "8300",
             "overlay_type": "vxlan",
-            "projs": []
+            "vpcs": []
         }
     ```
 
@@ -1590,7 +1590,7 @@ External API definitions are based on phase I use cases and related system param
             "cidr": "192.168.0.0/28",
             "port_ibo": "8300",
             "overlay_type": "vxlan",
-            "projs": [
+            "vpcs": [
                 "3dda2801-d675-4688-a63f-dcda8d327f50",
                 "3ddffee1-cf55-7788-a63f-dcda8d582f45"
             ]
@@ -1604,7 +1604,7 @@ External API definitions are based on phase I use cases and related system param
             "cidr": "192.168.0.0/28",
             "port_ibo": "8300",
             "overlay_type": "vxlan",
-            "projs": [
+            "vpcs": [
                 "3dda2801-d675-4688-a63f-dcda8d327f50",
                 "3ddffee1-cf55-7788-a63f-dcda8d582f45"
             ]
@@ -1656,6 +1656,7 @@ External API definitions are based on phase I use cases and related system param
                 "projs": []
             }
         ]
+    ```
 
 ##### 7.3.1.4 Get ZGC by ID
 - Privilege: Sys Admin
@@ -1685,18 +1686,19 @@ External API definitions are based on phase I use cases and related system param
                 "111d4fae-7dec-11d0-a765-00a0c9345999",
                 "111d4fae-7dec-11d0-a765-00a0c9345777"
             ],
-            "projs": [
+            "vpcs": [
                 "3dda2801-d675-4688-a63f-dcda8d327f50",
                 "3ddffee1-cf55-7788-a63f-dcda8d582f45"
             ]
         }
+    ```
 
-##### 7.3.1.5 Get ZGC by Project ID
-- Privilege: Tenant Admin
+##### 7.3.1.5 Get ZGC by VPC ID
+- Privilege: **Tenant Admin**
 - Method: GET
-- Request: /zgcs?proj={proj_id}
+- Request: /zgcs?vpc={vpc_id}
 - Request Parameter:
-  - filter: string proj_id
+  - filter: string vpc_id
   - Body: None
 - Response:
   - Response Code:
@@ -1704,26 +1706,31 @@ External API definitions are based on phase I use cases and related system param
     - Error: 400, 404, 500
   - Body: json
     ```json
-    Request: http://localhost:8080/zgcs?proj=3dda2801-d675-4688-a63f-dcda8d327f50
+    Request: http://localhost:8080/zgcs?vpc=3dda2801-d675-4688-a63f-dcda8d327f50
     Response:
         data:
         {
-            "zgc_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
-            "name": "ZGC_test1",
-            "description": "ZGC 1",
-            "cidr": "192.168.0.0/28",
-            "port_ibo": "8300",
-            "overlay_type": "vxlan",
-            "nodes": [
-                "111d4fae-7dec-11d0-a765-00a0c9345612",
-                "111d4fae-7dec-11d0-a765-00a0c9345999",
-                "111d4fae-7dec-11d0-a765-00a0c9345777"
-            ],
-            "projs": [
-                "3dda2801-d675-4688-a63f-dcda8d327f50",
-                "3ddffee1-cf55-7788-a63f-dcda8d582f45"
-            ]
+          "zgc_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
+          "name": "ZGC_test1",
+          "description": "ZGC 1",
+          "gws": 
+          [
+            {
+              "ip": "192.168.0.87",
+              "mac": "37.02.ff.cc.65.87"
+            },
+            {
+              "ip": "192.168.0.88",
+              "mac": "37.02.ff.cc.65.88"
+            },
+            {
+              "ip": "192.168.0.89",
+              "mac": "37.02.ff.cc.65.89"
+            }
+          ],
+          "port_ibo": "8300"
         }
+    ```
 
 ##### 7.3.1.6 Delete ZGC
 - Privilege: Sys Admin
@@ -1741,13 +1748,14 @@ External API definitions are based on phase I use cases and related system param
     Request: http://localhost:8080/zgcs/f81d4fae-7dec-11d0-a765-00a0c91e6bf6
     Response:
         data: {}
+    ```
 
-#### 7.3.2 Project REST APIs
+#### 7.3.2 VPC REST APIs
 
-##### 7.3.2.1 Add Project
-- Privilege: Sys Admin
+##### 7.3.2.1 Add VPC
+- Privilege: **Tenant Admin**
 - Method: POST
-- Request: /projs
+- Request: /vpcs
 - Request Parameter:
   - PathVariable: None
   - Body: json
@@ -1758,26 +1766,26 @@ External API definitions are based on phase I use cases and related system param
   - Body: json
 - Example:
     ```json
-    Request: http://localhost:8080/projs
+    Request: http://localhost:8080/vpcs
         data:
         {
-            "project_id": "3dda2801-d675-4688-a63f-dcda8d327f50",
-            "zgc_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
+            "vpc_id": "3dda2801-d675-4688-a63f-dcda8d327f50",
+            "vni": "02ff01"
         }
     Response:
         data:
         {
-            "project_id": "3dda2801-d675-4688-a63f-dcda8d327f50",
-            "zgc_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
+            "vpc_id": "3dda2801-d675-4688-a63f-dcda8d327f50",
+            "vni": "02ff01"
         }
     ```
 
-##### 7.3.2.2 Delete Project
-- Privilege: Sys Admin
+##### 7.3.2.2 Delete VPC
+- Privilege: **Tenant Admin**
 - Method: DELETE
-- Request: /projs/{project_id}
+- Request: /vpcs/{vpc_id}
 - Request Parameter:
-  - PathVariable: string project_id
+  - PathVariable: string vpc_id
   - Body: None
 - Response:
   - Response Code:
@@ -1786,7 +1794,7 @@ External API definitions are based on phase I use cases and related system param
   - Body: json
 - Example:
     ```json
-    Request: http://localhost:8080/projs/3dda2801-d675-4688-a63f-dcda8d327f50
+    Request: http://localhost:8080/vpcs/3dda2801-d675-4688-a63f-dcda8d327f50
     Response:
         data:
         {
@@ -1815,6 +1823,8 @@ External API definitions are based on phase I use cases and related system param
             "name": "ZGC_node1",
             "description": "ZGC network node 1",
             "ip_control": "172.16.0.15",
+            "inf_tenant": "eth1",
+            "inf_zgc": "eth2",
             "zgc_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
         }
     Response:
@@ -1824,6 +1834,8 @@ External API definitions are based on phase I use cases and related system param
             "name": "ZGC_node1",
             "description": "ZGC network node 1",
             "ip_control": "172.16.0.15",
+            "inf_tenant": "eth1",
+            "inf_zgc": "eth2",
             "zgc_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
         }
     ```
@@ -1849,12 +1861,14 @@ External API definitions are based on phase I use cases and related system param
         }
     ```
 
-#### 7.3.4 Compute Instance REST APIs
+#### 7.3.4 Compute Instance Ports REST APIs
+Ports APIs supports multiple ports/interfaces per tenant compute instance and 
+multiple IP addresses per port.
 
-##### 7.3.4.1 Add Compute Instance
-- Privilege: Tenant Admin
+##### 7.3.4.1 Add Compute Instance Ports
+- Privilege: **Tenant Admin**
 - Method: POST
-- Request: /instances
+- Request: /ports
 - Request Parameter:
   - PathVariable: None
   - Body: json
@@ -1865,39 +1879,98 @@ External API definitions are based on phase I use cases and related system param
   - Body: json
 - Example:
     ```json
-    Request: http://localhost:8080/instances
+    Request: http://localhost:8080/ports
         data:
-        {
-            "instance_id": "333d4fae-7dec-11d0-a765-00a0c9342222",
-            "vni": "1927",
-            "vip_instance": "",
-            "ip_instance": "10.10.0.3",
-            "mac_instance": "cc:dd:ee:ff:11:22",
+        [
+          {
+            "port_id": "333d4fae-7dec-11d0-a765-00a0c9342222",
+            "vpc_id": "3dda2801-d675-4688-a63f-dcda8d327f50",
+            "ips_port": 
+            [
+              {
+                "ip": "10.10.0.3",
+                "vip": ""
+              },
+              {
+                "ip": "10.10.3.7",
+                "vip": "10.10.3.100"
+              }
+            ],
+            "mac_port": "cc:dd:ee:ff:11:22",
             "ip_node": "192.168.10.27",
             "mac_node": "ee:dd:ee:ff:22:11",
-            "zgc_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
-        }
+          },
+          {
+            "port_id": "99976feae-7dec-11d0-a765-00a0c9341111",
+            "vpc_id": "3dda2801-d675-4688-a63f-dcda8d327f55",
+            "ips_port": 
+            [
+              {
+                "ip": "10.10.0.3",
+                "vip": ""
+              },
+              {
+                "ip": "10.10.3.7",
+                "vip": ""
+              }
+            ],
+            "mac_port": "6c:dd:ee:ff:11:32",
+            "ip_node": "192.168.10.33",
+            "mac_node": "ee:dd:ee:ff:33:11",
+          }
+        ]
     Response:
         data:
-        {
-            "instance_id": "333d4fae-7dec-11d0-a765-00a0c9342222",
-            "vni": "1927",
-            "vip_instance": "",
-            "ip_instance": "10.10.0.3",
-            "mac_instance": "cc:dd:ee:ff:11:22",
+        [
+          {
+            "port_id": "333d4fae-7dec-11d0-a765-00a0c9342222",
+            "vpc_id": "3dda2801-d675-4688-a63f-dcda8d327f50",
+            "ips_port": 
+            [
+              {
+                "ip": "10.10.0.3",
+                "vip": ""
+              },
+              {
+                "ip": "10.10.3.7",
+                "vip": "10.10.3.100"
+              }
+            ],
+            "mac_port": "cc:dd:ee:ff:11:22",
             "ip_node": "192.168.10.27",
             "mac_node": "ee:dd:ee:ff:22:11",
             "zgc_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
             "status": "pending"
-        }
+          },
+          {
+            "port_id": "99976feae-7dec-11d0-a765-00a0c9341111",
+            "vpc_id": "3dda2801-d675-4688-a63f-dcda8d327f55",
+            "ips_port": 
+            [
+              {
+                "ip": "10.10.0.3",
+                "vip": ""
+              },
+              {
+                "ip": "10.10.3.7",
+                "vip": ""
+              }
+            ],
+            "mac_port": "6c:dd:ee:ff:11:32",
+            "ip_node": "192.168.10.33",
+            "mac_node": "ee:dd:ee:ff:33:11",
+            "zgc_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
+            "status": "pending"
+          }
+        ]
     ```
 
-##### 7.3.4.2 Get Compute Instance
-- Privilege: Tenant Admin
+##### 7.3.4.2 Get Compute Instance Port
+- Privilege: **Tenant Admin**
 - Method: GET
-- Request: /instances/{instance_id}
+- Request: /ports/{port_id}
 - Request Parameter:
-  - PathVariable: string instance_id
+  - PathVariable: string port_id
   - Body: None
 - Response:
   - Response Code:
@@ -1906,28 +1979,37 @@ External API definitions are based on phase I use cases and related system param
   - Body: json
 - Example:
     ```json
-    Request: http://localhost:8080/instances/333d4fae-7dec-11d0-a765-00a0c9342222
+    Request: http://localhost:8080/ports/333d4fae-7dec-11d0-a765-00a0c9342222
     Response:
         data:
         {
-            "instance_id": "333d4fae-7dec-11d0-a765-00a0c9342222",
-            "vni": "1927",
-            "vip_instance": "",
-            "ip_instance": "10.10.0.3",
-            "mac_instance": "cc:dd:ee:ff:11:22",
-            "ip_node": "192.168.10.27",
-            "mac_node": "ee:dd:ee:ff:22:11",
-            "zgc_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
-            "status": "ready"
+          "port_id": "333d4fae-7dec-11d0-a765-00a0c9342222",
+          "vpc_id": "3dda2801-d675-4688-a63f-dcda8d327f50",
+          "ips_port": 
+          [
+            {
+              "ip": "10.10.0.3",
+              "vip": ""
+            },
+            {
+              "ip": "10.10.3.7",
+              "vip": "10.10.3.100"
+            }
+          ],
+          "mac_port": "cc:dd:ee:ff:11:22",
+          "ip_node": "192.168.10.27",
+          "mac_node": "ee:dd:ee:ff:22:11",
+          "zgc_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
+          "status": "ready"
         }
     ```
 
-##### 7.3.4.3 Delete Compute Instance
-- Privilege: Sys Admin
+##### 7.3.4.3 Delete Compute Instance Port
+- Privilege: **Tenant Admin**
 - Method: DELETE
-- Request: /instances/{instance_id}
+- Request: /ports/{port_id}
 - Request Parameter:
-  - PathVariable: string instance_id
+  - PathVariable: string port_id
   - Body: None
 - Response:
   - Response Code:
@@ -1936,7 +2018,7 @@ External API definitions are based on phase I use cases and related system param
   - Body: json
 - Example:
     ```json
-    Request: http://localhost:8080/instances/333d4fae-7dec-11d0-a765-00a0c9342222
+    Request: http://localhost:8080/ports/333d4fae-7dec-11d0-a765-00a0c9342222
     Response:
         data:
         {
