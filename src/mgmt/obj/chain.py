@@ -14,8 +14,9 @@ logger = logging.getLogger()
 class Chain(KubeObject):
 
     def __init__(self, name, obj_api, opr_store, spec=None):
-        super.__init__(name, obj_api, opr_store, spec)
-        self.resource = "chains"
+        super().__init__(name, obj_api, opr_store, spec)
+        self.kind = "Chain"
+        self.plural = "chains"
         self.head = ""
         self.tail = ""
         self.dft = ""

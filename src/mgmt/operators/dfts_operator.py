@@ -39,3 +39,6 @@ class DftOperator(ObjectOperator):
 
         kube_list_obj(self.obj_api, RESOURCES.dfts, list_dft_obj_fn)
         self.bootstrapped = True
+
+    def get_stored_obj(self, name, spec):
+        return Dft(name, self.obj_api, self.store, spec)

@@ -16,11 +16,11 @@ class ObjectOperator(object):
         logger.info(kwargs)
         self.store = OprStore()
 
-    def store_get_obj(self, name, resource, spec):
-        obj = self.store.get_obj(name, resource)
+    def store_get_obj(self, name, kind, spec):
+        obj = self.store.get_obj(name, kind)
         if not obj:
             logger.info(
-                "{} of type {} not found in store".format(name, resource))
+                "{} of type {} not found in store".format(name, kind))
             return None
         obj.set_obj_spec(spec)
         return obj
@@ -30,7 +30,7 @@ class ObjectOperator(object):
         obj.update_obj()
 
     def store_delete_obj(self, obj):
-        self.store.delete_obj(obj.name, obj.resource)
+        self.store.delete_obj(obj.name, obj.kind)
         obj.delete_obj()
 
     def set_object_provisioned(self, obj):

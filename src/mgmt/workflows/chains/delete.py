@@ -11,16 +11,6 @@ logger = logging.getLogger()
 chains_opr = ChainOperator()
 
 
-class ChainDelete(WorkflowTask):
-
-    def requires(self):
-        logger.info("Requires {task}".format(task=self.__class__.__name__))
-        return []
-
-    def run(self):
-        logger.info("Run {task}".format(task=self.__class__.__name__))
-        chain = chains_opr.store_get_obj(
-            self.param.name, self.param.spec["plural"], self.param.spec)
-
-        chains_opr.store_delete_obj(chain.name, chain.resource)
-        self.finalize()
+def chain_delete(chain, name, body, spec):
+    logger.info("Deleting Chain {}!".format(name))
+    return chain

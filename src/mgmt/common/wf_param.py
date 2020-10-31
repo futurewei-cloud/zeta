@@ -29,3 +29,6 @@ class HandlerParam(luigi.Parameter):
     diff = {}
     extra = None
     return_message = None
+
+    def workflow_func(self, obj, name, body, spec):
+        return obj
