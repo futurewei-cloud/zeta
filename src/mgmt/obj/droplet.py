@@ -34,6 +34,7 @@ class Droplet(KubeObject):
 
     def __init__(self, name, obj_api, opr_store, spec=None):
         super.__init__(name, obj_api, opr_store, spec)
+        self.resource = "droplets"
         self.ip = ""
         self.mac = ""
         self.phy_itf = 'eth0'
@@ -59,19 +60,3 @@ class Droplet(KubeObject):
         self.mac = get_spec_val('mac', spec)
         self.ip = get_spec_val('ip', spec)
         self.phy_itf = get_spec_val('itf', spec)
-
-    def get_plural(self):
-        return "droplets"
-
-    def get_kind(self):
-        return "Droplet"
-
-    def store_update_obj(self):
-        if self.store is None:
-            return
-        self.store.update_droplet(self)
-
-    def store_delete_obj(self):
-        if self.store is None:
-            return
-        self.store.delete_droplet(self.name)

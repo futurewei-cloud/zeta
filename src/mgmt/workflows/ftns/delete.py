@@ -19,7 +19,8 @@ class FtnDelete(WorkflowTask):
 
     def run(self):
         logger.info("Run {task}".format(task=self.__class__.__name__))
-        ftn = ftns_opr.store.get_ftn(self.param.name)
-        ftns_opr.store.delete_ftn(ftn.name)
-        ftn.delete_obj()
+        ftn = ftns_opr.store_get_obj(
+            self.param.name, self.param.spec["plural"], self.param.spec)
+
+        ftns_opr.store_delete_obj(ftn.name, ftn.resource)
         self.finalize()

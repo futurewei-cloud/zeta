@@ -77,6 +77,12 @@ class WorkflowTask(luigi.Task):
     def run(self):
         self.finalize()
 
+    def pre_create(self):
+        pass
+
+    def post_create(self):
+        pass
+
 
 class WorkflowFactory(ABC):
 

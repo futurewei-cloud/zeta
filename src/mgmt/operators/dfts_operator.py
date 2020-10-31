@@ -35,24 +35,7 @@ class DftOperator(ObjectOperator):
             logger.info("Bootstrapped dft {}".format(name))
             dft = Dft(name, self.obj_api, self.store, spec)
             if dft.status == OBJ_STATUS.obj_status_provisioned:
-                self.store_update(dft)
+                self.store.update_obj(dft)
 
         kube_list_obj(self.obj_api, RESOURCES.dfts, list_dft_obj_fn)
         self.bootstrapped = True
-
-    def create_default_dft(self):
-        if self.store.get_dft(OBJ_DEFAULTS.default_dft):
-            return
-        dft = Dft(OBJ_DEFAULTS.default_dft, self.obj_api, self.store)
-        dft.numchainreplicas = 3
-        dft.numchains = OBJ_DEFAULTS.default_n_chains
-        dft.create_obj()
-
-    def store_update(self, dft):
-        self.store.update_dft(dft)
-
-    def get_dft_stored_obj(self, name):
-        return self.store.get_dft(name)
-
-    def get_dft_tmp_obj(self, name, spec):
-        return Dft(name, self.obj_api, self.store, spec)

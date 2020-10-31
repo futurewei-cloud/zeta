@@ -21,8 +21,8 @@ class ChainCreate(WorkflowTask):
 
     def run(self):
         logger.info("Run {task}".format(task=self.__class__.__name__))
-        chain = chains_opr.get_chain_stored_obj(self.param.name)
-        chain.set_obj_spec(self.param.spec)
+        chain = dfts_opr.store_get_obj(
+            self.param.name, self.param.spec["plural"], self.param.spec)
+
         chains_opr.set_object_provisioned(chain)
-        chains_opr.store_update(chain)
         self.finalize()

@@ -19,8 +19,8 @@ class FtnCreate(WorkflowTask):
 
     def run(self):
         logger.info("Run {task}".format(task=self.__class__.__name__))
-        ftn = ftns_opr.get_ftn_stored_obj(self.param.name)
-        ftn.set_obj_spec(self.param.spec)
+        ftn = ftns_opr.store_get_obj(
+            self.param.name, self.param.spec["plural"], self.param.spec)
+
         ftns_opr.set_object_provisioned(ftn)
-        ftns_opr.store_update(ftn)
         self.finalize()

@@ -15,6 +15,7 @@ class Dft(KubeObject):
 
     def __init__(self, name, obj_api, opr_store, spec=None):
         super.__init__(name, obj_api, opr_store, spec)
+        self.resource = "dfts"
         self.table = []
         self.numchains = 0
         self.numchainreplicas = 0
@@ -37,19 +38,3 @@ class Dft(KubeObject):
         self.numchains = get_spec_val('numchains', spec)
         self.numchainreplicas = get_spec_val('numchainreplicas', spec)
         self.table = get_spec_val('table', spec)
-
-    def get_plural(self):
-        return "dft"
-
-    def get_kind(self):
-        return "Dft"
-
-    def store_update_obj(self):
-        if self.store is None:
-            return
-        self.store.update_dft(self)
-
-    def store_delete_obj(self):
-        if self.store is None:
-            return
-        self.store.delete_dft(self.name)

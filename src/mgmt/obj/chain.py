@@ -15,8 +15,11 @@ class Chain(KubeObject):
 
     def __init__(self, name, obj_api, opr_store, spec=None):
         super.__init__(name, obj_api, opr_store, spec)
+        self.resource = "chains"
         self.head = ""
         self.tail = ""
+        self.dft = ""
+        self.size = 0
         self.ftns = []
         if spec is not None:
             self.set_obj_spec(spec)
@@ -26,7 +29,9 @@ class Chain(KubeObject):
             "status": self.status,
             "head": self.head,
             "tail": self.tail,
-            "ftns": self.ftns
+            "ftns": self.ftns,
+            "dft": self.dft,
+            "size": self.size
         }
         return self.obj
 
@@ -36,19 +41,5 @@ class Chain(KubeObject):
         self.head = get_spec_val('head', spec)
         self.tail = get_spec_val('tail', spec)
         self.ftns = get_spec_val('ftns', spec)
-
-    def get_plural(self):
-        return "chains"
-
-    def get_kind(self):
-        return "Chain"
-
-    def store_update_obj(self):
-        if self.store is None:
-            return
-        self.store.update_chain(self)
-
-    def store_delete_obj(self):
-        if self.store is None:
-            return
-        self.store.delete_chain(self.name)
+        self.dft = get_spec_val('dft', spec)
+        self.size = get_spec_val('size', spec)

@@ -20,32 +20,25 @@
 # THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import luigi
-from common.workflow import *
-from workflows.droplets.bootstrap import *
+from workflows.common.bootstrap import *
 from workflows.droplets.create import *
 from workflows.droplets.provisioned import *
 from workflows.droplets.delete import *
 
-from workflows.dfts.bootstrap import *
 from workflows.dfts.create import *
 from workflows.dfts.provisioned import *
 from workflows.dfts.delete import *
 
-from workflows.chains.bootstrap import *
 from workflows.chains.create import *
 from workflows.chains.provisioned import *
 from workflows.chains.delete import *
 
-from workflows.ftns.bootstrap import *
 from workflows.ftns.create import *
 from workflows.ftns.provisioned import *
 from workflows.ftns.delete import *
 
 
 class ZetaWorkflowFactory():
-
-    def DropletOperatorStart(self, param):
-        return DropletOperatorStart(param=param)
 
     def DropletCreate(self, param):
         return DropletCreate(param=param)
@@ -56,9 +49,6 @@ class ZetaWorkflowFactory():
     def DropletDelete(self, param):
         return DropletDelete(param=param)
 
-    def DftOperatorStart(self, param):
-        return DftOperatorStart(param=param)
-
     def DftCreate(self, param):
         return DftCreate(param=param)
 
@@ -67,9 +57,6 @@ class ZetaWorkflowFactory():
 
     def DftDelete(self, param):
         return DftDelete(param=param)
-
-    def ChainOperatorStart(self, param):
-        return ChainOperatorStart(param=param)
 
     def ChainCreate(self, param):
         return ChainCreate(param=param)
@@ -80,9 +67,6 @@ class ZetaWorkflowFactory():
     def ChainDelete(self, param):
         return ChainDelete(param=param)
 
-    def FtnOperatorStart(self, param):
-        return FtnOperatorStart(param=param)
-
     def FtnCreate(self, param):
         return FtnCreate(param=param)
 
@@ -91,3 +75,6 @@ class ZetaWorkflowFactory():
 
     def FtnDelete(self, param):
         return FtnDelete(param=param)
+
+    def CommonOperatorStart(self, param):
+        return CommonOperatorStart(param=param)

@@ -35,16 +35,7 @@ class ChainOperator(ObjectOperator):
             logger.info("Bootstrapped chain {}".format(name))
             chain = Chain(name, self.obj_api, self.store, spec)
             if chain.status == OBJ_STATUS.obj_status_provisioned:
-                self.store_update(chain)
+                self.store.update_obj(chain)
 
         kube_list_obj(self.obj_api, RESOURCES.chains, list_chain_obj_fn)
         self.bootstrapped = True
-
-    def store_update(self, chain):
-        self.store.update_chain(chain)
-
-    def get_chain_stored_obj(self, name):
-        return self.store.get_chain(name)
-
-    def get_chain_tmp_obj(self, name, spec):
-        return Chain(name, self.obj_api, self.store, spec)

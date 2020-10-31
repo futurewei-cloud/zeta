@@ -132,7 +132,7 @@ def kube_update_obj(obj):
         spec = obj.get_obj_spec()
 
         if 'provisiondelay' not in spec or spec['provisiondelay'] == "":
-            if 'createtime' in body['spec'] and spec['status'] == OBJ_STATUS.obj_provisioned:
+            if 'createtime' in body['spec'] and spec['status'] == OBJ_STATUS.obj_status_provisioned:
                 spec['createtime'] = body['spec']['createtime']
                 now = datetime.datetime.now()
 

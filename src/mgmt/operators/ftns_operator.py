@@ -35,16 +35,7 @@ class FtnOperator(ObjectOperator):
             logger.info("Bootstrapped ftn {}".format(name))
             ftn = Ftn(name, self.obj_api, self.store, spec)
             if ftn.status == OBJ_STATUS.obj_status_provisioned:
-                self.store_update(ftn)
+                self.store.update_obj(ftn)
 
         kube_list_obj(self.obj_api, RESOURCES.ftns, list_ftn_obj_fn)
         self.bootstrapped = True
-
-    def store_update(self, ftn):
-        self.store.update_ftn(ftn)
-
-    def get_ftn_stored_obj(self, name):
-        return self.store.get_ftn(name)
-
-    def get_ftn_tmp_obj(self, name, spec):
-        return Ftn(name, self.obj_api, self.store, spec)

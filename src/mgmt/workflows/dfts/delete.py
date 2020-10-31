@@ -19,7 +19,8 @@ class DftDelete(WorkflowTask):
 
     def run(self):
         logger.info("Run {task}".format(task=self.__class__.__name__))
-        dft = dfts_opr.store.get_dft(self.param.name)
-        dfts_opr.store.delete_dft(dft.name)
-        dft.delete_obj()
+        dft = dfts_opr.store_get_obj(
+            self.param.name, self.param.spec["plural"], self.param.spec)
+
+        dfts_opr.store_delete_obj(dft.name, dft.resource)
         self.finalize()
