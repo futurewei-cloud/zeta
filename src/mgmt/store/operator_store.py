@@ -36,74 +36,53 @@ class OprStore(object):
 
     def _init(self, **kwargs):
         logger.info(kwargs)
-        self.droplets_store = {}
-        self.dfts_store = {}
-        self.chains_store = {}
-        self.ftns_store = {}
+        self.store = {}
+        self.store["droplets"] = {}
+        self.store["ftns"] = {}
+        self.store["chains"] = {}
+        self.store["dfts"] = {}
 
-    def update_droplet(self, droplet):
-        self.droplets_store[droplet.name] = droplet
+    def update_obj(self, obj):
+        if obj.resource in self.store:
+            self.store[obj.resource][obj.name] = obj
+        else:
+            logger.info("Unknown object type {}".format(obj.resource))
 
-    def delete_droplet(self, name):
-        if name in self.droplets_store:
-            del self.droplets_store[name]
+    def get_obj(self, name, resource):
+        if resource in self.store:
+            if name in self.store[resource]:
+                return self.store[resource][name]
+            logger.info(
+                "Object {} of resource {} not found".format(resource, name))
+            return None
+        else:
+            logger.info("Unknown object type {}".format(resource))
+            return None
 
-    def get_droplet(self, name):
-        if name in self.droplets_store:
-            return self.droplets_store[name]
-        return None
+    def delete_obj(self, name, resource):
+        if resource in self.store:
+            if name in self.store[resource]:
+                del self.store[resource][name]
+            logger.info(
+                "Object {} of resource {} not found".format(resource, name))
+        else:
+            logger.info("Unknown object type {}".format(resource))
 
     def get_droplet_by_ip(self, ip):
-        for d in self.droplets_store:
-            if self.droplets_store[d].ip == ip:
-                return self.droplets_store[d]
+        for d in self.store["Droplet"]:
+            if self.store["Droplet"][d].ip == ip:
+                return self.store["Droplet"][d]
         return None
 
     def get_all_droplets(self):
-        return self.droplets_store.values()
+        return self.store["Droplet"].values()
 
     def contains_droplet(self, name):
-        if name in self.droplets_store:
+        if name in self.store["Droplet"]:
             return True
         return False
 
-    def _dump_droplets(self):
-        for d in self.droplets_store.values():
+    def dump_droplets(self):
+        for d in self.store["Droplet"].values():
             logger.info("Droplets: {}, Spec: {}".format(
                 d.name, d.get_obj_spec()))
-
-    def update_dft(self, dft):
-        self.dfts_store[dft.name] = dft
-
-    def update_chain(self, chain):
-        self.chains_store[chain.name] = chain
-
-    def update_ftn(self, ftn):
-        self.ftns_store[ftn.name] = ftn
-
-    def get_dft(self, name):
-        if name in self.dfts_store:
-            return self.dfts_store[name]
-        return None
-
-    def get_chain(self, name):
-        if name in self.chains_store:
-            return self.chains_store[name]
-        return None
-
-    def get_ftn(self, name):
-        if name in self.ftns_store:
-            return self.ftns_store[name]
-        return None
-
-    def delete_dft(self, name):
-        if name in self.dfts_store:
-            del self.dfts_store[name]
-
-    def delete_chain(self, name):
-        if name in self.chains_store:
-            del self.chains_store[name]
-
-    def delete_ftn(self, name):
-        if name in self.ftns_store:
-            del self.ftns_store[name]

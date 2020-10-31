@@ -15,12 +15,14 @@ class Ftn(KubeObject):
 
     def __init__(self, name, obj_api, opr_store, spec=None):
         super.__init__(name, obj_api, opr_store, spec)
+        self.resource = "ftns"
         self.ftn = ""
         self.ip = ""
         self.mac = ""
         self.nextnode = ""
         self.droplet = ""
-        self.chains = []
+        self.parent_chain = ""
+        self.augmented_chain = ""
         if spec is not None:
             self.set_obj_spec(spec)
 
@@ -32,7 +34,8 @@ class Ftn(KubeObject):
             "mac": self.mac,
             "nextnode": self.nextnode,
             "droplet": self.droplet,
-            "chain": self.chains
+            "parentchain": self.parent_chain,
+            "augmentedchain": self.augmented_chain
         }
 
         return self.obj
@@ -45,20 +48,5 @@ class Ftn(KubeObject):
         self.mac = get_spec_val('mac', spec)
         self.nextnode = get_spec_val('nextnode', spec)
         self.droplet = get_spec_val('droplet', spec)
-        self.chains = get_spec_val('chains', spec)
-
-    def get_plural(self):
-        return "ftns"
-
-    def get_kind(self):
-        return "Ftn"
-
-    def store_update_obj(self):
-        if self.store is None:
-            return
-        self.store.update_ftn(self)
-
-    def store_delete_obj(self):
-        if self.store is None:
-            return
-        self.store.delete_ftn(self.name)
+        self.parent_chain = get_spec_val('parentchain', spec)
+        self.augmented_chain = get_spec_val('augmentedchain', spec)

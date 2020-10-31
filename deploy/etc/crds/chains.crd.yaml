@@ -39,3 +39,13 @@ spec:
       priority: 0
       JSONPath: .spec.tail
       description: The tail of the chain
+    - name: Dft
+      type: string
+      priority: 0
+      JSONPath: .spec.dft
+      description: The Dft this chain belongs to
+    - name: Size
+      type: string
+      priority: 0
+      JSONPath: .spec.size
+      description: The size of the chain

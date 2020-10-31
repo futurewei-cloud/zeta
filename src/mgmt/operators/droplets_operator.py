@@ -49,21 +49,9 @@ class DropletOperator(ObjectOperator):
     def query_existing_droplets(self):
         def list_droplet_obj_fn(name, spec, plurals):
             logger.info("Bootstrapped droplet {}".format(name))
-            d = Droplet(name, self.obj_api, self.store, spec)
-            if d.status == OBJ_STATUS.obj_status_provisioned:
-                self.store_update(d)
+            droplet = Droplet(name, self.obj_api, self.store, spec)
+            if droplet.status == OBJ_STATUS.obj_status_provisioned:
+                self.store.update_obj(droplet)
 
         kube_list_obj(self.obj_api, RESOURCES.droplets, list_droplet_obj_fn)
         self.bootstrapped = True
-
-    def get_droplet_tmp_obj(self, name, spec):
-        return Droplet(name, self.obj_api, self.store, spec)
-
-    def get_droplet_stored_obj(self, name):
-        return self.store.get_droplet(name)
-
-    def store_get_by_ip(self, ip):
-        return self.store.get_droplet_by_ip(ip)
-
-    def store_update(self, droplet):
-        self.store.update_droplet(droplet)

@@ -21,40 +21,32 @@ spec:
     shortNames:
       - ftn
       - ftns
-  validation:
-    openAPIV3Schema:
-      properties:
-        chains:
-          type: array
-          items:
-            type: string
-          minItems: 1
   additionalPrinterColumns:
-    - name: dft
+    - name: Dft
       type: string
       priority: 0
       JSONPath: .spec.dft
       description: The DFT that this FTN belongs to
-    - name: ip
-      type: string
-      priority: 0
-      JSONPath: .spec.ip
-      description: The IP address of ftn chain node
-    - name: droplet
+    - name: Droplet
       type: string
       priority: 0
       JSONPath: .spec.droplet
-      description: The droplet where this ftn chain node deployed
-    - name: mac
-      type: string
-      priority: 0
-      JSONPath: .spec.mac
-      description: The Mac address of this ftn chain node
-    - name: nextnode
+      description: The droplet where this ftn is deployed
+    - name: Nextnode
       type: string
       priority: 0
       JSONPath: .spec.nextnode
-      description: The next replica node following this ftn chain node
+      description: The next replica following this ftn
+    - name: Parentchain
+      type: string
+      priority: 0
+      JSONPath: .spec.parentchain
+      description: The parent chain of this ftn
+    - name: Augmentedchain
+      type: string
+      priority: 0
+      JSONPath: .spec.augmentedchain
+      description: The chain this ftn is augmented onto
     - name: Status
       type: string
       priority: 0

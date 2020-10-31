@@ -37,6 +37,11 @@ class CONSTANTS:
     IPPROTO_TCP = "6"
     IPROTO_UDP = "17"
 
+    DFT = "Dft"
+    CHAIN = "Chain"
+    FTN = "Ftn"
+    DROPLET = "Droplet"
+
 
 class OBJ_STATUS:
     obj_status_init = 'Init'

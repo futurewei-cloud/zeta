@@ -19,7 +19,8 @@ class ChainDelete(WorkflowTask):
 
     def run(self):
         logger.info("Run {task}".format(task=self.__class__.__name__))
-        chain = chains_opr.store.get_chain(self.param.name)
-        chains_opr.store.delete_chain(chain.name)
-        chain.delete_obj()
+        chain = chains_opr.store_get_obj(
+            self.param.name, self.param.spec["plural"], self.param.spec)
+
+        chains_opr.store_delete_obj(chain.name, chain.resource)
         self.finalize()

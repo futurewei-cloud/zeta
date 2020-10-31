@@ -1,9 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2020 The Authors.
 
-# Authors: Sherif Abdelwahab <@zasherif>
-#          Phu Tran          <@phudtran>
-
+# Authors: Phu Tran          <@phudtran>
 
 import logging
 import json

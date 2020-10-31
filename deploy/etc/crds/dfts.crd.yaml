@@ -29,12 +29,12 @@ spec:
           items:
             type: string
   additionalPrinterColumns:
-    - name: numchains
-      type: string
+    - name: Numchains
+      type: integer
       priority: 0
       JSONPath: .spec.numchains
       description: The number of chains in the DFT
-    - name: numchainreplicas
+    - name: Numchainreplicas
       type: integer
       priority: 0
       JSONPath: .spec.numchainreplicas
