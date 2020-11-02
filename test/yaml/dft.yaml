@@ -8,6 +8,6 @@ kind: Dft
 metadata:
   name: dft0
 spec:
-  numchains: 1
-  numchainreplicas: 1
+  numchains: 2
+  numchainreplicas: 2
   status: "Init"

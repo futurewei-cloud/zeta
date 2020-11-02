@@ -58,3 +58,9 @@ class DropletOperator(ObjectOperator):
 
     def get_stored_obj(self, name, spec):
         return Droplet(name, self.obj_api, self.store, spec)
+
+    def get_droplet_by_ip(self, ip):
+        for d in self.store.store["Droplet"]:
+            if self.store.store["Droplet"][d].ip == ip:
+                return self.store.store["Droplet"][d]
+        return None

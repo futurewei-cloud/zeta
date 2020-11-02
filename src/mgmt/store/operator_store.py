@@ -68,21 +68,15 @@ class OprStore(object):
         else:
             logger.info("Unknown object type {}".format(kind))
 
-    def get_droplet_by_ip(self, ip):
-        for d in self.store["Droplet"]:
-            if self.store["Droplet"][d].ip == ip:
-                return self.store["Droplet"][d]
-        return None
+    def get_all_obj_typ(self, kind):
+        return self.store[kind].values()
 
-    def get_all_droplets(self):
-        return self.store["Droplet"].values()
-
-    def contains_droplet(self, name):
-        if name in self.store["Droplet"]:
+    def contains_obj(self, name, kind):
+        if name in self.store[kind][name]:
             return True
         return False
 
-    def dump_droplets(self):
-        for d in self.store["Droplet"].values():
-            logger.info("Droplets: {}, Spec: {}".format(
-                d.name, d.get_obj_spec()))
+    def dump_obj_kind(self, kind):
+        for obj in self.store[kind].values():
+            logger.info("{}: {}, Spec: {}".format(
+                kind, obj.name, obj.get_obj_spec()))
