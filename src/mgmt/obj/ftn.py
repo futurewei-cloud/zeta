@@ -17,9 +17,7 @@ class Ftn(KubeObject):
         super().__init__(name, obj_api, opr_store, spec)
         self.kind = "Ftn"
         self.plural = "ftns"
-        self.ftn = ""
-        self.ip = ""
-        self.mac = ""
+        self.dft = ""
         self.nextnode = ""
         self.droplet = ""
         self.parent_chain = ""
@@ -30,9 +28,7 @@ class Ftn(KubeObject):
     def get_obj_spec(self):
         self.obj = {
             "status": self.status,
-            "ftn": self.ftn,
-            "ip": self.ip,
-            "mac": self.mac,
+            "dft": self.dft,
             "nextnode": self.nextnode,
             "droplet": self.droplet,
             "parentchain": self.parent_chain,
@@ -44,9 +40,7 @@ class Ftn(KubeObject):
     def set_obj_spec(self, spec):
         # K8s APIs
         self.status = get_spec_val('status', spec)
-        self.ftn = get_spec_val('ftn', spec)
-        self.ip = get_spec_val('ip', spec)
-        self.mac = get_spec_val('mac', spec)
+        self.dft = get_spec_val('dft', spec)
         self.nextnode = get_spec_val('nextnode', spec)
         self.droplet = get_spec_val('droplet', spec)
         self.parent_chain = get_spec_val('parentchain', spec)
