@@ -17,6 +17,7 @@ class Dft(KubeObject):
         super().__init__(name, obj_api, opr_store, spec)
         self.kind = "Dft"
         self.plural = "dfts"
+        self.maglev_table = None
         self.table = []
         self.numchains = 0
         self.numchainreplicas = 0

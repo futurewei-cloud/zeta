@@ -25,6 +25,6 @@ from operators.droplets_operator import *
 droplets_opr = DropletOperator()
 
 
-def droplet_delete(droplet, name, body, spec):
+def droplet_delete(task, droplet, name, body, spec):
     logger.info("Deleting droplet {}!".format(name))
     return droplet

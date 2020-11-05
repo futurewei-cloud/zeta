@@ -8,6 +8,6 @@ from operators.dfts_operator import *
 dfts_opr = DftOperator()
 
 
-def dft_delete(dft, name, body, spec):
+def dft_delete(task, dft, name, body, spec):
     logger.info("Deleting DFT {}!".format(name))
     return dft

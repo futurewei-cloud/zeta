@@ -10,7 +10,6 @@ metadata:
 spec:
   dft: "dft0"
   droplet: "d0"
-  nextnode: "f1"
   parentchain: "c0"
   augmentedchain: ""
   status: "Init"

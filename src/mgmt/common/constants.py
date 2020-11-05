@@ -55,12 +55,23 @@ class OBJ_DEFAULTS:
     default_n_chains = 3
     default_n_replicas = 3
 
+    # Some good prime numbers: 101, 211, 307, 401, 503, 601, 701, 809, 907, 1009, 2003
+    # at least 100x greater than size and prime.
+    default_maglev_table_size = 307
+
 
 class RESOURCES:
     dfts = "dfts"
     chains = "chains"
     ftns = "ftns"
     droplets = "droplets"
+
+
+class KIND:
+    dft = "Dft"
+    chain = "Chain"
+    ftn = "Ftn"
+    droplet = "Droplet"
 
 
 class LAMBDAS:

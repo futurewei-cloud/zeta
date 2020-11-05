@@ -9,6 +9,6 @@ from operators.ftns_operator import *
 ftns_opr = FtnOperator()
 
 
-def ftn_provisioned(ftn, name, body, spec):
+def ftn_provisioned(task, ftn, name, body, spec):
     logger.info("Provisioned Ftn {}!".format(name))
     return ftn

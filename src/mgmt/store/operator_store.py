@@ -68,11 +68,11 @@ class OprStore(object):
         else:
             logger.info("Unknown object type {}".format(kind))
 
-    def get_all_obj_typ(self, kind):
+    def get_all_obj_type(self, kind):
         return self.store[kind].values()
 
     def contains_obj(self, name, kind):
-        if name in self.store[kind][name]:
+        if name in self.store[kind]:
             return True
         return False
 

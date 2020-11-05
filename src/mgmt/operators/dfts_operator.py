@@ -5,12 +5,13 @@
 
 import logging
 import random
+from kubernetes import client, config
 from common.constants import *
 from common.common import *
 from common.object_operator import ObjectOperator
-from kubernetes import client, config
 from obj.dft import Dft
 from store.operator_store import OprStore
+from common.maglev_table import MaglevTable
 
 logger = logging.getLogger()
 
@@ -42,3 +43,12 @@ class DftOperator(ObjectOperator):
 
     def get_stored_obj(self, name, spec):
         return Dft(name, self.obj_api, self.store, spec)
+
+    def create_default_dft(self):
+        if self.store.get_obj(OBJ_DEFAULTS.default_dft, KIND.dft):
+            return
+        dft = Dft(OBJ_DEFAULTS.default_dft, self.obj_api, self.store)
+        dft.numchains = OBJ_DEFAULTS.default_n_chains
+        dft.numchainreplicas = OBJ_DEFAULTS.default_n_replicas
+        dft.maglev_table = MaglevTable(OBJ_DEFAULTS.default_maglev_table_size)
+        dft.create_obj()

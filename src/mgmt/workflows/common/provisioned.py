@@ -17,7 +17,7 @@ class CommonProvisioned(WorkflowTask):
         logger.info("Run {task}".format(task=self.__class__.__name__))
         obj = objs_opr.store_get_obj(
             self.param.name, self.param.body["kind"], self.param.spec)
-        self.param.workflow_func(obj, self.param.name,
+        self.param.workflow_func(self, obj, self.param.name,
                                  self.param.body, self.param.spec)
         objs_opr.store_update_obj(obj)
         self.finalize()

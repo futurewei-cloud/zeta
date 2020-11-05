@@ -25,4 +25,5 @@ class CommonOperatorStart(WorkflowTask):
         ftns_opr.query_existing_ftns()
         chains_opr.query_existing_chains()
         dfts_opr.query_existing_dfts()
+        dfts_opr.create_default_dft()
         self.finalize()

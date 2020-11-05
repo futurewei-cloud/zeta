@@ -32,11 +32,6 @@ spec:
       priority: 0
       JSONPath: .spec.droplet
       description: The droplet where this ftn is deployed
-    - name: Nextnode
-      type: string
-      priority: 0
-      JSONPath: .spec.nextnode
-      description: The next replica following this ftn
     - name: Parentchain
       type: string
       priority: 0

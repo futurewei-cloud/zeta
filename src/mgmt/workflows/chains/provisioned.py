@@ -11,6 +11,6 @@ logger = logging.getLogger()
 chains_opr = ChainOperator()
 
 
-def chain_provisioned(chain, name, body, spec):
+def chain_provisioned(task, chain, name, body, spec):
     logger.info("Provisioned Chain {}!".format(name))
     return chain

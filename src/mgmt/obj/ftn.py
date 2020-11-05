@@ -18,7 +18,6 @@ class Ftn(KubeObject):
         self.kind = "Ftn"
         self.plural = "ftns"
         self.dft = ""
-        self.nextnode = ""
         self.droplet = ""
         self.parent_chain = ""
         self.augmented_chain = ""
@@ -29,7 +28,6 @@ class Ftn(KubeObject):
         self.obj = {
             "status": self.status,
             "dft": self.dft,
-            "nextnode": self.nextnode,
             "droplet": self.droplet,
             "parentchain": self.parent_chain,
             "augmentedchain": self.augmented_chain
@@ -41,7 +39,6 @@ class Ftn(KubeObject):
         # K8s APIs
         self.status = get_spec_val('status', spec)
         self.dft = get_spec_val('dft', spec)
-        self.nextnode = get_spec_val('nextnode', spec)
         self.droplet = get_spec_val('droplet', spec)
         self.parent_chain = get_spec_val('parentchain', spec)
         self.augmented_chain = get_spec_val('augmentedchain', spec)
