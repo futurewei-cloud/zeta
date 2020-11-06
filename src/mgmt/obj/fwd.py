@@ -8,38 +8,31 @@ import json
 from common.constants import *
 from common.common import *
 from common.kube_obj import KubeObject
+logger = logging.getLogger()
 
 
-class Chain(KubeObject):
+class Fwd(KubeObject):
 
     def __init__(self, name, obj_api, opr_store, spec=None):
         super().__init__(name, obj_api, opr_store, spec)
-        self.kind = "Chain"
-        self.plural = "chains"
-        self.head = ""
-        self.tail = ""
+        self.kind = "Fwd"
+        self.plural = "fwds"
         self.dft = ""
-        self.size = 0
-        self.ftns = []
+        self.droplet = ""
         if spec is not None:
             self.set_obj_spec(spec)
 
     def get_obj_spec(self):
         self.obj = {
             "status": self.status,
-            "head": self.head,
-            "tail": self.tail,
-            "ftns": self.ftns,
             "dft": self.dft,
-            "size": self.size
+            "droplet": self.droplet
         }
+
         return self.obj
 
     def set_obj_spec(self, spec):
         # K8s APIs
         self.status = get_spec_val('status', spec)
-        self.head = get_spec_val('head', spec)
-        self.tail = get_spec_val('tail', spec)
-        self.ftns = get_spec_val('ftns', spec)
         self.dft = get_spec_val('dft', spec)
-        self.size = get_spec_val('size', spec)
+        self.droplet = get_spec_val('droplet', spec)

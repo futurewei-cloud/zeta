@@ -6,7 +6,7 @@
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
-  name: chains.zeta.com
+  name: fwds.zeta.com
 spec:
   scope: Namespaced
   group: zeta.com
@@ -15,40 +15,27 @@ spec:
       served: true
       storage: true
   names:
-    kind: Chain
-    plural: chains
-    singular: chain
+    kind: Fwd
+    plural: fwds
+    singular: fwd
     shortNames:
-      - chain
-      - chains
-  validation:
-    openAPIV3Schema:
-      properties:
-        ftns:
-          type: array
-          items:
-            type: string
+      - fwd
+      - fwds
   additionalPrinterColumns:
-    - name: Head
-      type: string
-      priority: 0
-      JSONPath: .spec.head
-      description: The head of the chain
-    - name: Tail
-      type: string
-      priority: 0
-      JSONPath: .spec.tail
-      description: The tail of the chain
     - name: Dft
       type: string
       priority: 0
       JSONPath: .spec.dft
-      description: The Dft this chain belongs to
-    - name: Size
-      type: integer
+      description: The DFT that this Fwd is using
+    - name: Droplet
+      type: string
       priority: 0
-      JSONPath: .spec.size
-      description: The size of the chain
+      JSONPath: .spec.droplet
+      description: The droplet where this fwd is deployed
+    - name: Status
+      type: string
+      priority: 0
+      JSONPath: .spec.status
     - name: CreateTime
       type: string
       priority: 0

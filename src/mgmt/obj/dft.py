@@ -3,12 +3,10 @@
 
 # Authors: Phu Tran          <@phudtran>
 
-import logging
 import json
 from common.constants import *
 from common.common import *
 from common.kube_obj import KubeObject
-logger = logging.getLogger()
 
 
 class Dft(KubeObject):
