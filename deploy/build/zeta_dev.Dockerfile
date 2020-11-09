@@ -8,21 +8,21 @@
 FROM ubuntu:18.04@sha256:646942475da61b4ce9cc5b3fadb42642ea90e5d0de46111458e100ff2c7031e6
 
 RUN apt-get update && \
-# Add ppa for gcc-9
+    # Add ppa for gcc-9
     DEBIAN_FRONTEND=noninteractive apt-get install -y software-properties-common && \
-	add-apt-repository ppa:ubuntu-toolchain-r/test && \
-	DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    add-apt-repository ppa:ubuntu-toolchain-r/test && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y \
     build-essential \
     cmake \
     python3 \
     python3-pip \
     python3-setuptools \
-# Following are required for XDP development environment
+    # Following are required for XDP development environment
     make \
     gcc-9 \
-	g++-9 \
-	gcc-9-multilib \
-	g++-9-multilib \
+    g++-9 \
+    gcc-9-multilib \
+    g++-9-multilib \
     libssl-dev \
     libelf-dev \
     libcap-dev \
@@ -35,7 +35,7 @@ RUN apt-get update && \
     bison \
     flex \
     graphviz \
-# End of XDP tools 
+    # End of XDP tools
     rpcbind \
     rsyslog \
     unzip \
@@ -57,10 +57,10 @@ RUN apt-get update && \
     libtool && \
     apt-get clean
 
-RUN    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 10 \
-	&& update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 20 \
-	&& update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 10 \
-	&& update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 20
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 10 \
+    && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 20 \
+    && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 10 \
+    && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 20
 
 RUN pip3 install httpserver netaddr grpcio grpcio-tools
 

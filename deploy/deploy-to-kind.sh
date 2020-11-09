@@ -64,7 +64,8 @@ KINDCONF="${ROOT}/build/tests/kind/config"
 ZETACONF="${ROOT}/build/tests/zeta.config"
 KINDHOME="${HOME}/.kube/config"
 USER=${1:-user}
-NODES=${2:-3}
+KUBE_NODES=${2:-3}
+DROPLET_NODES=${3:-12}
 timeout=120
 
 kind delete cluster
@@ -86,9 +87,11 @@ if [[ "$USER" == "dev" ]]; then
 else
     DOCKER_ACC="fwnetworking"
 fi
-docker image build -t $DOCKER_ACC/zetanode:latest -f ${ROOT}/deploy/kind/Dockerfile $ROOT
 
-source ${ROOT}/deploy/kind/create_cluster.sh $KINDCONF $USER $NODES
+source ${ROOT}/deploy/kind/create_droplets.sh $DOCKER_ACC $DROPLET_NODES
+
+docker image build -t $DOCKER_ACC/zetanode:latest -f ${ROOT}/deploy/kind/Dockerfile $ROOT
+source ${ROOT}/deploy/kind/create_cluster.sh $KINDCONF $USER $KUBE_NODES
 
 api_ip=`docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' kind-control-plane`
 sed "s/server: https:\/\/127.0.0.1:[[:digit:]]\+/server: https:\/\/$api_ip:6443/" $KINDCONF > $ZETACONF
@@ -107,3 +110,5 @@ else
     echo "ERROR: Cluster setup timed out after $timeout seconds!"
     exit 1
 fi
+
+source ${ROOT}/deploy/kind/register_droplets.sh $DROPLET_NODES
