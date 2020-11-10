@@ -5,7 +5,6 @@
 
 import logging
 import random
-import uuid
 from kubernetes import client, config
 from common.constants import *
 from common.common import *

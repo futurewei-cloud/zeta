@@ -22,7 +22,7 @@ do
     spec:
         mac: $mac
         ip: $ip
-        interface: $ITF
+        itf: $ITF
         status: Init
 EOF
 done

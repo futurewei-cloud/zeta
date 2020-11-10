@@ -22,10 +22,10 @@
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 # THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-# Checks for status: Provisioned for given object
+# Checks for status for given object
 function get_status() {
     OBJECT=$1
-
+    STATUS=$2
     kubectl get $OBJECT 2> /tmp/kubetctl.err | awk '
     NR==1 {
         for (i=1; i<=NF; i++) {
@@ -33,18 +33,17 @@ function get_status() {
         }
     }
     { print $f["STATUS"] }
-    ' | grep Running > /dev/null
+    ' | grep $STATUS > /dev/null
 
     return $?
 }
 
 # Checks for status Provisioned of array of objects
 function check_ready() {
-    objects=("pods")
     sum=0
-    for i in "${objects[@]}"
+    for i in $1
     do
-        get_status $i
+        get_status $i ${@: -1}
         let sum+=$((sum + $?))
     done
     if [[ $sum == 0 ]]; then
@@ -64,7 +63,7 @@ KINDCONF="${ROOT}/build/tests/kind/config"
 ZETACONF="${ROOT}/build/tests/zeta.config"
 KINDHOME="${HOME}/.kube/config"
 USER=${1:-user}
-KUBE_NODES=${2:-3}
+KUBE_NODES=${2:-1}
 DROPLET_NODES=${3:-12}
 timeout=120
 
@@ -98,17 +97,33 @@ sed "s/server: https:\/\/127.0.0.1:[[:digit:]]\+/server: https:\/\/$api_ip:6443/
 ln -snf $KINDCONF $KINDHOME
 source $ROOT/deploy/install/deploy_mgmt.sh $USER $DOCKER_ACC
 
+objects=("pods")
 end=$((SECONDS + $timeout))
-echo -n "Waiting for cluster to come up."
+echo -n "Waiting for Operator to come up."
 while [[ $SECONDS -lt $end ]]; do
-    check_ready || break
+    check_ready "${objects[@]}" "Running" || break
 done
 echo
 if [[ $SECONDS -lt $end ]]; then
-    echo "Cluster now ready!"
+    echo "Operator now ready!"
 else
-    echo "ERROR: Cluster setup timed out after $timeout seconds!"
+    echo "ERROR: Operator deployment timed out after $timeout seconds!"
     exit 1
 fi
 
 source ${ROOT}/deploy/kind/register_droplets.sh $DROPLET_NODES
+
+objects=("dfts" "chains" "ftns" "fwds" "droplets")
+
+end=$((SECONDS + $timeout))
+echo -n "Waiting for default objects to be provisioned"
+while [[ $SECONDS -lt $end ]]; do
+    check_ready "${objects[@]}" "Provisioned" || break
+done
+echo
+if [[ $SECONDS -lt $end ]]; then
+    echo "Objects now ready!"
+else
+    echo "ERROR: Object deployment timed out after $timeout seconds!"
+    exit 1
+fi

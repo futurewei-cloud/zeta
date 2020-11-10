@@ -38,6 +38,11 @@ spec:
       - drp
       - drps
   additionalPrinterColumns:
+    - name: Status
+      type: string
+      priority: 0
+      JSONPath: .spec.status
+      description: The Current Status of the droplet
     - name: Mac
       type: string
       priority: 0
@@ -48,11 +53,6 @@ spec:
       priority: 0
       JSONPath: .spec.ip
       description: The IP of the endpoint
-    - name: Status
-      type: string
-      priority: 0
-      JSONPath: .spec.status
-      description: The Current Status of the droplet
     - name: Interface
       type: string
       priority: 0

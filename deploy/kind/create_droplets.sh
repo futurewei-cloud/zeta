@@ -12,9 +12,10 @@ DROPLETS=$(docker ps -a --format "{{.Names}}" | grep zeta-droplet)
 NETWORK="droplet_network"
 
 # Remove existing droplet containers and tenant network
-docker network rm $NETWORK 2> /dev/null
-docker stop $DROPLETS 2> /dev/null
-docker rm -f $DROPLETS 2> /dev/null
+docker network rm $NETWORK > /dev/null 2>&1
+echo "Deleting existing zeta-droplets containers"
+docker stop $DROPLETS > /dev/null 2>&1
+docker rm -f $DROPLETS > /dev/null 2>&1
 
 docker image build -t $DOCKER_ACC/zeta-droplet:latest -f ${ROOT}/deploy/kind/droplet.Dockerfile $ROOT
 
@@ -26,6 +27,7 @@ docker network create -d bridge \
 
 for ((i=1; i<=NODES; i++));
 do
+    echo -e "Creating zeta-droplet-$i"
     docker run -d \
         --privileged \
         --cap-add=NET_ADMIN \

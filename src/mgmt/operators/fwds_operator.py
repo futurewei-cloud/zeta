@@ -5,7 +5,6 @@
 
 import logging
 import random
-import uuid
 from common.constants import *
 from common.common import *
 from common.object_operator import ObjectOperator

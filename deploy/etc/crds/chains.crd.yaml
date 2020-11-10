@@ -29,6 +29,11 @@ spec:
           items:
             type: string
   additionalPrinterColumns:
+    - name: Status
+      type: string
+      priority: 0
+      JSONPath: .spec.status
+      description: The Current Status of the Chain
     - name: Head
       type: string
       priority: 0

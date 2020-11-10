@@ -22,6 +22,10 @@ spec:
       - fwd
       - fwds
   additionalPrinterColumns:
+    - name: Status
+      type: string
+      priority: 0
+      JSONPath: .spec.status
     - name: Dft
       type: string
       priority: 0
@@ -32,10 +36,6 @@ spec:
       priority: 0
       JSONPath: .spec.droplet
       description: The droplet where this fwd is deployed
-    - name: Status
-      type: string
-      priority: 0
-      JSONPath: .spec.status
     - name: CreateTime
       type: string
       priority: 0

@@ -29,6 +29,11 @@ spec:
           items:
             type: string
   additionalPrinterColumns:
+    - name: Status
+      type: string
+      priority: 0
+      JSONPath: .spec.status
+      description: The Current Status of the DFT
     - name: Numchains
       type: integer
       priority: 0
@@ -39,11 +44,6 @@ spec:
       priority: 0
       JSONPath: .spec.numchainreplicas
       description: The number of replica ftns in each chain
-    - name: Status
-      type: string
-      priority: 0
-      JSONPath: .spec.status
-      description: The Current Status of the DFT
     - name: CreateTime
       type: string
       priority: 0

@@ -22,6 +22,10 @@ spec:
       - ftn
       - ftns
   additionalPrinterColumns:
+    - name: Status
+      type: string
+      priority: 0
+      JSONPath: .spec.status
     - name: Dft
       type: string
       priority: 0
@@ -42,10 +46,6 @@ spec:
       priority: 0
       JSONPath: .spec.augmentedchain
       description: The chain this ftn is augmented onto
-    - name: Status
-      type: string
-      priority: 0
-      JSONPath: .spec.status
     - name: CreateTime
       type: string
       priority: 0
