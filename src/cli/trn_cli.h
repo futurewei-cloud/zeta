@@ -54,16 +54,9 @@ int trn_cli_read_conf_str(ketopt_t *om, int argc, char *argv[],
 			  struct cli_conf_data_t *);
 
 cJSON *trn_cli_parse_json(const char *buf);
-int trn_cli_parse_vpc(const cJSON *jsonobj, struct rpc_trn_vpc_t *vpc);
-int trn_cli_parse_vpc_key(const cJSON *jsonobj, struct rpc_trn_vpc_key_t *vpc);
-int trn_cli_parse_net(const cJSON *jsonobj, struct rpc_trn_network_t *net);
-int trn_cli_parse_net_key(const cJSON *jsonobj,
-			  struct rpc_trn_network_key_t *net);
 int trn_cli_parse_ep(const cJSON *jsonobj, struct rpc_trn_endpoint_t *ep);
 int trn_cli_parse_ep_key(const cJSON *jsonobj,
 			 struct rpc_trn_endpoint_key_t *ep);
-int trn_cli_parse_port(const cJSON *jsonobj, struct rpc_trn_port_t *ep);
-int trn_cli_parse_port_key(const cJSON *jsonobj, struct rpc_trn_port_key_t *ep);
 int trn_cli_parse_xdp(const cJSON *jsonobj,
 		      struct rpc_trn_xdp_intf_t *xdp_intf);
 int trn_cli_parse_tun_intf(const cJSON *jsonobj,
@@ -74,33 +67,15 @@ int trn_cli_parse_ebpf_prog(const cJSON *jsonobj, rpc_trn_ebpf_prog_t *prog);
 int trn_cli_parse_ebpf_prog_stage(const cJSON *jsonobj,
 				  rpc_trn_ebpf_prog_stage_t *stage);
 
-int trn_cli_update_port_subcmd(CLIENT *clnt, int argc, char *argv[]);
-int trn_cli_update_vpc_subcmd(CLIENT *clnt, int argc, char *argv[]);
-int trn_cli_update_net_subcmd(CLIENT *clnt, int argc, char *argv[]);
 int trn_cli_update_ep_subcmd(CLIENT *clnt, int argc, char *argv[]);
-int trn_cli_delete_vpc_subcmd(CLIENT *clnt, int argc, char *argv[]);
-int trn_cli_delete_net_subcmd(CLIENT *clnt, int argc, char *argv[]);
 int trn_cli_delete_ep_subcmd(CLIENT *clnt, int argc, char *argv[]);
-int trn_cli_get_vpc_subcmd(CLIENT *clnt, int argc, char *argv[]);
-int trn_cli_get_net_subcmd(CLIENT *clnt, int argc, char *argv[]);
 int trn_cli_get_ep_subcmd(CLIENT *clnt, int argc, char *argv[]);
 int trn_cli_load_transit_subcmd(CLIENT *clnt, int argc, char *argv[]);
 int trn_cli_unload_transit_subcmd(CLIENT *clnt, int argc, char *argv[]);
 int trn_cli_load_agent_subcmd(CLIENT *clnt, int argc, char *argv[]);
 int trn_cli_unload_agent_subcmd(CLIENT *clnt, int argc, char *argv[]);
 
-int trn_cli_update_agent_ep_subcmd(CLIENT *clnt, int argc, char *argv[]);
-int trn_cli_update_agent_md_subcmd(CLIENT *clnt, int argc, char *argv[]);
-int trn_cli_get_agent_ep_subcmd(CLIENT *clnt, int argc, char *argv[]);
-int trn_cli_get_agent_md_subcmd(CLIENT *clnt, int argc, char *argv[]);
-int trn_cli_delete_agent_ep_subcmd(CLIENT *clnt, int argc, char *argv[]);
-int trn_cli_delete_agent_md_subcmd(CLIENT *clnt, int argc, char *argv[]);
-
 int trn_cli_load_pipeline_stage_subcmd(CLIENT *clnt, int argc, char *argv[]);
 int trn_cli_unload_pipeline_stage_subcmd(CLIENT *clnt, int argc, char *argv[]);
 
-void dump_vpc(struct rpc_trn_vpc_t *vpc);
-void dump_net(struct rpc_trn_network_t *net);
 void dump_ep(struct rpc_trn_endpoint_t *ep);
-void dump_port(struct rpc_trn_port_t *port);
-void dump_agent_md(struct rpc_trn_agent_metadata_t *agent_md);

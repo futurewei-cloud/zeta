@@ -54,10 +54,7 @@ struct ebpf_prog_stage_t {
 	int prog_fd;
 	struct bpf_object *obj;
 
-	int networks_map_ref_fd;
-	int vpc_map_ref_fd;
 	int endpoints_map_ref_fd;
-	int port_map_ref_fd;
 	int interface_config_map_ref_fd;
 	int hosted_endpoints_iface_map_ref_fd;
 	int interfaces_map_ref_fd;
@@ -67,10 +64,7 @@ struct ebpf_prog_stage_t {
 	int ep_flow_host_cache_ref_fd;
 	int ep_host_cache_ref_fd;
 
-	struct bpf_map *networks_map_ref;
-	struct bpf_map *vpc_map_ref;
 	struct bpf_map *endpoints_map_ref;
-	struct bpf_map *port_map_ref;
 	struct bpf_map *hosted_endpoints_iface_map_ref;
 	struct bpf_map *interface_config_map_ref;
 	struct bpf_map *interfaces_map_ref;
@@ -92,10 +86,7 @@ struct user_metadata_t {
 	int itf_idx[TRAN_MAX_ITF];
 
 	int jmp_table_fd;
-	int networks_map_fd;
-	int vpc_map_fd;
 	int endpoints_map_fd;
-	int port_map_fd;
 	int interface_config_map_fd;
 	int hosted_endpoints_iface_map_fd;
 	int interfaces_map_fd;
@@ -105,10 +96,7 @@ struct user_metadata_t {
 	int ep_host_cache_fd;
 
 	struct bpf_map *jmp_table_map;
-	struct bpf_map *networks_map;
-	struct bpf_map *vpc_map;
 	struct bpf_map *endpoints_map;
-	struct bpf_map *port_map;
 	struct bpf_map *hosted_endpoints_iface_map;
 	struct bpf_map *interface_config_map;
 	struct bpf_map *interfaces_map;
@@ -129,34 +117,14 @@ int trn_user_metadata_free(struct user_metadata_t *md);
 
 int trn_bpf_maps_init(struct user_metadata_t *md);
 
-int trn_update_network(struct user_metadata_t *md, struct network_key_t *netkey,
-		       struct network_t *net);
-
 int trn_update_endpoint(struct user_metadata_t *md,
 			struct endpoint_key_t *epkey, struct endpoint_t *ep);
-
-int trn_update_port(struct user_metadata_t *md, struct port_key_t *portkey,
-		    struct port_t *port);
-
-int trn_update_vpc(struct user_metadata_t *md, struct vpc_key_t *vpckey,
-		   struct vpc_t *vpc);
-
-int trn_get_network(struct user_metadata_t *md, struct network_key_t *netkey,
-		    struct network_t *net);
 
 int trn_get_endpoint(struct user_metadata_t *md, struct endpoint_key_t *epkey,
 		     struct endpoint_t *ep);
 
-int trn_get_vpc(struct user_metadata_t *md, struct vpc_key_t *vpckey,
-		struct vpc_t *vpc);
-
-int trn_delete_vpc(struct user_metadata_t *md, struct vpc_key_t *vpckey);
-
 int trn_delete_endpoint(struct user_metadata_t *md,
 			struct endpoint_key_t *epkey);
-
-int trn_delete_network(struct user_metadata_t *md,
-		       struct network_key_t *netkey);
 
 int trn_user_metadata_init(struct user_metadata_t *md, char *itf,
 			   char *kern_path, int xdp_flags);

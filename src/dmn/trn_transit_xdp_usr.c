@@ -90,11 +90,9 @@ int trn_user_metadata_free(struct user_metadata_t *md)
 int trn_bpf_maps_init(struct user_metadata_t *md)
 {
 	md->jmp_table_map = bpf_map__next(NULL, md->obj);
-	md->networks_map = bpf_map__next(md->jmp_table_map, md->obj);
-	md->vpc_map = bpf_map__next(md->networks_map, md->obj);
-	md->endpoints_map = bpf_map__next(md->vpc_map, md->obj);
-	md->port_map = bpf_map__next(md->endpoints_map, md->obj);
-	md->hosted_endpoints_iface_map = bpf_map__next(md->port_map, md->obj);
+	md->endpoints_map = bpf_map__next(md->jmp_table_map, md->obj);
+	md->hosted_endpoints_iface_map =
+		bpf_map__next(md->endpoints_map, md->obj);
 	md->interface_config_map =
 		bpf_map__next(md->hosted_endpoints_iface_map, md->obj);
 	md->interfaces_map = bpf_map__next(md->interface_config_map, md->obj);
@@ -104,8 +102,7 @@ int trn_bpf_maps_init(struct user_metadata_t *md)
 	md->ep_host_cache = bpf_map__next(md->ep_flow_host_cache, md->obj);
 	md->xdpcap_hook_map = bpf_map__next(md->ep_host_cache, md->obj);
 
-	if (!md->networks_map || !md->vpc_map || !md->endpoints_map ||
-	    !md->port_map || !md->hosted_endpoints_iface_map ||
+	if (!md->endpoints_map || !md->hosted_endpoints_iface_map ||
 	    !md->interface_config_map || !md->interfaces_map ||
 	    !md->fwd_flow_mod_cache || !md->rev_flow_mod_cache ||
 	    !md->ep_flow_host_cache || !md->ep_host_cache ||
@@ -115,10 +112,7 @@ int trn_bpf_maps_init(struct user_metadata_t *md)
 	}
 
 	md->jmp_table_fd = bpf_map__fd(md->jmp_table_map);
-	md->networks_map_fd = bpf_map__fd(md->networks_map);
-	md->vpc_map_fd = bpf_map__fd(md->vpc_map);
 	md->endpoints_map_fd = bpf_map__fd(md->endpoints_map);
-	md->port_map_fd = bpf_map__fd(md->port_map);
 	md->interface_config_map_fd = bpf_map__fd(md->interface_config_map);
 	md->hosted_endpoints_iface_map_fd =
 		bpf_map__fd(md->hosted_endpoints_iface_map);
@@ -214,29 +208,6 @@ int trn_update_endpoint(struct user_metadata_t *md,
 	return 0;
 }
 
-int trn_update_vpc(struct user_metadata_t *md, struct vpc_key_t *vpckey,
-		   struct vpc_t *vpc)
-{
-	int err = bpf_map_update_elem(md->vpc_map_fd, vpckey, vpc, 0);
-	if (err) {
-		TRN_LOG_ERROR("Store VPCs mapping failed (err:%d).", err);
-		return 1;
-	}
-	return 0;
-}
-
-int trn_get_network(struct user_metadata_t *md, struct network_key_t *netkey,
-		    struct network_t *net)
-{
-	netkey->prefixlen += 64; /* tunid size */
-	int err = bpf_map_lookup_elem(md->networks_map_fd, netkey, net);
-	if (err) {
-		TRN_LOG_ERROR("Querying network mapping failed (err:%d).", err);
-		return 1;
-	}
-	return 0;
-}
-
 int trn_get_endpoint(struct user_metadata_t *md, struct endpoint_key_t *epkey,
 		     struct endpoint_t *ep)
 {
@@ -307,10 +278,7 @@ int trn_add_prog(struct user_metadata_t *md, unsigned int prog_idx,
 		return 1;
 	}
 
-	_SET_INNER_MAP(networks_map);
-	_SET_INNER_MAP(vpc_map);
 	_SET_INNER_MAP(endpoints_map);
-	_SET_INNER_MAP(port_map);
 	_SET_INNER_MAP(hosted_endpoints_iface_map);
 	_SET_INNER_MAP(interface_config_map);
 	_SET_INNER_MAP(interfaces_map);
@@ -343,10 +311,7 @@ int trn_add_prog(struct user_metadata_t *md, unsigned int prog_idx,
 		goto error;
 	}
 
-	_UPDATE_INNER_MAP(networks_map);
-	_UPDATE_INNER_MAP(vpc_map);
 	_UPDATE_INNER_MAP(endpoints_map);
-	_UPDATE_INNER_MAP(port_map);
 	_UPDATE_INNER_MAP(hosted_endpoints_iface_map);
 	_UPDATE_INNER_MAP(interface_config_map);
 	_UPDATE_INNER_MAP(interfaces_map);
@@ -370,28 +335,6 @@ int trn_remove_prog(struct user_metadata_t *md, unsigned int prog_idx)
 		TRN_LOG_ERROR("Error add prog to trn jmp table (err:%d).", err);
 	}
 	bpf_object__close(md->ebpf_progs[prog_idx].obj);
-	return 0;
-}
-
-int trn_get_vpc(struct user_metadata_t *md, struct vpc_key_t *vpckey,
-		struct vpc_t *vpc)
-{
-	int err = bpf_map_lookup_elem(md->vpc_map_fd, vpckey, vpc);
-	if (err) {
-		TRN_LOG_ERROR("Querying vpc mapping failed (err:%d).", err);
-		return 1;
-	}
-	return 0;
-}
-
-int trn_delete_network(struct user_metadata_t *md, struct network_key_t *netkey)
-{
-	netkey->prefixlen += 64; /* tunid size */
-	int err = bpf_map_delete_elem(md->networks_map_fd, netkey);
-	if (err) {
-		TRN_LOG_ERROR("Deleting network mapping failed (err:%d).", err);
-		return 1;
-	}
 	return 0;
 }
 
@@ -419,16 +362,6 @@ int trn_delete_endpoint(struct user_metadata_t *md,
 		return 1;
 	}
 
-	return 0;
-}
-
-int trn_delete_vpc(struct user_metadata_t *md, struct vpc_key_t *vpckey)
-{
-	int err = bpf_map_delete_elem(md->vpc_map_fd, vpckey);
-	if (err) {
-		TRN_LOG_ERROR("Deleting vpc mapping failed (err:%d).", err);
-		return 1;
-	}
 	return 0;
 }
 

@@ -29,8 +29,6 @@
 #define __ALWAYS_INLINE__ __attribute__((__always_inline__))
 
 #define TRAN_MAX_NEP 65537
-#define TRAN_MAX_NSWITCH 32768
-#define TRAN_MAX_NROUTER 16384
 #define TRAN_MAX_REMOTES 256
 #define TRAN_MAX_ITF 256
 #define TRAN_UNUSED_ITF_IDX -1
@@ -58,16 +56,6 @@ enum trn_xdp_stage_t {
 	XDP_SCALED_EP_PROC
 };
 
-struct port_key_t {
-	__u32 tunip[3];
-	__u16 port;
-	__u8 protocol;
-} __attribute__((packed));
-
-struct port_t {
-	__u16 target_port;
-} __attribute__((packed, aligned(4)));
-
 struct endpoint_key_t {
 	__u32 tunip[3];
 } __attribute__((packed));
@@ -80,41 +68,10 @@ struct endpoint_t {
 	unsigned char mac[6];
 } __attribute__((packed, aligned(4)));
 
-struct network_key_t {
-	__u32 prefixlen; /* up to 32 for AF_INET, 128 for AF_INET6*/
-	__u32 nip[3];
-} __attribute__((packed));
-
-struct network_t {
-	__u32 prefixlen; /* up to 32 for AF_INET, 128 for AF_INET6 */
-	__u32 nip[3];
-	__u32 nswitches;
-	__u32 switches_ips[TRAN_MAX_NSWITCH];
-} __attribute__((packed, aligned(4)));
-
-struct vpc_key_t {
-	union {
-		__be64 tunnel_id;
-	};
-} __attribute__((packed));
-
-struct vpc_t {
-	__u32 nrouters;
-	__u32 routers_ips[TRAN_MAX_NROUTER];
-} __attribute__((packed, aligned(4)));
-
 struct tunnel_iface_t {
 	int iface_index;
 	__u32 ip;
 	unsigned char mac[6];
-} __attribute__((packed, aligned(4)));
-
-struct agent_metadata_t {
-	struct tunnel_iface_t eth;
-	struct network_key_t nkey;
-	struct network_t net;
-	struct endpoint_key_t epkey;
-	struct endpoint_t ep;
 } __attribute__((packed, aligned(4)));
 
 struct ipv4_tuple_t {
