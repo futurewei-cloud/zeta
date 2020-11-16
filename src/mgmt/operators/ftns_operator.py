@@ -42,3 +42,12 @@ class FtnOperator(ObjectOperator):
 
     def get_stored_obj(self, name, spec):
         return Ftn(name, self.obj_api, self.store, spec)
+
+    def create_n_ftns(self, chain):
+        for i in range(chain.size):
+            ftn_name = chain.name + '-ftn-' + str(i)
+            ftn = Ftn(ftn_name, self.obj_api, self.store)
+            ftn.parent_chain = chain.name
+            ftn.dft = chain.dft
+            ftn.create_obj()
+            chain.ftns.append(ftn.name)

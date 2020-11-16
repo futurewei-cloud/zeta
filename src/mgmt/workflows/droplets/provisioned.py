@@ -25,6 +25,6 @@ from operators.droplets_operator import *
 droplets_opr = DropletOperator()
 
 
-def droplet_provisioned(droplet, name, body, spec):
+def droplet_provisioned(task, droplet, name, body, spec):
     logger.info("Provisioned droplet {}!".format(name))
     return droplet

@@ -4,12 +4,10 @@
 # Authors: Phu Tran          <@phudtran>
 
 apiVersion: "zeta.com/v1"
-kind: Ftn
+kind: Fwd
 metadata:
-  name: ftn0
+  name: fwd0
 spec:
   dft: "dft0"
-  droplet: "d0"
-  parentchain: "c0"
-  augmentedchain: ""
+  droplet: "d1"
   status: "Init"

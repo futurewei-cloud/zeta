@@ -29,6 +29,11 @@ spec:
           items:
             type: string
   additionalPrinterColumns:
+    - name: Status
+      type: string
+      priority: 0
+      JSONPath: .spec.status
+      description: The Current Status of the Chain
     - name: Head
       type: string
       priority: 0
@@ -49,3 +54,13 @@ spec:
       priority: 0
       JSONPath: .spec.size
       description: The size of the chain
+    - name: CreateTime
+      type: string
+      priority: 0
+      JSONPath: .spec.createtime
+      description: Time the object is created
+    - name: ProvisionDelay
+      type: string
+      priority: 0
+      JSONPath: .spec.provisiondelay
+      description: Time to provision an object from creation

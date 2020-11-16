@@ -45,6 +45,7 @@ class DropletOperator(ObjectOperator):
         self.store = OprStore()
         config.load_incluster_config()
         self.obj_api = client.CustomObjectsApi()
+        self.allocated_droplets = set()
 
     def query_existing_droplets(self):
         def list_droplet_obj_fn(name, spec, plurals):
@@ -64,3 +65,26 @@ class DropletOperator(ObjectOperator):
             if self.store.store["Droplet"][d].ip == ip:
                 return self.store.store["Droplet"][d]
         return None
+
+    def assign_droplet(self, obj):
+        droplets = set(self.store.get_all_obj_type(
+            KIND.droplet)) - self.allocated_droplets
+        if len(droplets) == 0:
+            return False
+        d = random.sample(droplets, 1)[0]
+        obj.droplet = d
+        self.allocated_droplets.add(d)
+        logger.info("Assigned droplet {} to {}".format(d, obj.name))
+        return True
+
+    def unassign_droplet(self, obj):
+        if obj.droplet == "":
+            return False
+        self.allocated_droplets.remove(obj.droplet)
+        obj.droplet = ""
+        logger.info("Unassigned droplet {} from {}".format(d, obj.name))
+        return True
+
+    def get_unallocated_droplets(self):
+        return set(self.store.get_all_obj_type(
+            KIND.droplet)) - self.allocated_droplets

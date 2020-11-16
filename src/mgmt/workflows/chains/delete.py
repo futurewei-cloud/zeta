@@ -11,6 +11,6 @@ logger = logging.getLogger()
 chains_opr = ChainOperator()
 
 
-def chain_delete(chain, name, body, spec):
+def chain_delete(task, chain, name, body, spec):
     logger.info("Deleting Chain {}!".format(name))
     return chain

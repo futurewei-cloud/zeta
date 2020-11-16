@@ -21,6 +21,7 @@
 
 import logging
 import inspect
+from common.constants import KIND
 
 logger = logging.getLogger()
 
@@ -37,10 +38,11 @@ class OprStore(object):
     def _init(self, **kwargs):
         logger.info(kwargs)
         self.store = {}
-        self.store["Droplet"] = {}
-        self.store["Ftn"] = {}
-        self.store["Chain"] = {}
-        self.store["Dft"] = {}
+        self.store[KIND.droplet] = {}
+        self.store[KIND.fwd] = {}
+        self.store[KIND.ftn] = {}
+        self.store[KIND.chain] = {}
+        self.store[KIND.dft] = {}
 
     def update_obj(self, obj):
         if obj.kind in self.store:
@@ -68,11 +70,11 @@ class OprStore(object):
         else:
             logger.info("Unknown object type {}".format(kind))
 
-    def get_all_obj_typ(self, kind):
-        return self.store[kind].values()
+    def get_all_obj_type(self, kind):
+        return self.store[kind].keys()
 
     def contains_obj(self, name, kind):
-        if name in self.store[kind][name]:
+        if name in self.store[kind]:
             return True
         return False
 

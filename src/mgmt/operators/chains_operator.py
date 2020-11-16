@@ -5,12 +5,12 @@
 
 import logging
 import random
+from kubernetes import client, config
 from common.constants import *
 from common.common import *
 from common.object_operator import ObjectOperator
 from store.operator_store import OprStore
 from obj.chain import Chain
-from kubernetes import client, config
 
 logger = logging.getLogger()
 
@@ -42,3 +42,13 @@ class ChainOperator(ObjectOperator):
 
     def get_stored_obj(self, name, spec):
         return Chain(name, self.obj_api, self.store, spec)
+
+    def create_n_chains(self, dft):
+        for i in range(dft.numchains):
+            chain_name = dft.name + '-chain-' + str(i)
+            chain = Chain(chain_name, self.obj_api, self.store)
+            chain.dft = dft.name
+            chain.size = dft.numchainreplicas
+            chain.create_obj()
+            dft.maglev_table.add(chain.name)
+        dft.table = dft.maglev_table.table

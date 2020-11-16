@@ -9,6 +9,6 @@ from operators.ftns_operator import *
 ftns_opr = FtnOperator()
 
 
-def ftn_delete(ftn, name, body, spec):
+def ftn_delete(task, ftn, name, body, spec):
     logger.info("Deleting Ftn {}!".format(name))
     return ftn

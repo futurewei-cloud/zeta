@@ -8,6 +8,6 @@ from operators.dfts_operator import *
 dfts_opr = DftOperator()
 
 
-def dft_provisioned(dft, name, body, spec):
+def dft_provisioned(task, dft, name, body, spec):
     logger.info("Provisioned DFT {}!".format(name))
     return dft

@@ -11,16 +11,14 @@ from common.kube_obj import KubeObject
 logger = logging.getLogger()
 
 
-class Ftn(KubeObject):
+class Fwd(KubeObject):
 
     def __init__(self, name, obj_api, opr_store, spec=None):
         super().__init__(name, obj_api, opr_store, spec)
-        self.kind = "Ftn"
-        self.plural = "ftns"
+        self.kind = "Fwd"
+        self.plural = "fwds"
         self.dft = ""
         self.droplet = ""
-        self.parent_chain = ""
-        self.augmented_chain = ""
         if spec is not None:
             self.set_obj_spec(spec)
 
@@ -28,9 +26,7 @@ class Ftn(KubeObject):
         self.obj = {
             "status": self.status,
             "dft": self.dft,
-            "droplet": self.droplet,
-            "parentchain": self.parent_chain,
-            "augmentedchain": self.augmented_chain
+            "droplet": self.droplet
         }
 
         return self.obj
@@ -40,5 +36,3 @@ class Ftn(KubeObject):
         self.status = get_spec_val('status', spec)
         self.dft = get_spec_val('dft', spec)
         self.droplet = get_spec_val('droplet', spec)
-        self.parent_chain = get_spec_val('parentchain', spec)
-        self.augmented_chain = get_spec_val('augmentedchain', spec)

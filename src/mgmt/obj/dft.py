@@ -3,12 +3,10 @@
 
 # Authors: Phu Tran          <@phudtran>
 
-import logging
 import json
 from common.constants import *
 from common.common import *
 from common.kube_obj import KubeObject
-logger = logging.getLogger()
 
 
 class Dft(KubeObject):
@@ -17,6 +15,7 @@ class Dft(KubeObject):
         super().__init__(name, obj_api, opr_store, spec)
         self.kind = "Dft"
         self.plural = "dfts"
+        self.maglev_table = None
         self.table = []
         self.numchains = 0
         self.numchainreplicas = 0
