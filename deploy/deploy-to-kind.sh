@@ -89,7 +89,7 @@ fi
 
 source ${ROOT}/deploy/kind/create_droplets.sh $DOCKER_ACC $DROPLET_NODES
 
-docker image build -t $DOCKER_ACC/zetanode:latest -f ${ROOT}/deploy/kind/Dockerfile $ROOT
+docker image build -t $DOCKER_ACC/kindnode:latest -f ${ROOT}/deploy/kind/Dockerfile $ROOT
 source ${ROOT}/deploy/kind/create_cluster.sh $KINDCONF $USER $KUBE_NODES
 
 api_ip=`docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' kind-control-plane`
