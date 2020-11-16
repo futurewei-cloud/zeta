@@ -1,0 +1,29 @@
+#
+# SPDX-License-Identifier: MIT
+#
+# Copyright (c) 2020 The Authors.
+# Authors: Bin Liang  <@liangbin>
+#
+# Summary: Inventory file for local KIND site named "kind"
+#
+# Role based logical Groups of nodes
+[kube_master]
+localhost
+
+[kube_nodes]
+localhost
+
+[fwd]
+localhost
+
+[ftn]
+localhost
+
+[ovs]
+localhost
+
+# Base group for all EC2 instances
+# In format:
+#   10.155.136.200  ansible_host=10.155.136.200 region='us-west-1' instanceID='i234890879083453'
+[launched]
+localhost ansible_connection=local

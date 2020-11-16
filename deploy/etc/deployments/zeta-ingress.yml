@@ -1,0 +1,21 @@
+#
+# SPDX-License-Identifier: MIT
+#
+# Copyright (c) 2020 The Authors.
+# Authors: Bin Liang  <@liangbin>
+#
+# Summary: zeta-ingress definition
+#
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: zeta-ingress
+  annotations:
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /
+        backend:
+          serviceName: zeta-manager
+          servicePort: 5000

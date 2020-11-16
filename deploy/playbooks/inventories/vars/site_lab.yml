@@ -1,0 +1,14 @@
+---
+#
+# SPDX-License-Identifier: MIT
+#
+# Copyright (c) 2020 The Authors.
+# Authors: Bin Liang  <@liangbin>
+#
+# Summary: Site specific playbook variables for site named "lab"
+#
+ansible_port: 22
+ansible_user: "user"
+ansible_password: "{{VAULT_LAB_USER_PASSWORD}}"
+ansible_enable_password: "{{VAULT_LAB_ENABLE_PASSWORD}}"
+k8s_type: "microk8s"

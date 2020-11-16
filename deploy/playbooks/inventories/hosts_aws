@@ -1,0 +1,32 @@
+#
+# SPDX-License-Identifier: MIT
+#
+# Copyright (c) 2020 The Authors.
+# Authors: Bin Liang  <@liangbin>
+#
+# Summary: Inventory file for remote AWS EC2 site named "aws"
+# Note: Don't modify entries after [launched], they are add/deleted dynamically through deploy.sh 
+#
+# Role based logical Groups of nodes
+[kube_master]
+node-0
+
+[kube_nodes]
+node-[1:2]
+
+[fwd]
+node-[3:4]
+
+[ftn]
+node-[5:6]
+
+[ovs]
+node-[7:8]
+
+# Use aws for group_vars
+[aws:children]
+launched
+
+# Base group for all EC2 instances
+# In format:
+[launched]

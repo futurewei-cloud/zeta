@@ -1,0 +1,62 @@
+---
+#
+# SPDX-License-Identifier: MIT
+#
+# Copyright (c) 2020 The Authors.
+# Authors: Bin Liang  <@liangbin>
+#
+# Summary: Play to publish Zeta service images to correct registry for deployment
+#
+
+## ============== Play to Rebuild and tag zeta images for deployment ================================
+- name: "==== Rebuild and tag zeta images for deployment"
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: "Rebuild & tag"
+      shell: "../install/build_zeta_images.sh &>>{{DBG_LOG}}"
+      args: 
+        executable: /bin/bash
+      environment:
+        STAGE: "{{stage}}"
+        REG: "{{reg}}"
+      register: "output"
+    - debug: var=output.stdout_lines
+
+## ============== Play to Publish zeta images for deployment ================================
+- name: "==== Publish Zeta images to {{site}} registry {{reg}}"
+  hosts: kube_master
+  vars:
+    local_user: ubuntu
+  gather_facts: false
+  tasks:
+    - name: Transfer images to microk8s built-in registry
+      block:
+        - name: "Copy zeta service images to site {{site}}"
+          copy:
+            src: "/tmp/zeta_images.tar"
+            dest: "/tmp/zeta_images.tar"
+          register: "output"
+
+        - name: "Install zeta service images to site {{site}}"
+          shell: "docker load < /tmp/zeta_images.tar"
+          args: 
+            executable: /bin/bash
+          register: "output"
+        - debug: var=output.stdout_lines
+
+      when: k8s_type == "microk8s"
+
+    - name: "push zeta operator image to {{site}} registry {{reg}}"
+      shell: "docker push {{reg}}/zeta_opr:latest"
+      args: 
+        executable: /bin/bash
+      register: "output"
+    - debug: var=output.stdout_lines
+
+    - name: "push zeta manager image to registry {{reg}}"
+      shell: "docker push {{reg}}/zeta_manager:latest"
+      args: 
+        executable: /bin/bash
+      register: "output"
+    - debug: var=output.stdout_lines

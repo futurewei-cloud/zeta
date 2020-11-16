@@ -1,0 +1,20 @@
+#
+# SPDX-License-Identifier: MIT
+#
+# Copyright (c) 2020 The Authors.
+# Authors: Bin Liang  <@liangbin>
+#
+# Summary: zeta service definition
+#
+apiVersion: v1
+kind: Service
+metadata:
+  name: zeta-manager
+  labels:
+    service: zeta-manager
+spec:
+  selector:
+    app: zeta-manager
+  ports:
+  - port: 5000
+    targetPort: 5000

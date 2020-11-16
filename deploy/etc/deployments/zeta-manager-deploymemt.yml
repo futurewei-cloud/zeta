@@ -1,0 +1,55 @@
+#
+# SPDX-License-Identifier: MIT
+#
+# Copyright (c) 2020 The Authors.
+# Authors: Bin Liang  <@liangbin>
+#
+# Summary: zeta-manager deployment template
+#
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    name: zeta-manager
+  name: zeta-manager
+spec:
+  progressDeadlineSeconds: 2147483647
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zeta-manager
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: zeta-manager
+    spec:
+      containers:
+      - env:
+        - name: FLASK_ENV
+          value: development
+        - name: APP_SETTINGS
+          value: project.config.DevelopmentConfig
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              key: user
+              name: postgres-credentials
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: postgres-credentials
+        image: ${REGISTRY}/zeta_manager:latest
+        imagePullPolicy: Always
+        name: zeta-manager
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 3

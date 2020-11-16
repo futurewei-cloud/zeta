@@ -3,7 +3,8 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2020 The Authors.
 
-# Authors: Phu Tran          <@phudtran>
+# Authors: Sherif Abdelwahab <@zasherif>
+#          Phu Tran          <@phudtran>
 #          Bin Liang         <@liangbin>
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,11 +22,16 @@
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 # THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-# Get full path of current ROOT no matter where it's placed and invoked
-ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." >/dev/null 2>&1 && pwd )"
-USER=${1:-user}
-DOCKER_ACC=${2:-fwnetworking}
+# Get full path of current script no matter where it's placed and invoked
+MY_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+DEPLOYMENTS_PATH="$MY_PATH/../etc/deployments"
 
-docker image build -t $DOCKER_ACC/zetanode:latest -f ${ROOT}/deploy/k8s/Dockerfile $ROOT
+. $MY_PATH/common.sh
 
-source $ROOT/deploy/install/deploy_mgmt.sh $USER $DOCKER_ACC
+echo "Creating the zeta-operator deployment and pod..."
+
+REGISTRY="$REG" \
+envsubst '$REGISTRY' < $DEPLOYMENTS_PATH/zeta-operator.yml > $DEPLOYMENTS_PATH/.zeta-operator.yml
+# Delete existing deployment and deploy
+delete_pods zeta-operator deployment &>/dev/null || true
+kubectl apply -f $DEPLOYMENTS_PATH/.zeta-operator.yml

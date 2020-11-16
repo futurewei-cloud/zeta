@@ -22,46 +22,106 @@
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 # THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+
+# Enforce minimal KIND version to support using "kind" network with customized MTU instead of the "bridge" 
+kindver="$(kind version | head -n1 | cut -d" " -f2)"
+kindrequired="v0.8.0"
+if [ "$(printf '%s\n' "$kindrequired" "$kindver" | sort -V | head -n1)" != "$kindrequired" ]; then 
+    echo " --> Minimal KIND version is $kindrequired, running version is $kindver, Please upgrade before proceed!"
+    exit 1
+fi
+kind_network='kind'
+droplet_network="droplet_network"
+
 # Get full path of current ROOT no matter where it's placed and invoked
 ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." >/dev/null 2>&1 && pwd )"
+KINDCONF="${HOME}/.kube/config.kind"
+ZETACONF="${HOME}/.kube/zeta.config"
+KINDHOME="${HOME}/.kube/config"
 
-KINDCONF=${1:-"${ROOT}/build/tests/kind/config"}
-USER=${2:-dev}
-NODES=${3:-1}
-
-# create registry container unless it already exists
+STAGE=${1:-dev}
+KUBE_NODES=${2:-1}
+DROPLET_NODES=${3:-12}
 reg_name='local-kind-registry'
 reg_port='5000'
-reg_network='kind'
-running="$(docker inspect -f '{{.State.Running}}' "${reg_name}" 2>/dev/null || true)"
-reg_url=$reg_name
-kind_version=$(kind version)
-if [[ "${running}" != 'true' ]]; then
-  docker run \
-    -d --restart=always -p "${reg_port}:5000" --name "${reg_name}" \
-    registry:2
-fi
 
-case "${kind_version}" in
-  "kind v0.7."* | "kind v0.6."* | "kind v0.5."*)
-    reg_url="$(docker inspect -f '{{.NetworkSettings.IPAddress}}' "${reg_name}")"
-    reg_network='bridge'
-    ;;
-esac
+# Clean up cluster
+kind delete cluster
+docker network disconnect $kind_network $reg_name &>/dev/null
+docker network rm $kind_network &>/dev/null
+# Remove existing droplet containers and tenant network
+DROPLETS=$(docker ps -a --format "{{.Names}}" | grep zeta-droplet)
+docker network rm $droplet_network > /dev/null 2>&1
+echo "Deleting existing zeta-droplets containers"
+docker stop $DROPLETS > /dev/null 2>&1
+docker rm -f $DROPLETS > /dev/null 2>&1
+docker container prune -f > /dev/null 2>&1
+docker network prune -f > /dev/null 2>&1
+docker volume prune -f > /dev/null 2>&1
 
-if [[ $USER == "dev" ]]; then
+# All interfaces in the network have an MTU of 9000 to
+# simulate a real datacenter. Since all container traffic
+# goes through the docker bridge, we must ensure the bridge
+# interfaces also has the same MTU to prevent ip fragmentation.
+docker network create -d bridge \
+  --subnet=172.18.0.0/16 \
+  --gateway=172.18.0.1 \
+  --opt com.docker.network.driver.mtu=9000 \
+  $kind_network >/dev/null
+
+docker network create -d bridge \
+  --subnet=20.0.0.0/8 \
+  --gateway=20.0.0.1 \
+  --opt com.docker.network.driver.mtu=9000 \
+  $droplet_network >/dev/null
+
+# Attach local registry to kind_network
+if [[ "$STAGE" == "development" ]]; then
+
+  # create local registry container unless it already exists
+  running="$(docker inspect -f '{{.State.Running}}' ${reg_name})"
+  if [[ "${running}" != 'true' ]]; then
+      echo "Install local registry..."
+      docker run \
+          -d --restart=always -p "${reg_port}:5000" --name "${reg_name}" \
+          --network=$kind_network \
+          registry:2 >/dev/null
+  else
+      # Make sure the existing local registry is connected with KIND network 
+      docker network connect $kind_network $reg_name >/dev/null
+  fi
+
+  reg_ip="$(docker inspect -f '{{.NetworkSettings.Networks.kind.IPAddress}}' ${reg_name})"
   PATCH="containerdConfigPatches:
-- |-
-  [plugins.\"io.containerd.grpc.v1.cri\".registry.mirrors.\"localhost:${reg_port}\"]
-    endpoint = [\"http://${reg_url}:${reg_port}\"]"
-  REPO="localhost:5000"
+  - |-
+    [plugins.\"io.containerd.grpc.v1.cri\".registry.mirrors.\"localhost:${reg_port}\"]
+    endpoint = [\"http://${reg_name}:${reg_port}\"]"
+  REG="localhost:$reg_port"
+  echo "Deployment scenario: Development - Zeta images will be pulled from $REG"
 else
+  # Use container images in dockeker hub public registry
   PATCH=""
-  REPO="fwnetworking"
+  REG="fwnetworking"
+  echo "Deployment scenario: Production - Zeta images will be pulled from $REG"
 fi
+
+# Bring up droplets
+for ((i=1; i<=$DROPLET_NODES; i++));
+do
+    echo -e "Creating zeta-droplet-$i"
+    docker run -d \
+        --privileged \
+        --cap-add=NET_ADMIN \
+        --cap-add=SYS_PTRACE \
+        --security-opt seccomp=unconfined \
+        --pid=host \
+        --network=$droplet_network \
+        --name zeta-droplet-$i \
+        $REG/zeta-droplet:latest
+done
 
 NODE_TEMPLATE="  - role: worker
-    image: ${REPO}/kindnode:latest
+    image: ${REG}/zetanode:latest
 "
 FINAL_NODES=""
 
@@ -77,13 +137,42 @@ apiVersion: kind.x-k8s.io/v1alpha4
 ${PATCH}
 nodes:
   - role: control-plane
-    image: ${REPO}/kindnode:latest
+    image: ${REG}/zetanode:latest
+    kubeadmConfigPatches:
+    - |
+      kind: InitConfiguration
+      nodeRegistration:
+        kubeletExtraArgs:
+          node-labels: "ingress-ready=true"
+    extraPortMappings:
+    - containerPort: 80
+      hostPort: 8080
+      protocol: TCP
+    - containerPort: 443
+      hostPort: 443
+      protocol: TCP
+
 ${FINAL_NODES}
 EOF
 
-if [[ $reg_network == "kind" ]]; then
-  docker network connect $reg_network "${reg_name}"
+api_ip=`docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' kind-control-plane`
+sed "s/server: https:\/\/127.0.0.1:[[:digit:]]\+/server: https:\/\/$api_ip:6443/" $KINDCONF > $ZETACONF
+ln -snf $KINDCONF $KINDHOME
+
+if [[ $STAGE == "development" ]]; then
   for node in $(kind get nodes); do
-    kubectl annotate node "${node}" "kind.x-k8s.io/registry=localhost:${reg_port}";
+    kubectl annotate node "${node}" "kind.x-k8s.io/registry=${REG}" >/dev/null
   done
+  # Document the local registry
+  # https://github.com/kubernetes/enhancements/tree/master/keps/sig-cluster-lifecycle/generic/1755-communicating-a-local-registry
+  cat <<EOF | kubectl apply -f -
+  apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: local-registry-hosting
+    namespace: kube-public
+  data:
+    localRegistryHosting.v1: |
+      host: "localhost:${reg_port}"
+EOF
 fi

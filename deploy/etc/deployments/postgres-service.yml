@@ -1,0 +1,20 @@
+#
+# SPDX-License-Identifier: MIT
+#
+# Copyright (c) 2020 The Authors.
+# Authors: Bin Liang  <@liangbin>
+#
+# Summary: Postgres service definition
+#
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  labels:
+    service: postgres
+spec:
+  selector:
+    service: postgres
+  type: ClusterIP
+  ports:
+  - port: 5432

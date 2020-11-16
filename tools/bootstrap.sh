@@ -36,9 +36,9 @@ if [ "$kernel_ver" != "5.6.0-rc2" ]; then
 
 	read -p "Execute kernel update script (y/n)?" choice
 	case "$choice" in
-	  y|Y ) sh ./deploy/kernelupdate.sh;;
-	  n|N ) echo "Please run kernelupdate.sh to download and update the kernel!"; exit;;
-	  * ) echo "Please run kernelupdate.sh to download and update the kernel!"; exit;;
+	  y|Y ) sh ./tools/kernelupdate.sh;;
+	  n|N ) echo "Please run ./tools/kernelupdate.sh to download and update the kernel!"; exit;;
+	  * ) echo "Please run ./tools/kernelupdate.sh to download and update the kernel!"; exit;;
 	esac
 fi
 ver=$(curl -s https://api.github.com/repos/kubernetes-sigs/kind/releases/latest | grep -oP '"tag_name": "\K(.*)(?=")')

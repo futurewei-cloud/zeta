@@ -1,0 +1,31 @@
+#
+# SPDX-License-Identifier: MIT
+#
+# Copyright (c) 2020 The Authors.
+# Authors: Bin Liang  <@liangbin>
+#
+# Summary: Inventory file for site named "lab"
+#
+# Role based logical Groups of nodes
+[kube_master]
+node-0
+
+[kube_nodes]
+node-0
+
+[fwd]
+node-1
+
+[ftn]
+node-2
+
+[ovs]
+node-[3:4]
+
+# Physical node instances
+[launched]
+node-0 ansible_host=10.213.43.90 ansible_connection=ssh ansible_user=user ansible_password=Huawei@2018 ansible_enable_password=Huawei@2018
+node-1 ansible_host=10.213.43.91 ansible_connection=ssh ansible_user=user ansible_password=Huawei@2018 ansible_enable_password=Huawei@2018
+node-2 ansible_host=10.213.43.92 ansible_connection=ssh ansible_user=user ansible_password=Huawei@2018 ansible_enable_password=Huawei@2018
+node-3 ansible_host=10.213.43.93 ansible_connection=ssh ansible_user=user ansible_password=Huawei@2018 ansible_enable_password=Huawei@2018
+node-4 ansible_host=10.213.43.94 ansible_connection=ssh ansible_user=user ansible_password=Huawei@2018 ansible_enable_password=Huawei@2018

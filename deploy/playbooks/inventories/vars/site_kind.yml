@@ -1,0 +1,12 @@
+---
+#
+# SPDX-License-Identifier: MIT
+#
+# Copyright (c) 2020 The Authors.
+# Authors: Bin Liang  <@liangbin>
+#
+# Summary: Site specific playbook variables for local KIND site named "kind"
+#
+k8s_type: "kind"
+k8s_size: 2
+droplet_size: 3
