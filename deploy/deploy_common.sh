@@ -22,7 +22,7 @@ myloc=$(pwd)
 MY_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 if [[ ! -f $MY_PATH/playbooks/inventories/vars/.vault.yml ]]; then
-  echo -n " Can't find your vault, run $MY_PATH/env_setuo.sh as normal user first!"
+  echo -n " Can't find your vault, run $MY_PATH/env_setup.sh as normal user first!"
   exit 1
 fi
 

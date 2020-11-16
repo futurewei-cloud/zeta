@@ -61,7 +61,8 @@ if [[ "$K8S_TYPE" == "kind" ]]; then
 
     # Register droplet containers in KIND deployment
     ITF="eth1"
-    droplets=($(docker ps | grep 'zeta-droplet-' | awk {'print $10'}))
+    droplets=($(docker ps | grep -o 'zeta-droplet-[0-9]\+'))
+
     for droplet in "${droplets[@]}"
     do
         docker network connect kind $droplet
