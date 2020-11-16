@@ -23,8 +23,6 @@
 
 # Get full path of current ROOT no matter where it's placed and invoked
 ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." >/dev/null 2>&1 && pwd )"
-USER=${1:-user}
-DOCKER_ACC=${2:-fwnetworking}
 
 source $ROOT/deploy/install/create_crds.sh $ROOT
-source $ROOT/deploy/install/deploy_operator.sh $ROOT $USER $DOCKER_ACC
+source $ROOT/deploy/install/deploy_zeta_operator.sh

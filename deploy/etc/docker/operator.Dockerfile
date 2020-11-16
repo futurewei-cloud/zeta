@@ -24,4 +24,4 @@ COPY . /var/zeta/
 RUN pip3 install /var/zeta/deploy/
 RUN ln -snf /var/zeta/build/bin /trn_bin
 COPY deploy/etc/luigi.cfg /etc/luigi/luigi.cfg
-CMD kopf run --standalone /var/zeta/src/mgmt/operator.py
+CMD kopf run --standalone /var/zeta/src/mgmt/operator/operator.py

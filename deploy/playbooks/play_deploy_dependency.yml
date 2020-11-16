@@ -1,0 +1,31 @@
+---
+#
+# SPDX-License-Identifier: MIT
+#
+# Copyright (c) 2020 The Authors.
+# Authors: Bin Liang  <@liangbin>
+#
+# Summary: Play to deploy Zeta dependent services
+#
+## ============== Play to deploy 3rd party dependencies ================================
+- name: "==== Deploy Zeta dependenies to K8S cluster at {{ site }} site"
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: "KIND cluster block"
+      block:
+        - name: "Deploy Ingress-Nginx service"
+          shell: "../install/deploy_ingress_nginx.sh"
+          args: 
+            executable: /bin/bash
+          register: "output"
+        - debug: var=output.stdout_lines
+      when: site == "kind"     # End of kind block
+
+    - name: "Deploy PostgreSQL service"
+      shell: "../install/deploy_postgres.sh"
+      args: 
+        executable: /bin/bash
+      register: "output"
+    - debug: var=output.stdout_lines

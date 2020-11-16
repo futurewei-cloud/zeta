@@ -1,0 +1,74 @@
+---
+#
+# SPDX-License-Identifier: MIT
+#
+# Copyright (c) 2020 The Authors.
+# Authors: Bin Liang  <@liangbin>
+#
+# Summary: Play to create k8s cluster on target site
+#
+## ============== Play to Create K8S cluster for deployment ================================
+- name: "==== Provision all K8S cluster nodes at {{ site }} site"
+  hosts: kube_master:kube_nodes      # host in either groups
+  gather_facts: true
+  #vars_files:
+  #  - "inventories/vars/.vault.yml"
+  #  - "inventories/vars/site_{{site}}.yml"
+  vars:
+    host_user: "{{ lookup('env','USER') }}"
+    local_user: ubuntu
+  tasks:
+    - name: "Remote Microk8s cluster provisioning task block"
+      block:
+        - name: "make sure they have minimum RAM required"
+          fail: msg="not enough RAM"
+          when: ansible_memory_mb.real.total < 1900
+          
+        - name: "make sure the system encoding is utf-8"
+          become: yes
+          template:
+            src: templates/locale
+            dest: /etc/default/locale
+            owner: root
+            group: root
+            mode: 0644
+    
+        - include: tasks/apt.yml
+        - include: tasks/ubuntu.yml
+        - include: tasks/microk8s-all.yml
+    
+      when: site != "kind"    # End of non-kind block
+
+    - name: "Local KIND cluster provisioning task block"
+      block:
+        - name: "Repackage and publish zetanode image"
+          shell: "../install/publish_zeta_node.sh"
+          args: 
+            executable: /bin/bash
+          environment:
+            STAGE: "{{stage}}"
+            REG: "{{reg}}"
+          register: "output"
+        - debug: var=output.stdout_lines
+
+        - name: "Setting up Kind cluster"
+          shell: "../kind/create_cluster.sh {{stage}} {{kind_size}} &>> {{DBG_LOG}}"
+          args: 
+            executable: /bin/bash
+          environment:
+            STAGE: "{{stage}}"
+          register: "output"
+        - debug: var=output.stdout
+
+      when: site == "kind"     # End of kind block
+
+
+- name: "==== Provision K8S master nodes at {{ site }} site"
+  hosts: kube_master
+  vars:
+    local_user: ubuntu
+
+  tasks:
+    - include: tasks/microk8s-master.yml
+      when: site != "kind"   
+    

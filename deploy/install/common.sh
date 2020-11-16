@@ -5,6 +5,7 @@
 
 # Authors: Sherif Abdelwahab <@zasherif>
 #          Phu Tran          <@phudtran>
+#          Bin Liang         <@liangbin>
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal

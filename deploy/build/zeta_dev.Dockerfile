@@ -62,7 +62,7 @@ RUN    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 10 \
 	&& update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 10 \
 	&& update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 20
 
-RUN pip3 install httpserver netaddr grpcio grpcio-tools
+RUN pip3 install httpserver netaddr grpcio grpcio-tools flask
 
 ENV PATH=$PATH:/usr/local/share/openvswitch/scripts \
     LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib

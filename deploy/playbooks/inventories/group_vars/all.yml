@@ -1,0 +1,11 @@
+---
+#
+# SPDX-License-Identifier: MIT
+#
+# Copyright (c) 2020 The Authors.
+# Authors: Bin Liang  <@liangbin>
+#
+# Summary: Group specific playbook variables for Inventory group "all", which includes all hosts
+#
+microk8s_version: "{{ lookup('env','MICROK8S_VERSION') | default('1.18/stable', true) }}"
+enable_nginx: "{{ lookup('env','MICROK8S_ENABLE_NGINX') | default(true, true) }}"

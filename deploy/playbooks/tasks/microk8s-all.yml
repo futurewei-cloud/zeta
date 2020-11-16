@@ -1,0 +1,69 @@
+---
+#
+# SPDX-License-Identifier: MIT
+#
+# Copyright (c) 2020 The Authors.
+# Authors: Bin Liang  <@liangbin>
+#
+# Summary: Tasks for all microk8s nodes
+#
+# ----------------------------------------------------
+# Install microk8s snap
+# ----------------------------------------------------
+
+- name: "Install microk8s version {{microk8s_version}}"
+  become: yes
+  snap:
+    name: microk8s
+    classic: yes
+    channel: "{{ microk8s_version }}"
+
+- name: Add user 'ubuntu' to group microk8s
+  become: yes
+  command: usermod -a -G microk8s {{ local_user }}
+
+# ----------------------------------------------------
+# Install docker snap
+# ----------------------------------------------------
+
+- name: "Install docker"
+  become: yes
+  snap:
+    name: docker
+    classic: yes
+
+- name: Ensure group "docker" exists
+  become: yes
+  group:
+    name: docker
+    state: present
+
+- name: Add user 'ubuntu' to group docker
+  become: yes
+  command: usermod -a -G docker {{ local_user }}
+
+- name: Change docker socket permissions to allow non-root connection
+  become: yes
+  file:
+    path: /var/run/docker.sock
+    group: docker
+    mode: '0666'
+
+# reset_connection doesn't work within a condition block, manually kill ansible sessions
+# to make user group changes effective
+#- name: reset ssh connection to allow user changes to affect 'current login user'
+#  meta: reset_connection
+- name: Kill SSH
+  shell: sleep 1; pkill -u {{ ansible_ssh_user }} sshd
+  async: 3
+  poll: 2
+
+- name: Wait for microk8s to be ready
+  shell: "microk8s status --wait-ready"
+  changed_when: False
+
+- name: Set File Descriptor Limits for Microk8s
+  lineinfile:
+    dest: /var/snap/microk8s/current/args/containerd-env
+    line: "ulimit -n 65536"
+    state: present

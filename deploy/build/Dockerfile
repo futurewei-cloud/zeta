@@ -7,6 +7,8 @@
 
 FROM fwnetworking/zeta_dev:latest
 
+RUN pip3 install flask
+
 # Set container user to match host $USER to avoid messing up shared folders
 ARG USER_NAME
 ARG USER_ID

@@ -1,0 +1,43 @@
+---
+#
+# SPDX-License-Identifier: MIT
+#
+# Copyright (c) 2020 The Authors.
+# Authors: Bin Liang  <@liangbin>
+#
+# Summary: Play to deploy Zeta services on target k8s cluster
+#
+## ============== Play to deploy zeta services to target cluster ================================
+- name: "==== Deploy Zeta services"
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: "Deploy zeta-operator service"
+      shell: "../install/deploy_mgmt.sh &>>{{DBG_LOG}}"
+      args: 
+        executable: /bin/bash
+      environment:
+        STAGE: "{{stage}}"
+        REG: "{{reg}}"
+      register: "output"
+    - debug: var=output.stdout_lines
+
+    - name: "Deploy zeta-manager service"
+      shell: "../install/deploy_zeta_manager.sh &>>{{DBG_LOG}}"
+      args: 
+        executable: /bin/bash
+      environment:
+        STAGE: "{{stage}}"
+        REG: "{{reg}}"
+        K8S_TYPE: "{{k8s_type}}"
+      register: "output"
+    - debug: var=output.stdout_lines
+
+    - name: "Check Zeta deployment completion"
+      shell: "../install/deploy_wellcheck.sh"
+      args: 
+        executable: /bin/bash
+      register: "output"
+    - debug: var=output.stdout_lines
+    
