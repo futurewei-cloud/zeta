@@ -19,7 +19,7 @@
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 # THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-FROM fwnetworking/zeta_node:latest
+FROM fwnetworking/kindnode:latest
 COPY . /var/zeta/
 RUN pip3 install /var/zeta/deploy
 RUN ln -snf /var/zeta/build/bin /trn_bin

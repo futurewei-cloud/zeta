@@ -12,7 +12,7 @@ ARG USER_NAME
 ARG USER_ID
 ARG GROUP_ID
 
-RUN if [ $USER_ID -ne 0 ]; then addgroup --gid $GROUP_ID $USER_NAME && \
+RUN if [ $USER_ID -ne 0 ]; then (getent group $GROUP_ID || addgroup --gid $GROUP_ID $USER_NAME) && \
     adduser --disabled-password --gecos '' --uid $USER_ID --gid $GROUP_ID $USER_NAME; fi
 
 USER $USER_NAME

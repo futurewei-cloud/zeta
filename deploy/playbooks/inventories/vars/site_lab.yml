@@ -8,7 +8,7 @@
 # Summary: Site specific playbook variables for site named "lab"
 #
 ansible_port: 22
-ansible_user: "user"
+ansible_user: "{{VAULT_LAB_USER}}"
 ansible_password: "{{VAULT_LAB_USER_PASSWORD}}"
 ansible_enable_password: "{{VAULT_LAB_ENABLE_PASSWORD}}"
 k8s_type: "microk8s"

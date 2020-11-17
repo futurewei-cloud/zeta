@@ -96,13 +96,19 @@ if [[ "$STAGE" == "development" ]]; then
   - |-
     [plugins.\"io.containerd.grpc.v1.cri\".registry.mirrors.\"localhost:${reg_port}\"]
     endpoint = [\"http://${reg_name}:${reg_port}\"]"
-  REG="localhost:$reg_port"
-  echo "Deployment scenario: Development - Zeta images will be pulled from $REG"
 else
   # Use container images in dockeker hub public registry
   PATCH=""
-  REG="fwnetworking"
-  echo "Deployment scenario: Production - Zeta images will be pulled from $REG"
+fi
+
+if [[ ! -z "$STAGE" && "$STAGE" != "user" ]]; then
+  echo "Rebuild and publish zeta_node image to $REG..."
+  docker image build -t $REG/zeta_node:latest -f $ROOT/deploy/kind/Dockerfile $ROOT >/dev/null
+  docker image push $REG/zeta_node:latest >/dev/null
+
+  echo "Rebuild and publish zeta_droplet image to $REG..."
+  docker image build -t $REG/zeta_droplet:latest -f ${ROOT}/deploy/kind/droplet.Dockerfile $ROOT >/dev/null
+  docker image push $REG/zeta_droplet:latest >/dev/null
 fi
 
 # Bring up droplets
@@ -117,11 +123,11 @@ do
         --pid=host \
         --network=$droplet_network \
         --name zeta-droplet-$i \
-        $REG/zeta-droplet:latest
+        $REG/zeta_droplet:latest
 done
 
 NODE_TEMPLATE="  - role: worker
-    image: ${REG}/zetanode:latest
+    image: ${REG}/zeta_node:latest
 "
 FINAL_NODES=""
 
@@ -137,7 +143,7 @@ apiVersion: kind.x-k8s.io/v1alpha4
 ${PATCH}
 nodes:
   - role: control-plane
-    image: ${REG}/zetanode:latest
+    image: ${REG}/zeta_node:latest
     kubeadmConfigPatches:
     - |
       kind: InitConfiguration

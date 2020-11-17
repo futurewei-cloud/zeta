@@ -24,8 +24,8 @@ node-[3:4]
 
 # Physical node instances
 [launched]
-node-0 ansible_host=10.213.43.90 ansible_connection=ssh ansible_user=user ansible_password=CHANGEME ansible_enable_password=CHANGEME
-node-1 ansible_host=10.213.43.91 ansible_connection=ssh ansible_user=user ansible_password=CHANGEME ansible_enable_password=CHANGEME
-node-2 ansible_host=10.213.43.92 ansible_connection=ssh ansible_user=user ansible_password=CHANGEME ansible_enable_password=CHANGEME
-node-3 ansible_host=10.213.43.93 ansible_connection=ssh ansible_user=user ansible_password=CHANGEME ansible_enable_password=CHANGEME
-node-4 ansible_host=10.213.43.94 ansible_connection=ssh ansible_user=user ansible_password=CHANGEME ansible_enable_password=CHANGEME
+node-0 ansible_host=10.213.43.90
+node-1 ansible_host=10.213.43.91
+node-2 ansible_host=10.213.43.92
+node-3 ansible_host=10.213.43.93
+node-4 ansible_host=10.213.43.94

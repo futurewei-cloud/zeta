@@ -7,21 +7,20 @@
 #
 # Summary: Site specific playbook variables for site named "aws"
 #
-ansible_port: 22
-ansible_user: "ubuntu"
-ansible_ssh_private_key_file: "~/.ssh/Bin-ssh-keypair-testVM.pem"
-k8s_type: "microk8s"
 ec2_access_key: "{{ VAULT_AWS_ACCESS_KEY_ID }}"
 ec2_secret_key: "{{ VAULT_AWS_SECRET_ACCESS_KEY }}"
+ec2_keypair: "{{ VAULT_AWS_EC2_KEYPAIR }}"
+ansible_ssh_private_key_file: "{{ VAULT_AWS_EC2_KEY_FILE }}"
+
+ansible_port: 22
+ansible_user: "ubuntu"
+k8s_type: "microk8s"
 ec2_myid: "Bin"
 ec2_instance_count: "3"
 ec2_region: "us-west-1"
 ec2_instance_type: "t2.2xlarge"
 ec2_image: "ami-03fac5402e10ea93b"
-ec2_keypair: "Bin-ssh-keypair-testVM"
 ec2_volume_size: "10"
 ec2_security_group: "zeta"
 ec2_subnet_id: "subnet-0b16b023de31a5400"
-
-ec2_hosts_template: "aws_hosts.j2" 
 ec2_hosts: "inventories/hosts_aws"

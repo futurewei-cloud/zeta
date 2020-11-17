@@ -41,22 +41,13 @@
 
     - name: "Local KIND cluster provisioning task block"
       block:
-        - name: "Repackage and publish zetanode image"
-          shell: "../install/publish_zeta_node.sh"
-          args: 
-            executable: /bin/bash
-          environment:
-            STAGE: "{{stage}}"
-            REG: "{{reg}}"
-          register: "output"
-        - debug: var=output.stdout_lines
-
         - name: "Setting up Kind cluster"
           shell: "../kind/create_cluster.sh {{stage}} {{k8s_size}} {{droplet_size}} &>> {{DBG_LOG}}"
           args: 
             executable: /bin/bash
           environment:
             STAGE: "{{stage}}"
+            REG: "{{reg}}"
           register: "output"
         - debug: var=output.stdout
 
