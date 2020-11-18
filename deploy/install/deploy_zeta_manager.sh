@@ -16,8 +16,8 @@ DEPLOYMENTS_PATH="$MY_PATH/../etc/deployments"
 echo "Creating the zeta-manager deployment and service..."
 
 REGISTRY="$REG" \
-envsubst '$REGISTRY' < $DEPLOYMENTS_PATH/zeta-manager-deploymemt.yml > $DEPLOYMENTS_PATH/.zeta-manager-deploymemt.yml
-kubectl apply -f $DEPLOYMENTS_PATH/.zeta-manager-deploymemt.yml
+envsubst '$REGISTRY' < $DEPLOYMENTS_PATH/zeta-manager-deployment.yml > $DEPLOYMENTS_PATH/.zeta-manager-deployment.yml
+kubectl apply -f $DEPLOYMENTS_PATH/.zeta-manager-deployment.yml
 kubectl apply -f $DEPLOYMENTS_PATH/zeta-manager-service.yml
 kubectl wait --for=condition=ready pod -l app=zeta-manager --timeout=300s
 
