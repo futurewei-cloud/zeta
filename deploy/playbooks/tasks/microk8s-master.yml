@@ -1,0 +1,197 @@
+---
+#
+# SPDX-License-Identifier: MIT
+#
+# Copyright (c) 2020 The Authors.
+# Authors: Bin Liang  <@liangbin>
+#
+# Summary: Tasks for microk8s master nodes
+#
+
+# ----------------------------------------------------
+# Add External IP to API Server's client certificate
+# for kubectl remote access validation
+# ----------------------------------------------------
+
+- name: Check External IP is already included in the running certificate
+  shell: "cat /var/snap/microk8s/current/certs/csr.conf | grep '= {{ansible_host}}' | wc -l"
+  register: ip_included
+  changed_when: False
+
+- name: External IP not in API Server certificate - Get highest entry in the list of IPs (conf)
+  shell: "cat /var/snap/microk8s/current/certs/csr.conf | sed -nr 's/IP\\.([0-9]+).*/\\1/p' | sort | tail -n 1"
+  register: csr_output
+  when: ip_included.stdout_lines[0]|int == 0
+
+- name: Add IP entry
+  lineinfile:
+    path: /var/snap/microk8s/current/certs/csr.conf.template
+    insertafter: '#MOREIPS'
+    line: "IP.{{csr_output.stdout_lines[0]|int + 3}} = {{ansible_host}}"
+  when: ip_included.stdout_lines[0]|int == 0
+
+# ----------------------------------------------------
+# Configure MicroK8s to allow privileged containers
+# ----------------------------------------------------
+
+- name: External IP not in API Server certificate - Get highest entry in the list of IPs (conf)
+  shell: "echo '--allow-privileged=true' >> /var/snap/microk8s/current/args/kube-apiserver"
+
+# ----------------------------------------------------
+# Restart microk8s after certificate and config changes
+# ----------------------------------------------------
+
+- name: Restart microk8s (stop)
+  shell: "microk8s.stop"
+
+- name: Restart microk8s (start)
+  shell: "microk8s.start"
+  ignore_errors: True
+
+- name: Wait for microk8s to be ready after updating the CSR
+  shell: "microk8s status --wait-ready"
+  changed_when: False
+
+# ----------------------------------------------------
+# Download Kubeconfig and change local kubectl profile
+# ----------------------------------------------------
+
+- name: Write config to file
+  shell: >
+    microk8s.config > /home/{{local_user}}/.kube/conf &&
+    chmod 660 /home/{{local_user}}/.kube/conf
+
+- name: Write config to 2nd file (will contain the external IP of MetalLB)
+  shell: >
+    microk8s.config > /home/{{local_user}}/.kube/conf-with-external-ip &&
+    chmod 660 /home/{{local_user}}/.kube/conf-with-external-ip
+
+- name: Replace IP in config (to use the external IP of MetalLB)
+  replace:
+    path: "/home/{{local_user}}/.kube/conf-with-external-ip"
+    regexp: 'server: https://[0-9\\.]+:16443'
+    replace: "server: https://{{ansible_host}}:16443"
+
+- name: Download kubeconf
+  fetch:
+    src: /home/{{local_user}}/.kube/conf-with-external-ip
+    dest: "~/.kube/config.{{site}}"
+    flat: yes
+    fail_on_missing: yes
+
+- name: Change local kubectl profile to the new cluster
+  shell: "ln -snf ~/.kube/config.{{site}} ~/.kube/config"
+  delegate_to: localhost
+  ignore_errors: true
+
+# ----------------------------------------------------
+# Get microk8s status for services we want
+# ----------------------------------------------------
+- name: Get microk8s status
+  shell: "microk8s status"
+  changed_when: False
+  register: microk8s_status
+
+# ----------------------------------------------------
+# RBAC
+# ----------------------------------------------------
+
+- name: MicroK8S - Enable RBAC
+  shell: "microk8s enable rbac"
+  when: '"rbac: enabled" not in microk8s_status.stdout_lines'
+
+# ----------------------------------------------------
+# DNS
+# ----------------------------------------------------
+
+- name: MicroK8S - Enable DNS
+  shell: "microk8s enable dns"
+  when: '"dns: enabled" not in microk8s_status.stdout_lines'
+
+# ----------------------------------------------------
+# Hostpath Storage
+# ----------------------------------------------------
+
+- name: MicroK8S - Enable Storage
+  shell: "microk8s enable storage"
+  when: '"storage: enabled" not in microk8s_status.stdout_lines'
+
+# ----------------------------------------------------
+# Metrics-server
+# ----------------------------------------------------
+
+#- name: MicroK8S - Enable Metrics-server
+#  shell: "microk8s enable metrics-server"
+#  when: '"metrics-server: enabled" not in microk8s_status.stdout_lines'
+
+# ----------------------------------------------------
+# Dashboard
+# ----------------------------------------------------
+
+#- name: MicroK8S - Enable Dashboard
+#  shell: "microk8s enable dashboard"
+#  when: '"dashboard: enabled" not in microk8s_status.stdout_lines'
+
+# ----------------------------------------------------
+# Ingress
+# ----------------------------------------------------
+
+- name: MicroK8S - Enable Ingress
+  shell: "microk8s enable ingress"
+  when: '"ingress: enabled" not in microk8s_status.stdout_lines'
+
+# ----------------------------------------------------
+# Registry
+# ----------------------------------------------------
+
+- name: MicroK8S - Enable Registry
+  shell: "microk8s enable registry"
+  when: '"registry: enabled" not in microk8s_status.stdout_lines'
+
+# ----------------------------------------------------
+# MetalLB
+# ----------------------------------------------------
+
+- name: MetalLB set ip range
+  set_fact:
+    metallb_ip_begin: "{{hostvars[inventory_hostname].ansible_host}}"
+    metallb_ip_end: "{{hostvars[inventory_hostname].ansible_host}}"
+  when: '"metallb: enabled" not in microk8s_status.stdout_lines'
+
+- name: MetalLB IP range (debug)
+  debug:
+    msg: "{{metallb_ip_begin}} - {{metallb_ip_end}}"
+  when: '"metallb: enabled" not in microk8s_status.stdout_lines'
+
+- name: MetalLB - Enable MetalLB
+  shell: "microk8s enable metallb:{{metallb_ip_begin}}-{{metallb_ip_end}}"
+  when: '"metallb: enabled" not in microk8s_status.stdout_lines'
+
+# ----------------------------------------------------
+# Add Admin user for dashboard access
+# ----------------------------------------------------
+
+#- name: Copy manifests
+#  template:
+#    src: templates/manifests/admin-user.yml
+#    dest: "/home/{{ local_user }}/"
+#    mode: 0644
+
+#- name: Create admin user
+#  command: "microk8s.kubectl apply -f /home/{{ local_user }}/admin-user.yml"
+
+# - name: Configure dashboard service port
+#   become: yes
+#   command: "microk8s.kubectl patch service kubernetes-dashboard --namespace=kube-system --type='json' --patch='[{\"op\": \"replace\", \"path\": \"/spec/ports/0/nodePort\", \"value\":30000}]'"
+
+# - name: Get admin user ID
+#   command: microk8s.kubectl get secrets -n kube-system | grep microk8s-admin | awk '{print $1}'
+#   register: microk8s_admin_secret
+
+# - debug: var=kube_admin_secret
+
+# - name: Get access token
+#   command: "microk8s.kubectl describe secret { microk8s_admin_secret } -n kube-system | grep token: | awk '{print $2}'"
+#   register: microk8s_admin_token
+
+# - debug: var=microk8s_admin_token

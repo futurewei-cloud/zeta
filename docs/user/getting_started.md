@@ -30,7 +30,7 @@ TBD
 ## Build and Unit Testing
 1. Clone the Zeta repository:
     ```
-    git clone git@github.com:futurewei-cloud/zeta.git
+    git clone --recurse-submodules git@github.com:futurewei-cloud/zeta.git
     ```
 2. Enter the local repo:
     ```
@@ -63,7 +63,7 @@ If you are testing out Zeta with Kind, a script has been included to setup a loc
 Simply run the script below in the Zeta directory.
 
 ```
-$ ./deploy/deploy-to-kind.sh
+$ ./deploy/full_deploy.sh -d kind
 ```
 
 This script does the following:
@@ -72,10 +72,49 @@ This script does the following:
 * Build the Kind-Node, and Zeta-Operator docker images
 * Apply all of the Zeta [CRDs](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/).
 * Deploy the Zeta [Operators](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/).
+* You can customize kind cluster by modifying deploy/playbooks/inventories/vars/site_kind.yml
+* Note: First time you deploy, the tool will ask you to setup deploy secrets, follow instruction and press "enter" if you don't have the info asked.
+
+Once deployed, local kubeconfig is automatically updated for the new cluster, so you can use kubectl to manage the cluster
+If you made some changes to Zeta, you can re-deploy zeta services on the AWS cluster created in step 3, this will be much faster
+```
+$ ./deploy/zeta_deploy.sh -d kind
+```
+To remove the cluster and all resources:
+```
+$ ./deploy/full_deploy.sh -r kind
+```
+
+### Deploy to AWS EC2 cloud
+
+**Note**: Before proceeding with the setup script below, please make sure you have [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) installed and you have AWS credentials ready.
+
+1. Setup secret vault to keep AWS credentials local pand private:
+
+```
+$ ./deploy/env_setup.sh
+```
+
+2. Make necessary changes to the AWS cluster to be created for you in deploy/playbooks/inventories/vars/site_aws.yml
+3. Setup AWS K8S cluster and deploy Zeta
+
+```
+$ ./deploy/full_deploy.sh -d aws
+```
+4. Once deployed, local kubeconfig is automatically updated for the new cluster, so you can use kubectl to manage the cluster
+5. To remove the cluster and all resources:
+```
+$ ./deploy/full_deploy.sh -r aws
+```
+6. If you made some changes to Zeta, you can re-deploy zeta services on the AWS cluster created in step 3, this will be much faster
+```
+$ ./deploy/zeta_deploy.sh -d aws
+```
 
 ### Deploy to Remote K8S Cluster
 
 **Note**: Before proceeding with the setup script below, please make sure you have [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) installed and configured to access the remote K8S cluster.
+**Note**: Also, make sure postgres and ingress controller are enabled on remote K8S cluster.
 
 Validate your kubectl installations by running:
 ```
@@ -85,12 +124,12 @@ $ kubectl version --client
 Simply run the script below in the Zeta directory to deploy Zeta to the K8S cluster.
 
 ```
-$ ./deploy/deploy-to-k8s.sh
+$ ./deploy/zeta_deploy.sh -d aws
 ```
 
 ## Linux Kernel Update
 
 For TCP to function properly, you will need to update your Kernel version to at least 5.6-rc2 on every node. A script, ```kernelupdate.sh``` is provided in the Zeta repo to download and update your machine's kernel if you do not wish to build the kernel source code yourself.
 ```
-./deploy/kernelupdate.sh
+./tools/kernelupdate.sh
 ```

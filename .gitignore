@@ -1,3 +1,6 @@
+.*
+!.gitignore
+!.travis.yml
 \#*\#
 /build
 docsite/build/*

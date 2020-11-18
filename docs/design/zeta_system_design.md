@@ -1560,7 +1560,8 @@ External API definitions are based on phase I use cases and related system param
             "id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
             "name": "ZGC_test",
             "description": "ZGC 1",
-            "cidr": "192.168.0.0/28",
+            "ip_start": "192.168.0.1",
+            "ip_end": "192.168.0.11",
             "port_ibo": "8300",
             "overlay_type": "vxlan",
             "vpcs": []
@@ -1587,7 +1588,8 @@ External API definitions are based on phase I use cases and related system param
             "id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
             "name": "ZGC_test",
             "description": "ZGC 1",
-            "cidr": "192.168.0.0/28",
+            "ip_start": "192.168.0.1",
+            "ip_end": "192.168.0.11",
             "port_ibo": "8300",
             "overlay_type": "vxlan",
             "vpcs": [
@@ -1601,7 +1603,8 @@ External API definitions are based on phase I use cases and related system param
             "id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
             "name": "ZGC_test",
             "description": "ZGC 1",
-            "cidr": "192.168.0.0/28",
+            "ip_start": "192.168.0.1",
+            "ip_end": "192.168.0.11",
             "port_ibo": "8300",
             "overlay_type": "vxlan",
             "vpcs": [
@@ -1633,7 +1636,8 @@ External API definitions are based on phase I use cases and related system param
                 "zgc_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
                 "name": "ZGC_test1",
                 "description": "ZGC 1",
-                "cidr": "192.168.0.0/28",
+                "ip_start": "192.168.0.1",
+                "ip_end": "192.168.0.11",
                 "port_ibo": "8300",
                 "overlay_type": "vxlan",
                 "nodes": [
@@ -1641,7 +1645,7 @@ External API definitions are based on phase I use cases and related system param
                     "111d4fae-7dec-11d0-a765-00a0c9345999",
                     "111d4fae-7dec-11d0-a765-00a0c9345777"
                 ],
-                "projs": [
+                "vpcs": [
                     "3dda2801-d675-4688-a63f-dcda8d327f50",
                     "3ddffee1-cf55-7788-a63f-dcda8d582f45"
                 ]
@@ -1650,10 +1654,12 @@ External API definitions are based on phase I use cases and related system param
                 "zgc_id": "f81d4fae-7dec-11d0-a765-007198230934",
                 "name": "ZGC_test2",
                 "description": "ZGC 2",
-                "cidr": "192.168.1.0/28",
+                "ip_start": "192.168.1.1",
+                "ip_end": "192.168.1.11",
                 "port_ibo": "8300",
                 "overlay_type": "vxlan",
-                "projs": []
+                "nodes": [],
+                "vpcs": []
             }
         ]
     ```
@@ -1678,7 +1684,8 @@ External API definitions are based on phase I use cases and related system param
             "zgc_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
             "name": "ZGC_test1",
             "description": "ZGC 1",
-            "cidr": "192.168.0.0/28",
+            "ip_start": "192.168.0.1",
+            "ip_end": "192.168.0.11",
             "port_ibo": "8300",
             "overlay_type": "vxlan",
             "nodes": [
@@ -1770,13 +1777,31 @@ External API definitions are based on phase I use cases and related system param
         data:
         {
             "vpc_id": "3dda2801-d675-4688-a63f-dcda8d327f50",
-            "vni": "02ff01"
+            "vni": "12345"
         }
     Response:
         data:
         {
             "vpc_id": "3dda2801-d675-4688-a63f-dcda8d327f50",
-            "vni": "02ff01"
+            "vni": "12345",
+            "zgc_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
+            "name": "ZGC_test1",
+            "gws": 
+            [
+              {
+                "ip": "192.168.0.87",
+                "mac": "37.02.ff.cc.65.87"
+              },
+              {
+                "ip": "192.168.0.88",
+                "mac": "37.02.ff.cc.65.88"
+              },
+              {
+                "ip": "192.168.0.89",
+                "mac": "37.02.ff.cc.65.89"
+              }
+            ],
+            "port_ibo": "8300"
         }
     ```
 

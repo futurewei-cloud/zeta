@@ -1,0 +1,93 @@
+---
+#
+# SPDX-License-Identifier: MIT
+#
+# Copyright (c) 2020 The Authors.
+# Authors: Bin Liang  <@liangbin>
+#
+# Summary: Play to terminate and provision target site
+#
+## ============== Play to destroy existing site ================================
+- name: "==== Undeploy {{ site }} site"
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  #vars_files:
+  #  - "inventories/vars/.vault.yml"
+  #  - "inventories/vars/site_{{site}}.yml"
+  tasks:
+    - name: "Terminate EC2 site"
+      ec2:
+        aws_access_key: "{{ ec2_access_key }}"
+        aws_secret_key: "{{ ec2_secret_key }}"
+        state: "absent"
+        region: "{{ hostvars[item]['region'] }}"
+        instance_ids: "{{ hostvars[item]['instance_id'] }}"
+      loop: "{{groups['launched']}}"
+      when: site == "aws" 
+
+    - name: "Cleanup EC2 inventory"
+      lineinfile:
+        path: "inventories/hosts_{{ site }}"
+        regexp: "{{ hostvars[item]['instance_id'] }}"
+        state: absent
+      loop: "{{groups['launched']}}"
+      when: site == "aws" 
+
+    - name: "Terminate KIND site"
+      shell: "kind delete cluster"
+      args: 
+        executable: /bin/bash
+      when: site == "kind" 
+
+    - name: Wait 3s for site cleanning up
+      pause: seconds=3
+
+## ============== Play to provision site for deployment ================================
+- name: "==== Provision {{ site }} site"
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  #vars_files:
+  #  - "inventories/vars/.vault.yml"
+  #  - "inventories/vars/site_{{site}}.yml"
+  tasks:
+    - name: "AWS provisioning task block"
+      block:
+        - name: "Provision {{ ec2_instance_count }} instances"
+          ec2:
+            aws_access_key: "{{ ec2_access_key }}"
+            aws_secret_key: "{{ ec2_secret_key }}"
+            key_name: "{{ ec2_keypair }}"
+            group: "{{ ec2_security_group }}"
+            instance_type: "{{ ec2_instance_type }}"
+            image: "{{ ec2_image }}"
+            vpc_subnet_id: "{{ ec2_subnet_id }}"
+            region: "{{ ec2_region }}"
+            count: "{{ ec2_instance_count }}"
+            count_tag:
+              Name: "Zeta-Node-{{ ec2_myid }}"
+            assign_public_ip: yes
+            instance_tags:
+              Name: "Zeta-Node-{{ ec2_myid }}"
+            wait: true
+            volumes:
+              - device_name: /dev/sda1
+                volume_type: gp2
+                volume_size: "{{ ec2_volume_size }}"
+                delete_on_termination: true
+          register: ec2
+
+        - name: "Add all instances to {{ site }} inventory group"
+          lineinfile:
+            path: "inventories/hosts_{{ site }}"
+            insertafter: '\[launched\]'
+            line: "node-{{index}}  ansible_host='{{item.public_ip}}' private_ip='{{item.private_ip}}' region='{{item.region}}' instance_id='{{ item.id }}'"
+          loop: '{{ec2.instances}}'
+          loop_control:
+            index_var: index
+
+        - name: Wait for the instances to boot by checking the ssh port
+          wait_for: host={{item.public_ip}} port=22 delay=15 timeout=300 state=started
+          with_items: "{{ ec2.instances }}"
+      when: stage != "undeploy" and site == "aws"     # End of aws block

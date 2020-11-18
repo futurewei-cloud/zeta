@@ -1,7 +1,10 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2020 The Authors.
 
-# Authors: Phu Tran          <@phudtran>
+# Authors: Phu Tran <@phudtran>
+#          Bin Liang <@liangbin>
+#
+# Summary: Template zeta-opr deployment
 
 apiVersion: v1
 kind: ServiceAccount
@@ -42,7 +45,7 @@ spec:
       terminationGracePeriodSeconds: 0
       hostNetwork: true
       containers:
-        - image: localhost:5000/zeta_opr:latest
+        - image: ${REGISTRY}/zeta_opr:latest
           name: zeta-operator
           securityContext:
             privileged: true
