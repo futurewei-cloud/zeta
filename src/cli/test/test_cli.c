@@ -89,42 +89,6 @@ int *__wrap_unload_transit_xdp_1(rpc_trn_xdp_intf_t *itf, CLIENT *clnt)
 	return retval;
 }
 
-int *__wrap_load_transit_agent_xdp_1(rpc_trn_xdp_intf_t *itf, CLIENT *clnt)
-{
-	UNUSED(itf);
-	UNUSED(clnt);
-	int *retval = mock_ptr_type(int *);
-	function_called();
-	return retval;
-}
-
-int *__wrap_unload_transit_agent_xdp_1(rpc_trn_xdp_intf_t *itf, CLIENT *clnt)
-{
-	UNUSED(itf);
-	UNUSED(clnt);
-	int *retval = mock_ptr_type(int *);
-	function_called();
-	return retval;
-}
-
-int *__wrap_update_agent_ep_1(rpc_trn_endpoint_t *ep, CLIENT *clnt)
-{
-	check_expected_ptr(ep);
-	check_expected_ptr(clnt);
-	int *retval = mock_ptr_type(int *);
-	function_called();
-	return retval;
-}
-
-int *__wrap_update_agent_md_1(rpc_trn_agent_metadata_t *md, CLIENT *clnt)
-{
-	check_expected_ptr(md);
-	check_expected_ptr(clnt);
-	int *retval = mock_ptr_type(int *);
-	function_called();
-	return retval;
-}
-
 rpc_trn_vpc_t *__wrap_get_vpc_1(rpc_trn_vpc_key_t *argp, CLIENT *clnt)
 {
 	check_expected_ptr(argp);
@@ -152,26 +116,6 @@ rpc_trn_endpoint_t *__wrap_get_ep_1(rpc_trn_endpoint_key_t *argp, CLIENT *clnt)
 	return retval;
 }
 
-rpc_trn_endpoint_t *__wrap_get_agent_ep_1(rpc_trn_endpoint_key_t *argp,
-					  CLIENT *clnt)
-{
-	check_expected_ptr(argp);
-	check_expected_ptr(clnt);
-	rpc_trn_endpoint_t *retval = mock_ptr_type(rpc_trn_endpoint_t *);
-	function_called();
-	return retval;
-}
-
-rpc_trn_agent_metadata_t *__wrap_get_agent_md_1(rpc_intf_t *argp, CLIENT *clnt)
-{
-	check_expected_ptr(argp);
-	check_expected_ptr(clnt);
-	rpc_trn_agent_metadata_t *retval =
-		mock_ptr_type(rpc_trn_agent_metadata_t *);
-	function_called();
-	return retval;
-}
-
 int *__wrap_delete_vpc_1(rpc_trn_vpc_key_t *argp, CLIENT *clnt)
 {
 	check_expected_ptr(argp);
@@ -191,24 +135,6 @@ int *__wrap_delete_net_1(rpc_trn_network_key_t *argp, CLIENT *clnt)
 }
 
 int *__wrap_delete_ep_1(rpc_trn_endpoint_key_t *argp, CLIENT *clnt)
-{
-	check_expected_ptr(argp);
-	check_expected_ptr(clnt);
-	int *retval = mock_ptr_type(int *);
-	function_called();
-	return retval;
-}
-
-int *__wrap_delete_agent_ep_1(rpc_trn_endpoint_key_t *argp, CLIENT *clnt)
-{
-	check_expected_ptr(argp);
-	check_expected_ptr(clnt);
-	int *retval = mock_ptr_type(int *);
-	function_called();
-	return retval;
-}
-
-int *__wrap_delete_agent_md_1(rpc_intf_t *argp, CLIENT *clnt)
 {
 	check_expected_ptr(argp);
 	check_expected_ptr(clnt);
@@ -496,96 +422,6 @@ static void test_trn_cli_unload_transit_subcmd(void **state)
 	expect_function_call(__wrap_unload_transit_xdp_1);
 	will_return(__wrap_unload_transit_xdp_1, NULL);
 	rc = trn_cli_unload_transit_subcmd(NULL, argc, argv1);
-	assert_int_equal(rc, -EINVAL);
-}
-
-static void test_trn_cli_load_agent_subcmd(void **state)
-{
-	UNUSED(state);
-	int rc;
-	int argc = 5;
-	int load_agent_xdp_ret_val = 0;
-
-	/* Test cases */
-	char *argv1[] = { "load-agent-xdp", "-i", "eth0", "-j", QUOTE({
-				  "xdp_path": "/path/to/xdp/object/file",
-				  "pcapfile": "/path/to/bpf/pinned/map"
-			  }) };
-
-	char *argv2[] = { "load-agent-xdp", "-i", "eth0", "-j",
-			  QUOTE({ "pcapfile": "/path/to/bpf/pinned/map" }) };
-
-	char *argv3[] = { "load-agent-xdp", "-i", "eth0", "-j",
-			  QUOTE({ "xdp_path": "/path/to/xdp/object/file" }) };
-
-	/* Test call load_transit_xdp_1 successfully */
-	TEST_CASE("load_agent_xdp succeed with well formed input");
-	load_agent_xdp_ret_val = 0;
-	expect_function_call(__wrap_load_transit_agent_xdp_1);
-	will_return(__wrap_load_transit_agent_xdp_1, &load_agent_xdp_ret_val);
-	rc = trn_cli_load_agent_subcmd(NULL, argc, argv1);
-	assert_int_equal(rc, 0);
-
-	TEST_CASE("load_agent_xdp fails if path to object file is missing");
-	rc = trn_cli_load_agent_subcmd(NULL, argc, argv2);
-	assert_int_equal(rc, -EINVAL);
-
-	TEST_CASE("load_agent_xdp succeed even if pcap map is missing");
-	load_agent_xdp_ret_val = 0;
-	expect_function_call(__wrap_load_transit_agent_xdp_1);
-	will_return(__wrap_load_transit_agent_xdp_1, &load_agent_xdp_ret_val);
-	rc = trn_cli_load_agent_subcmd(NULL, argc, argv3);
-	assert_int_equal(rc, 0);
-
-	TEST_CASE("load_agent_xdp fails if rpc returns Error");
-	load_agent_xdp_ret_val = -EINVAL;
-	expect_function_call(__wrap_load_transit_agent_xdp_1);
-	will_return(__wrap_load_transit_agent_xdp_1, &load_agent_xdp_ret_val);
-	rc = trn_cli_load_agent_subcmd(NULL, argc, argv3);
-	assert_int_equal(rc, -EINVAL);
-
-	/* Test call load_transit_xdp return NULL*/
-	TEST_CASE("load_agent_xdp subcommand fails if rpc returns NULl");
-	expect_function_call(__wrap_load_transit_agent_xdp_1);
-	will_return(__wrap_load_transit_agent_xdp_1, NULL);
-	rc = trn_cli_load_agent_subcmd(NULL, argc, argv1);
-	assert_int_equal(rc, -EINVAL);
-}
-
-static void test_trn_cli_unload_agent_subcmd(void **state)
-{
-	UNUSED(state);
-	int rc;
-	int argc = 5;
-	int unload_transit_xdp_ret_val = 0;
-
-	/* Test cases */
-	char *argv1[] = { "unload-agent-xdp", "-i", "eth0", "-j", QUOTE({}) };
-
-	/* Test call unload_agent_xdp_1 successfully */
-	TEST_CASE("unload_agent_xdp succeed with well formed (empty) input");
-	unload_transit_xdp_ret_val = 0;
-	expect_function_call(__wrap_unload_transit_agent_xdp_1);
-	will_return(__wrap_unload_transit_agent_xdp_1,
-		    &unload_transit_xdp_ret_val);
-	rc = trn_cli_unload_agent_subcmd(NULL, argc, argv1);
-	assert_int_equal(rc, 0);
-
-	/* Test call unload_agent_xdp return error*/
-	TEST_CASE(
-		"unload_tagent_xdp subcommand fails if update_net_1 returns error");
-	unload_transit_xdp_ret_val = -EINVAL;
-	expect_function_call(__wrap_unload_transit_agent_xdp_1);
-	will_return(__wrap_unload_transit_agent_xdp_1,
-		    &unload_transit_xdp_ret_val);
-	rc = trn_cli_unload_agent_subcmd(NULL, argc, argv1);
-	assert_int_equal(rc, -EINVAL);
-
-	/* Test call unload_agent_xdp return NULL*/
-	TEST_CASE("unload_agent_xdp subcommand fails if rpc returns NULl");
-	expect_function_call(__wrap_unload_transit_agent_xdp_1);
-	will_return(__wrap_unload_transit_agent_xdp_1, NULL);
-	rc = trn_cli_unload_agent_subcmd(NULL, argc, argv1);
 	assert_int_equal(rc, -EINVAL);
 }
 

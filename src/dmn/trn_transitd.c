@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /**
- * @file trn_agent_xdp_usr.h
  * @author Sherif Abdelwahab (@zasherif)
  *
  * @brief Transit daemon
@@ -36,7 +35,6 @@
 
 #include "rpcgen/trn_rpc_protocol.h"
 #include "trn_transit_xdp_usr.h"
-#include "trn_agent_xdp_usr.h"
 #include "trn_log.h"
 #include "trn_transitd.h"
 

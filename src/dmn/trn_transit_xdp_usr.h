@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /**
- * @file trn_agent_xdp_usr.h
+ * @file trn_xdp_usr.h
  * @author Sherif Abdelwahab (@zasherif)
  *         Phu Tran          (@phudtran)
  *

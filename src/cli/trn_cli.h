@@ -61,8 +61,6 @@ int trn_cli_parse_xdp(const cJSON *jsonobj,
 		      struct rpc_trn_xdp_intf_t *xdp_intf);
 int trn_cli_parse_tun_intf(const cJSON *jsonobj,
 			   struct rpc_trn_tun_intf_t *itf);
-int trn_cli_parse_agent_md(const cJSON *jsonfile,
-			   struct rpc_trn_agent_metadata_t *agent_md);
 int trn_cli_parse_ebpf_prog(const cJSON *jsonobj, rpc_trn_ebpf_prog_t *prog);
 int trn_cli_parse_ebpf_prog_stage(const cJSON *jsonobj,
 				  rpc_trn_ebpf_prog_stage_t *stage);
@@ -72,8 +70,6 @@ int trn_cli_delete_ep_subcmd(CLIENT *clnt, int argc, char *argv[]);
 int trn_cli_get_ep_subcmd(CLIENT *clnt, int argc, char *argv[]);
 int trn_cli_load_transit_subcmd(CLIENT *clnt, int argc, char *argv[]);
 int trn_cli_unload_transit_subcmd(CLIENT *clnt, int argc, char *argv[]);
-int trn_cli_load_agent_subcmd(CLIENT *clnt, int argc, char *argv[]);
-int trn_cli_unload_agent_subcmd(CLIENT *clnt, int argc, char *argv[]);
 
 int trn_cli_load_pipeline_stage_subcmd(CLIENT *clnt, int argc, char *argv[]);
 int trn_cli_unload_pipeline_stage_subcmd(CLIENT *clnt, int argc, char *argv[]);

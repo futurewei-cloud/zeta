@@ -307,21 +307,6 @@ static void do_lo_xdp_unload(void)
 	assert_int_equal(*rc, 0);
 }
 
-static void do_veth_agent_load(void)
-{
-	rpc_trn_xdp_intf_t xdp_intf;
-	char itf[] = "veth";
-	char xdp_path[] = "/path/to/xdp/object/file";
-	char pcapfile[] = "/path/to/bpf/pinned/map";
-	xdp_intf.interface = itf;
-	xdp_intf.xdp_path = xdp_path;
-	xdp_intf.pcapfile = pcapfile;
-
-	int *rc;
-	rc = load_transit_agent_xdp_1_svc(&xdp_intf, NULL);
-	assert_int_equal(*rc, 0);
-}
-
 static void test_update_ep_1_svc(void **state)
 {
 	UNUSED(state);
@@ -508,7 +493,6 @@ static int groupSetup(void **state)
 	TRN_LOG_INIT("transitd_unit");
 	trn_itf_table_init();
 	do_lo_xdp_load();
-	do_veth_agent_load();
 	return 0;
 }
 
@@ -519,7 +503,6 @@ static int groupTeardown(void **state)
 {
 	UNUSED(state);
 	do_lo_xdp_unload();
-	do_veth_agent_unload();
 	trn_itf_table_free();
 	TRN_LOG_CLOSE();
 	return 0;

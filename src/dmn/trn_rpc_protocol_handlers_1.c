@@ -38,7 +38,6 @@
 
 #include "rpcgen/trn_rpc_protocol.h"
 #include "trn_transit_xdp_usr.h"
-#include "trn_agent_xdp_usr.h"
 #include "trn_log.h"
 #include "trn_transitd.h"
 
@@ -78,21 +77,6 @@ struct user_metadata_t *trn_itf_table_find(char *itf)
 }
 
 void trn_itf_table_delete(char *itf)
-{
-	INTF_DELETE();
-}
-
-int trn_vif_table_insert(char *itf, struct agent_user_metadata_t *md)
-{
-	INTF_INSERT();
-}
-
-struct agent_user_metadata_t *trn_vif_table_find(char *itf)
-{
-	INTF_FIND();
-}
-
-void trn_vif_table_delete(char *itf)
 {
 	INTF_DELETE();
 }

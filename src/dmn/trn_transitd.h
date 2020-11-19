@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /**
- * @file trn_agent_xdp_usr.h
  * @author Sherif Abdelwahab (@zasherif)
  *         Phu Tran          (@phudtran)
  *
@@ -27,7 +26,6 @@
 #include <search.h>
 
 #include "trn_transit_xdp_usr.h"
-#include "trn_agent_xdp_usr.h"
 
 #define INTF_INSERT()                                                                               \
 	do {                                                                                        \
@@ -91,6 +89,3 @@ void trn_itf_table_free();
 int trn_itf_table_insert(char *itf, struct user_metadata_t *md);
 struct user_metadata_t *trn_itf_table_find(char *itf);
 void trn_itf_table_delete(char *itf);
-int trn_vif_table_insert(char *itf, struct agent_user_metadata_t *md);
-struct agent_user_metadata_t *trn_vif_table_find(char *itf);
-void trn_vif_table_delete(char *itf);
