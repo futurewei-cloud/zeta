@@ -37,10 +37,10 @@ read -p " Enter your AWS Access Key ID: " -i "123" VAULT_AWS_ACCESS_KEY_ID
 read -p " Enter your AWS Secret Access Key: " -i "None" VAULT_AWS_SECRET_ACCESS_KEY
 read -p " Enter your AWS EC2 Keypair name: " -i "None" VAULT_AWS_EC2_KEYPAIR
 read -p " Enter your AWS EC2 key file with full path: " -i "None" VAULT_AWS_EC2_KEY_FILE
-read -p " Enter your local host sudo password: " -i "None" VAULT_LOCAL_ENABLE_PSWD
+read -p " Enter your local host sudo password: " -i "None" VAULT_LOCAL_BECOME_PASS
 read -p " Enter your Lab hosts user name: " -i "None" VAULT_LAB_USER
-read -p " Enter your Lab hosts user password: " -i "None" VAULT_LAB_USER_PASSWORD
-read -p " Enter your Lab hosts sudo password: " -i "None" VAULT_LAB_ENABLE_PASSWORD
+read -p " Enter your Lab hosts user password: " -i "None" VAULT_LAB_USER_PASS
+read -p " Enter your Lab hosts sudo password: " -i "None" VAULT_LAB_BECOME_PASS
 
 # Save vault password locally
 echo "${vaultPass}" > $ROOT/playbooks/inventories/vars/.vault_pass
@@ -52,10 +52,10 @@ VAULT_AWS_ACCESS_KEY_ID: \"$VAULT_AWS_ACCESS_KEY_ID\"
 VAULT_AWS_SECRET_ACCESS_KEY: \"$VAULT_AWS_SECRET_ACCESS_KEY\"
 VAULT_AWS_EC2_KEYPAIR: \"$VAULT_AWS_EC2_KEYPAIR\"
 VAULT_AWS_EC2_KEY_FILE: \"$VAULT_AWS_EC2_KEY_FILE\"
-VAULT_LOCAL_ENABLE_PSWD: \"$VAULT_LOCAL_ENABLE_PSWD\"
+VAULT_LOCAL_BECOME_PASS: \"$VAULT_LOCAL_BECOME_PASS\"
 VAULT_LAB_USER: \"$VAULT_LAB_USER\"
-VAULT_LAB_USER_PASSWORD: \"$VAULT_LAB_USER_PASSWORD\"
-VAULT_LAB_ENABLE_PASSWORD: \"$VAULT_LAB_ENABLE_PASSWORD\"
+VAULT_LAB_USER_PASS: \"$VAULT_LAB_USER_PASS\"
+VAULT_LAB_BECOME_PASS: \"$VAULT_LAB_BECOME_PASS\"
 " > $ROOT/playbooks/inventories/vars/.vault.yml
 ansible-vault encrypt $ROOT/playbooks/inventories/vars/.vault.yml --vault-password-file $ROOT/playbooks/inventories/vars/.vault_pass
 

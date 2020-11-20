@@ -34,17 +34,24 @@
 # Configure MicroK8s to allow privileged containers
 # ----------------------------------------------------
 
-- name: External IP not in API Server certificate - Get highest entry in the list of IPs (conf)
-  shell: "echo '--allow-privileged=true' >> /var/snap/microk8s/current/args/kube-apiserver"
+- name: Configure MicroK8s to allow privileged containers
+  become: yes
+  lineinfile:
+    path: /var/snap/microk8s/current/args/kube-apiserver
+    state: present
+    insertafter: EOF
+    line: --allow-privileged=true
 
 # ----------------------------------------------------
 # Restart microk8s after certificate and config changes
 # ----------------------------------------------------
 
 - name: Restart microk8s (stop)
+  become: yes
   shell: "microk8s.stop"
 
 - name: Restart microk8s (start)
+  become: yes
   shell: "microk8s.start"
   ignore_errors: True
 
@@ -113,6 +120,7 @@
 # ----------------------------------------------------
 
 - name: MicroK8S - Enable Storage
+  become: yes
   shell: "microk8s enable storage"
   when: '"storage: enabled" not in microk8s_status.stdout_lines'
 

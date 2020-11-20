@@ -11,16 +11,20 @@
 node-0
 
 [kube_nodes]
-node-0
+node-1
 
 [fwd]
-node-1
+node-2
 
 [ftn]
 node-2
 
 [ovs]
 node-[3:4]
+
+# Logic group to load group_vars for lab
+[lab:children]
+launched
 
 # Physical node instances
 [launched]
