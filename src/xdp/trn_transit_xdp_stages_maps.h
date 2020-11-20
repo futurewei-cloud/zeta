@@ -28,24 +28,6 @@
 
 /* Defines array of maps that carry the main transit XDP program maps accross tail calls */
 
-struct bpf_map_def SEC("maps") networks_map_ref = {
-	.type = BPF_MAP_TYPE_ARRAY_OF_MAPS,
-	.key_size = sizeof(int),
-	.value_size = sizeof(__u32),
-	.max_entries = 1,
-	.map_flags = 0,
-};
-BPF_ANNOTATE_KV_PAIR(networks_map_ref, int, __u32);
-
-struct bpf_map_def SEC("maps") vpc_map_ref = {
-	.type = BPF_MAP_TYPE_ARRAY_OF_MAPS,
-	.key_size = sizeof(int),
-	.value_size = sizeof(__u32),
-	.max_entries = 1,
-	.map_flags = 0,
-};
-BPF_ANNOTATE_KV_PAIR(vpc_map_ref, int, __u32);
-
 struct bpf_map_def SEC("maps") endpoints_map_ref = {
 	.type = BPF_MAP_TYPE_ARRAY_OF_MAPS,
 	.key_size = sizeof(int),
@@ -54,15 +36,6 @@ struct bpf_map_def SEC("maps") endpoints_map_ref = {
 	.map_flags = 0,
 };
 BPF_ANNOTATE_KV_PAIR(endpoints_map_ref, int, __u32);
-
-struct bpf_map_def SEC("maps") port_map_ref = {
-	.type = BPF_MAP_TYPE_ARRAY_OF_MAPS,
-	.key_size = sizeof(int),
-	.value_size = sizeof(__u32),
-	.max_entries = 1,
-	.map_flags = 0,
-};
-BPF_ANNOTATE_KV_PAIR(port_map_ref, int, __u32);
 
 struct bpf_map_def SEC("maps") hosted_endpoints_iface_map_ref = {
 	.type = BPF_MAP_TYPE_ARRAY_OF_MAPS,

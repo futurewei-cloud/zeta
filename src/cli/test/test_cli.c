@@ -44,24 +44,6 @@ int __wrap_setrlimit(int resource, const struct rlimit *rlim)
 	return 0;
 }
 
-int *__wrap_update_vpc_1(rpc_trn_vpc_t *vpc, CLIENT *clnt)
-{
-	check_expected_ptr(vpc);
-	check_expected_ptr(clnt);
-	int *retval = mock_ptr_type(int *);
-	function_called();
-	return retval;
-}
-
-int *__wrap_update_net_1(rpc_trn_network_t *net, CLIENT *clnt)
-{
-	check_expected_ptr(net);
-	check_expected_ptr(clnt);
-	int *retval = mock_ptr_type(int *);
-	function_called();
-	return retval;
-}
-
 int *__wrap_update_ep_1(rpc_trn_endpoint_t *ep, CLIENT *clnt)
 {
 	check_expected_ptr(ep);
@@ -89,47 +71,11 @@ int *__wrap_unload_transit_xdp_1(rpc_trn_xdp_intf_t *itf, CLIENT *clnt)
 	return retval;
 }
 
-rpc_trn_vpc_t *__wrap_get_vpc_1(rpc_trn_vpc_key_t *argp, CLIENT *clnt)
-{
-	check_expected_ptr(argp);
-	check_expected_ptr(clnt);
-	rpc_trn_vpc_t *retval = mock_ptr_type(rpc_trn_vpc_t *);
-	function_called();
-	return retval;
-}
-
-rpc_trn_network_t *__wrap_get_net_1(rpc_trn_network_key_t *argp, CLIENT *clnt)
-{
-	check_expected_ptr(argp);
-	check_expected_ptr(clnt);
-	rpc_trn_network_t *retval = mock_ptr_type(rpc_trn_network_t *);
-	function_called();
-	return retval;
-}
-
 rpc_trn_endpoint_t *__wrap_get_ep_1(rpc_trn_endpoint_key_t *argp, CLIENT *clnt)
 {
 	check_expected_ptr(argp);
 	check_expected_ptr(clnt);
 	rpc_trn_endpoint_t *retval = mock_ptr_type(rpc_trn_endpoint_t *);
-	function_called();
-	return retval;
-}
-
-int *__wrap_delete_vpc_1(rpc_trn_vpc_key_t *argp, CLIENT *clnt)
-{
-	check_expected_ptr(argp);
-	check_expected_ptr(clnt);
-	int *retval = mock_ptr_type(int *);
-	function_called();
-	return retval;
-}
-
-int *__wrap_delete_net_1(rpc_trn_network_key_t *argp, CLIENT *clnt)
-{
-	check_expected_ptr(argp);
-	check_expected_ptr(clnt);
-	int *retval = mock_ptr_type(int *);
 	function_called();
 	return retval;
 }

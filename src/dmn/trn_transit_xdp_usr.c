@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /**
- * @file trn_transit_xdp_usr.c
  * @author Sherif Abdelwahab (@zasherif)
  *         Phu Tran          (@phudtran)
  *
@@ -136,18 +135,6 @@ int trn_bpf_maps_init(struct user_metadata_t *md)
 	return 0;
 }
 
-int trn_update_network(struct user_metadata_t *md, struct network_key_t *netkey,
-		       struct network_t *net)
-{
-	netkey->prefixlen += 64; /* tunid size */
-	int err = bpf_map_update_elem(md->networks_map_fd, netkey, net, 0);
-	if (err) {
-		TRN_LOG_ERROR("Store network mapping failed (err:%d)", err);
-		return 1;
-	}
-	return 0;
-}
-
 static int get_unused_itf_index(struct user_metadata_t *md)
 {
 	// Simple search for an unused index for now
@@ -157,17 +144,6 @@ static int get_unused_itf_index(struct user_metadata_t *md)
 			return i;
 	}
 	return -1;
-}
-
-int trn_update_port(struct user_metadata_t *md, struct port_key_t *portkey,
-		    struct port_t *port)
-{
-	int err = bpf_map_update_elem(md->port_map_fd, portkey, port, 0);
-	if (err) {
-		TRN_LOG_ERROR("Store Port mapping failed (err:%d).", err);
-		return 1;
-	}
-	return 0;
 }
 
 int trn_update_endpoint(struct user_metadata_t *md,

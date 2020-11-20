@@ -30,10 +30,7 @@
 
 #include "trn_datamodel.h"
 
-#define MAX_NETS 16385
 #define MAX_EP 65537
-#define MAX_VPC 8192
-#define MAX_PORTS 65536
 
 struct bpf_map_def SEC("maps") jmp_table = {
 	.type = BPF_MAP_TYPE_PROG_ARRAY,
@@ -43,24 +40,6 @@ struct bpf_map_def SEC("maps") jmp_table = {
 };
 BPF_ANNOTATE_KV_PAIR(jmp_table, __u32, __u32);
 
-struct bpf_map_def SEC("maps") networks_map = {
-	.type = BPF_MAP_TYPE_LPM_TRIE,
-	.key_size = sizeof(struct network_key_t),
-	.value_size = sizeof(struct network_t),
-	.max_entries = MAX_NETS,
-	.map_flags = BPF_F_NO_PREALLOC,
-};
-BPF_ANNOTATE_KV_PAIR(networks_map, struct network_key_t, struct network_t);
-
-struct bpf_map_def SEC("maps") vpc_map = {
-	.type = BPF_MAP_TYPE_HASH,
-	.key_size = sizeof(struct vpc_key_t),
-	.value_size = sizeof(struct vpc_t),
-	.max_entries = MAX_VPC,
-	.map_flags = 0,
-};
-BPF_ANNOTATE_KV_PAIR(vpc_map, struct vpc_key_t, struct vpc_t);
-
 struct bpf_map_def SEC("maps") endpoints_map = {
 	.type = BPF_MAP_TYPE_HASH,
 	.key_size = sizeof(struct endpoint_key_t),
@@ -69,15 +48,6 @@ struct bpf_map_def SEC("maps") endpoints_map = {
 	.map_flags = 0,
 };
 BPF_ANNOTATE_KV_PAIR(endpoints_map, struct endpoint_key_t, struct endpoint_t);
-
-struct bpf_map_def SEC("maps") port_map = {
-	.type = BPF_MAP_TYPE_HASH,
-	.key_size = sizeof(struct port_key_t),
-	.value_size = sizeof(struct port_t),
-	.max_entries = MAX_PORTS,
-	.map_flags = 0,
-};
-BPF_ANNOTATE_KV_PAIR(port_map, struct port_key_t, struct port_t);
 
 struct bpf_map_def SEC("maps") hosted_endpoints_iface_map = {
 	.type = BPF_MAP_TYPE_HASH,

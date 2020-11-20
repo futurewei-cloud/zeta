@@ -55,24 +55,8 @@ int _transit_redirect_proc(struct xdp_md *ctx)
 	bpf_debug("[Transit:%d:] redirect processing\n", __LINE__);
 	int map_idx = 0;
 
-	void *networks_map, *vpc_map, *endpoints_map, *port_map,
-		*hosted_endpoints_iface_map, *interface_config_map,
+	void *endpoints_map, *hosted_endpoints_iface_map, *interface_config_map,
 		*interfaces_map;
-
-	networks_map = bpf_map_lookup_elem(&networks_map_ref, &map_idx);
-	if (!networks_map) {
-		bpf_debug("[Transit:%d:] failed to find networks_map\n",
-			  __LINE__);
-		return XDP_ABORTED;
-	}
-	bpf_debug("[Transit:%d:] found networks_map\n", __LINE__);
-
-	vpc_map = bpf_map_lookup_elem(&vpc_map_ref, &map_idx);
-	if (!vpc_map) {
-		bpf_debug("[Transit:%d:] failed to find vpc_map\n", __LINE__);
-		return XDP_ABORTED;
-	}
-	bpf_debug("[Transit:%d:] found vpc_map\n", __LINE__);
 
 	endpoints_map = bpf_map_lookup_elem(&endpoints_map_ref, &map_idx);
 	if (!endpoints_map) {
@@ -81,13 +65,6 @@ int _transit_redirect_proc(struct xdp_md *ctx)
 		return XDP_ABORTED;
 	}
 	bpf_debug("[Transit:%d:] found endpoints_map\n", __LINE__);
-
-	port_map = bpf_map_lookup_elem(&port_map_ref, &map_idx);
-	if (!port_map) {
-		bpf_debug("[Transit:%d:] failed to find port_map\n", __LINE__);
-		return XDP_ABORTED;
-	}
-	bpf_debug("[Transit:%d:] found port_map\n", __LINE__);
 
 	hosted_endpoints_iface_map =
 		bpf_map_lookup_elem(&hosted_endpoints_iface_map_ref, &map_idx);

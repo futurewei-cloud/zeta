@@ -394,26 +394,17 @@ static void test_get_ep_1_svc(void **state)
 	/* Test get_ep with valid ep_key */
 	struct rpc_trn_endpoint_t *retval;
 	will_return(__wrap_bpf_map_lookup_elem, &ep_val);
-	will_return(__wrap_bpf_map_lookup_elem, NULL);
-	will_return(__wrap_bpf_map_lookup_elem, NULL);
-	will_return(__wrap_bpf_map_lookup_elem, NULL);
 	expect_function_call(__wrap_bpf_map_lookup_elem);
 	retval = get_ep_1_svc(&ep_key1, NULL);
 	assert_true(check_ep_equal(retval, &ep1));
 
 	/* Test get_ep substrate with valid ep_key */
 	will_return(__wrap_bpf_map_lookup_elem, &ep_val2);
-	will_return(__wrap_bpf_map_lookup_elem, NULL);
-	will_return(__wrap_bpf_map_lookup_elem, NULL);
-	will_return(__wrap_bpf_map_lookup_elem, NULL);
 	expect_function_call(__wrap_bpf_map_lookup_elem);
 	retval = get_ep_1_svc(&ep_key2, NULL);
 	assert_true(check_ep_equal(retval, &ep2));
 
 	/* Test get_ep with bad return code from bpf_lookup */
-	will_return(__wrap_bpf_map_lookup_elem, NULL);
-	will_return(__wrap_bpf_map_lookup_elem, NULL);
-	will_return(__wrap_bpf_map_lookup_elem, NULL);
 	will_return(__wrap_bpf_map_lookup_elem, NULL);
 	expect_function_call(__wrap_bpf_map_lookup_elem);
 	retval = get_ep_1_svc(&ep_key1, NULL);
@@ -422,9 +413,6 @@ static void test_get_ep_1_svc(void **state)
 	/* Test get_ep with invalid interface index*/
 	ep_val.hosted_iface = 2;
 	will_return(__wrap_bpf_map_lookup_elem, &ep_val);
-	will_return(__wrap_bpf_map_lookup_elem, NULL);
-	will_return(__wrap_bpf_map_lookup_elem, NULL);
-	will_return(__wrap_bpf_map_lookup_elem, NULL);
 	expect_function_call(__wrap_bpf_map_lookup_elem);
 	retval = get_ep_1_svc(&ep_key1, NULL);
 	assert_false(check_ep_equal(retval, &ep1));
@@ -458,9 +446,6 @@ static void test_delete_ep_1_svc(void **state)
 
 	/* Test delete_ep_1 with valid ep_key */
 	will_return(__wrap_bpf_map_lookup_elem, &ep_val);
-	will_return(__wrap_bpf_map_lookup_elem, NULL);
-	will_return(__wrap_bpf_map_lookup_elem, NULL);
-	will_return(__wrap_bpf_map_lookup_elem, NULL);
 	will_return(__wrap_bpf_map_delete_elem, TRUE);
 	expect_function_call(__wrap_bpf_map_lookup_elem);
 	expect_function_call(__wrap_bpf_map_delete_elem);
@@ -469,9 +454,6 @@ static void test_delete_ep_1_svc(void **state)
 
 	/* Test delete_ep_1 with invalid ep_key */
 	will_return(__wrap_bpf_map_lookup_elem, &ep_val);
-	will_return(__wrap_bpf_map_lookup_elem, NULL);
-	will_return(__wrap_bpf_map_lookup_elem, NULL);
-	will_return(__wrap_bpf_map_lookup_elem, NULL);
 	will_return(__wrap_bpf_map_delete_elem, FALSE);
 	expect_function_call(__wrap_bpf_map_lookup_elem);
 	expect_function_call(__wrap_bpf_map_delete_elem);
