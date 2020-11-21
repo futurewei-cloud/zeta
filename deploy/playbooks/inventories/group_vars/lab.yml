@@ -7,3 +7,8 @@
 #
 # Summary: Group specific playbook variables for Inventory group named "lab"
 #
+ansible_port: 22
+ansible_user: "{{VAULT_LAB_USER}}"
+ansible_ssh_user: "{{VAULT_LAB_USER}}"
+ansible_ssh_pass: "{{VAULT_LAB_USER_PASS}}"
+ansible_become_pass: "{{VAULT_LAB_BECOME_PASS}}"

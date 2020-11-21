@@ -14,9 +14,23 @@
 # $ sudo update-grub
 - name: disable serial port 1/2
   become: yes
-  command: sed -i 's/ console=ttyS0//g' /etc/default/grub.d/50-cloudimg-settings.cfg
+  shell: >
+    if [ -f /etc/default/grub.d/50-cloudimg-settings.cfg ]; then sed -i 's/ console=ttyS0//g' /etc/default/grub.d/50-cloudimg-settings.cfg; fi
+  args:
+    executable: /bin/bash
 
 - name: disable serial port 2/2
   become: yes
-  command: update-grub
+  shell: >
+    if [ -f /etc/default/grub.d/50-cloudimg-settings.cfg ]; then update-grub; fi
+  args:
+    executable: /bin/bash
 
+# Fixing cluster DNS issue on current Ubuntu host (> 18.04), see https://github.com/kubernetes/kubeadm/issues/787
+- name: Adjust systemd-resolved for cluster DNS
+  become: yes
+  shell: >
+    rm /etc/resolv.conf; ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf
+  args:
+    executable: /bin/bash
+  when: site != "aws"

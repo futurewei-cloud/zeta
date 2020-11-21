@@ -28,5 +28,5 @@ docker image build -t $REG/zeta_manager:latest \
 
 if [[ "$REG" == "localhost:32000" ]]; then
     echo "Archiving Zeta service images..."
-    docker save $REG/zeta_opr:latest $REG/zeta_manager:latest -o /tmp/zeta_images.tar
+    docker save $REG/zeta_opr:latest $REG/zeta_manager:latest > /tmp/zeta_images.tar
 fi

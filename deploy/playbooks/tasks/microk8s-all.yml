@@ -18,7 +18,7 @@
     classic: yes
     channel: "{{ microk8s_version }}"
 
-- name: Add user 'ubuntu' to group microk8s
+- name: Add local user to group microk8s
   become: yes
   command: usermod -a -G microk8s {{ local_user }}
 
@@ -38,7 +38,7 @@
     name: docker
     state: present
 
-- name: Add user 'ubuntu' to group docker
+- name: Add local user to group docker
   become: yes
   command: usermod -a -G docker {{ local_user }}
 
@@ -48,6 +48,15 @@
     path: /var/run/docker.sock
     group: docker
     mode: '0666'
+
+- name: add /snap/bin to PATH
+  become: yes
+  lineinfile: >
+    dest=/etc/environment
+    state=present
+    backrefs=yes
+    regexp='PATH=(["]*)((?!.*?/snap/bin).*?)(["]*)$'
+    line="PATH=\1\2:/snap/bin\3"
 
 # reset_connection doesn't work within a condition block, manually kill ansible sessions
 # to make user group changes effective
@@ -59,7 +68,9 @@
   poll: 2
 
 - name: Wait for microk8s to be ready
-  shell: "microk8s status --wait-ready"
+  shell: "/snap/bin/microk8s status --wait-ready"
+  args:
+    executable: /bin/bash
   changed_when: False
 
 - name: Set File Descriptor Limits for Microk8s

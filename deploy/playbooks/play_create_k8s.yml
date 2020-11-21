@@ -15,8 +15,7 @@
   #  - "inventories/vars/.vault.yml"
   #  - "inventories/vars/site_{{site}}.yml"
   vars:
-    host_user: "{{ lookup('env','USER') }}"
-    local_user: ubuntu
+    local_user: "{{ansible_user}}"
   tasks:
     - name: "Remote Microk8s cluster provisioning task block"
       block:
@@ -57,7 +56,7 @@
 - name: "==== Provision K8S master nodes at {{ site }} site"
   hosts: kube_master
   vars:
-    local_user: ubuntu
+    local_user: "{{ansible_user}}"
 
   tasks:
     - include: tasks/microk8s-master.yml
