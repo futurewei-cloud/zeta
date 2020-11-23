@@ -14,22 +14,24 @@ POSTGRES_SERVICE_PORT = os.environ.get('POSTGRES_SERVICE_PORT')
 
 DATABASE_URL = f'postgres://{POSTGRES_USER}:{POSTGRES_PASSWORD}@postgres:{POSTGRES_SERVICE_PORT}/zeta'
 
+
 class BaseConfig:
     """Base configuration"""
     STAGE = 'production'
     DEBUG = False
     TESTING = False
-    SECRET_KEY="98d0s809SD990AS)(dS&A&*d78(*&ASD08A"
+    SECRET_KEY = "98d0s809SD990AS)(dS&A&*d78(*&ASD08A"
     SQLALCHEMY_ECHO = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_DATABASE_URI = DATABASE_URL
 
+
 class DevelopmentConfig(BaseConfig):
     """Development configuration"""
-    STAGE="development"
+    STAGE = "development"
     DEBUG = True
 
 
 class ProductionConfig(BaseConfig):
     """Production configuration"""
-    SECRET_KEY = os.environ.get('SECRET_KEY')    
+    SECRET_KEY = os.environ.get('SECRET_KEY')

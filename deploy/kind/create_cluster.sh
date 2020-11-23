@@ -31,7 +31,8 @@ if [ "$(printf '%s\n' "$kindrequired" "$kindver" | sort -V | head -n1)" != "$kin
     exit 1
 fi
 kind_network='kind'
-droplet_network="droplet_network"
+zgc_network="zgc_network"
+tenant_network="tenant_network"
 
 # Get full path of current ROOT no matter where it's placed and invoked
 ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." >/dev/null 2>&1 && pwd )"
@@ -51,7 +52,8 @@ docker network disconnect $kind_network $reg_name &>/dev/null
 docker network rm $kind_network &>/dev/null
 # Remove existing droplet containers and tenant network
 DROPLETS=$(docker ps -a --format "{{.Names}}" | grep zeta-droplet)
-docker network rm $droplet_network > /dev/null 2>&1
+docker network rm $zgc_network > /dev/null 2>&1
+docker network rm $tenant_network > /dev/null 2>&1
 echo "Deleting existing zeta-droplets containers"
 docker stop $DROPLETS > /dev/null 2>&1
 docker rm -f $DROPLETS > /dev/null 2>&1
@@ -70,10 +72,16 @@ docker network create -d bridge \
   $kind_network >/dev/null
 
 docker network create -d bridge \
+  --subnet=10.0.0.0/24 \
+  --gateway=10.0.0.1 \
+  --opt com.docker.network.driver.mtu=9000 \
+  $zgc_network >/dev/null
+
+docker network create -d bridge \
   --subnet=20.0.0.0/8 \
   --gateway=20.0.0.1 \
   --opt com.docker.network.driver.mtu=9000 \
-  $droplet_network >/dev/null
+  $tenant_network >/dev/null
 
 # Attach local registry to kind_network
 if [[ "$STAGE" == "development" ]]; then
@@ -121,7 +129,7 @@ do
         --cap-add=SYS_PTRACE \
         --security-opt seccomp=unconfined \
         --pid=host \
-        --network=$droplet_network \
+        --network=$zgc_network \
         --name zeta-droplet-$i \
         $REG/zeta_droplet:latest
 done

@@ -1848,8 +1848,12 @@ External API definitions are based on phase I use cases and related system param
             "name": "ZGC_node1",
             "description": "ZGC network node 1",
             "ip_control": "172.16.0.15",
+            "id_control": "ubuntu",
+            "pwd_control": "changeme",
             "inf_tenant": "eth1",
+            "mac_tenant": "11:22:33:44:55:66",
             "inf_zgc": "eth2",
+            "mac_zgc": "11:22:33:44:55:67",
             "zgc_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
         }
     Response:
@@ -1859,8 +1863,11 @@ External API definitions are based on phase I use cases and related system param
             "name": "ZGC_node1",
             "description": "ZGC network node 1",
             "ip_control": "172.16.0.15",
+            "id_control": "ubuntu",
             "inf_tenant": "eth1",
+            "mac_tenant": "11:22:33:44:55:66",
             "inf_zgc": "eth2",
+            "mac_zgc": "11:22:33:44:55:67",
             "zgc_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
         }
     ```

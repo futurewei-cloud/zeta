@@ -33,7 +33,7 @@ def all_zgcs():
         if not bool(settings.activeZgc):
             settings.activeZgc["zgc_id"] = post_data["zgc_id"]
             settings.activeZgc["ip_start"] = post_data["ip_start"]
-            settings.activeZgc["ip_end"] = post_data["ip_end"]         
+            settings.activeZgc["ip_end"] = post_data["ip_end"]
             settings.activeZgc["port_ibo"] = post_data["port_ibo"]
     else:
         response_object = [zgc.to_json() for zgc in Zgc.query.all()]

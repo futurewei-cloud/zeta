@@ -35,6 +35,7 @@ class Book(db.Model):
             'read': self.read
         }
 
+
 class Zgc(db.Model):
 
     __tablename__ = 'zgcs'
@@ -70,13 +71,18 @@ class Node(db.Model):
     __tablename__ = 'nodes'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    zgc_id = db.Column(db.String(64), db.ForeignKey('zgcs.zgc_id'), nullable=False)
+    zgc_id = db.Column(db.String(64), db.ForeignKey(
+        'zgcs.zgc_id'), nullable=False)
     node_id = db.Column(db.String(64), unique=True, nullable=False)
     name = db.Column(db.String(128), unique=True, nullable=False)
     description = db.Column(db.String(255), nullable=True)
     ip_control = db.Column(db.String(16), nullable=False)
+    id_control = db.Column(db.String(64), nullable=False)
+    pwd_control = db.Column(db.String(64), nullable=False)
     inf_tenant = db.Column(db.String(16), nullable=False)
+    mac_tenant = db.Column(db.String(18), nullable=False)
     inf_zgc = db.Column(db.String(16), nullable=False)
+    mac_zgc = db.Column(db.String(18), nullable=False)
 
     def to_json(self):
         return {
@@ -96,7 +102,8 @@ class Vpc(db.Model):
     __tablename__ = 'vpcs'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    zgc_id = db.Column(db.String(64), db.ForeignKey('zgcs.zgc_id'), nullable=False)
+    zgc_id = db.Column(db.String(64), db.ForeignKey(
+        'zgcs.zgc_id'), nullable=False)
     vpc_id = db.Column(db.String(64), unique=True, nullable=False)
     vni = db.Column(db.Integer, nullable=False)
     ports = db.relationship("Port", backref="vpc", lazy=True)
@@ -138,8 +145,10 @@ class Port(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     port_id = db.Column(db.String(64), unique=True, nullable=False)
     mac_port = db.Column(db.String(18), nullable=False)
-    vpc_id = db.Column(db.String(64), db.ForeignKey('vpcs.vpc_id'), nullable=False)
-    host_id = db.Column(db.String(64), db.ForeignKey('hosts.host_id'), nullable=False)
+    vpc_id = db.Column(db.String(64), db.ForeignKey(
+        'vpcs.vpc_id'), nullable=False)
+    host_id = db.Column(db.String(64), db.ForeignKey(
+        'hosts.host_id'), nullable=False)
     eps = db.relationship("EP", backref="port", lazy="joined")
 
     def to_json(self):
@@ -160,7 +169,8 @@ class EP(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     ip = db.Column(db.String(16), nullable=False)
     vip = db.Column(db.String(16), nullable=False)
-    port_id = db.Column(db.String(64), db.ForeignKey('ports.port_id'), nullable=False)
+    port_id = db.Column(db.String(64), db.ForeignKey(
+        'ports.port_id'), nullable=False)
 
     def to_json(self):
         return {

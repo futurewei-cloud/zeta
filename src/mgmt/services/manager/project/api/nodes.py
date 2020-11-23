@@ -53,8 +53,12 @@ def single_node(node_id):
         node.zgc_id = post_data.get('zgc_id')
         node.description = post_data.get('description')
         node.ip_control = post_data.get('ip_control')
+        node.id_control = post_data.get('id_control')
+        node.pwd_control = post_data.get('pwd_control')
         node.inf_tenant = post_data.get('inf_tenant')
+        node.mac_tenant = post_data.get('mac_tenant')
         node.inf_zgc = post_data.get('inf_zgc')
+        node.mac_zgc = post_data.get('mac_zgc')
         db.session.commit()
         response_object = node.to_json()
     elif request.method == 'DELETE':
