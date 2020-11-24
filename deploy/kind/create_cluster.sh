@@ -51,10 +51,10 @@ kind delete cluster
 docker network disconnect $kind_network $reg_name &>/dev/null
 docker network rm $kind_network &>/dev/null
 # Remove existing droplet containers and tenant network
-DROPLETS=$(docker ps -a --format "{{.Names}}" | grep zeta-droplet)
+DROPLETS=$(docker ps -a --format "{{.Names}}" | grep zeta-node)
 docker network rm $zgc_network > /dev/null 2>&1
 docker network rm $tenant_network > /dev/null 2>&1
-echo "Deleting existing zeta-droplets containers"
+echo "Deleting existing zeta-node containers"
 docker stop $DROPLETS > /dev/null 2>&1
 docker rm -f $DROPLETS > /dev/null 2>&1
 docker container prune -f > /dev/null 2>&1
@@ -122,15 +122,15 @@ fi
 # Bring up droplets
 for ((i=1; i<=$DROPLET_NODES; i++));
 do
-    echo -e "Creating zeta-droplet-$i"
+    echo -e "Creating zeta-node-$i"
     docker run -d \
         --privileged \
         --cap-add=NET_ADMIN \
         --cap-add=SYS_PTRACE \
         --security-opt seccomp=unconfined \
         --pid=host \
-        --network=$zgc_network \
-        --name zeta-droplet-$i \
+        --network=$kind_network \
+        --name zeta-node-$i \
         $REG/zeta_droplet:latest
 done
 

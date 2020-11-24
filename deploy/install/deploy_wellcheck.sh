@@ -60,37 +60,36 @@ fi
 manager_ip=$(kubectl get node $(kubectl get pods -o wide | grep zeta-manager | awk '{print $7}' | cut -d/ -f1) -o wide | grep kind | awk '{print $6}' | cut -d/ -f1)
 
 response=$(curl -H 'Content-Type: application/json' -X POST \
-    -d '{"zgc_id":"0",
-          "name":"zgc0",
+    -d '{"name":"zgc0",
           "description":"zgc0",
-          "ip_start":"10.0.0.0",
-          "ip_end":"10.0.0.255",
-          "port_ibo":"1"}' \
+          "ip_start":"20.0.0.0",
+          "ip_end":"20.0.0.255",
+          "port_ibo":"8300"}' \
       $manager_ip:80/zgcs)
 
 zgc_id=$(echo $response | sed 's/\\[tn]//g' | cut -d':' -f 7 | tr -d '"}' | xargs)
-kind_network="kind"
 tenant_network="tenant_network"
+zgc_network="zgc_network"
 
 if [[ "$K8S_TYPE" == "kind" ]]; then
 
-    # Register droplet containers in KIND deployment
-    inf_zgc="eth0"
-    inf_control="eth1"
+    # Register node containers in KIND deployment
+    inf_control="eth0"
+    inf_zgc="eth1"
     inf_tenant="eth2"
-    droplets=($(docker ps | grep -o 'zeta-droplet-[0-9]\+'))
-    for droplet in "${droplets[@]}"
+    nodes=($(docker ps | grep -o 'zeta-node-[0-9]\+'))
+    for node in "${nodes[@]}"
     do
-        docker network connect $kind_network $droplet
-        docker network connect $tenant_network $droplet
-        ip_control=$(docker exec $droplet ip addr show $inf_control | grep "inet\\b" | awk '{print $2}' | cut -d/ -f1)
-        ip_tenant=$(docker exec $droplet ip addr show $inf_tenant | grep "inet\\b" | awk '{print $2}' | cut -d/ -f1)
-        mac_tenant=$(docker exec $droplet ip addr show $inf_tenant | grep "link/ether\\b" | awk '{print $2}' | cut -d/ -f1)
-        ip_zgc=$(docker exec $droplet ip addr show $inf_zgc | grep "inet\\b" | awk '{print $2}' | cut -d/ -f1)
-        mac_zgc=$(docker exec $droplet ip addr show $inf_zgc | grep "link/ether\\b" | awk '{print $2}' | cut -d/ -f1)
+        docker network connect $zgc_network $node
+        docker network connect $tenant_network $node
+        ip_control=$(docker exec $node ip addr show $inf_control | grep "inet\\b" | awk '{print $2}' | cut -d/ -f1)
+        ip_tenant=$(docker exec $node ip addr show $inf_tenant | grep "inet\\b" | awk '{print $2}' | cut -d/ -f1)
+        mac_tenant=$(docker exec $node ip addr show $inf_tenant | grep "link/ether\\b" | awk '{print $2}' | cut -d/ -f1)
+        ip_zgc=$(docker exec $node ip addr show $inf_zgc | grep "inet\\b" | awk '{print $2}' | cut -d/ -f1)
+        mac_zgc=$(docker exec $node ip addr show $inf_zgc | grep "link/ether\\b" | awk '{print $2}' | cut -d/ -f1)
         body='{"zgc_id":"'"$zgc_id"'",
-        "description":"'"$droplet"'",
-        "name":"'"$droplet"'",
+        "description":"'"$node"'",
+        "name":"'"$node"'",
         "ip_control":"'"$ip_control"'",
         "id_control":"ubuntu",
         "pwd_control":"changeme",

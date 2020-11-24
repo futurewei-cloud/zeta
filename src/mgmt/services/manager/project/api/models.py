@@ -71,8 +71,8 @@ class Node(db.Model):
     __tablename__ = 'nodes'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    zgc_id = db.Column(db.String(64), db.ForeignKey(
-        'zgcs.zgc_id'), nullable=False)
+    zgc_id = db.Column(db.String(64), db.ForeignKey('zgcs.zgc_id'),
+                       nullable=False)
     node_id = db.Column(db.String(64), unique=True, nullable=False)
     name = db.Column(db.String(128), unique=True, nullable=False)
     description = db.Column(db.String(255), nullable=True)
@@ -102,8 +102,8 @@ class Vpc(db.Model):
     __tablename__ = 'vpcs'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    zgc_id = db.Column(db.String(64), db.ForeignKey(
-        'zgcs.zgc_id'), nullable=False)
+    zgc_id = db.Column(db.String(64), db.ForeignKey('zgcs.zgc_id'),
+                       nullable=False)
     vpc_id = db.Column(db.String(64), unique=True, nullable=False)
     vni = db.Column(db.Integer, nullable=False)
     ports = db.relationship("Port", backref="vpc", lazy=True)
