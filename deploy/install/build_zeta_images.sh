@@ -23,8 +23,7 @@ docker image build -t $REG/zeta_opr:latest \
 
 echo "Rebuild zeta-manager image..."
 docker image build -t $REG/zeta_manager:latest \
-    -f $ROOT/deploy/etc/docker/manager.Dockerfile \
-    $ROOT/src/mgmt/services/manager >/dev/null
+    -f $ROOT/deploy/etc/docker/manager.Dockerfile $ROOT >/dev/null
 
 if [[ "$REG" == "localhost:32000" ]]; then
     echo "Archiving Zeta service images..."

@@ -7,7 +7,7 @@
 
 # ----------------------------------------------------------------------------
 # Specify the version being used as well as the language
-cmake_minimum_required (VERSION 3.10)
+cmake_minimum_required (VERSION 3.17)
 
 # ----------------------------------------------------------------------------
 # Make sure we are building out-of-source

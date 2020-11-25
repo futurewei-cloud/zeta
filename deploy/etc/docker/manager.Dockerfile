@@ -15,14 +15,17 @@ RUN apt-get update && \
     apt-get clean
 
 # set working directory
-WORKDIR /usr/src/app
+WORKDIR /opt/zeta/manager
 
 # Add app
-COPY . /usr/src/app
+COPY build/manager /opt/zeta/manager
+COPY build/bin /opt/zeta/bin
 
 # Setup app
-RUN pip install -r requirements.txt && \
-    chmod +x /usr/src/app/entrypoint.sh
+RUN pip3 install /opt/zeta/manager/
+
+#RUN pip install -r requirements.txt && \
+#    chmod +x /usr/src/app/entrypoint.sh
 
 # Run app
-CMD ["/usr/src/app/entrypoint.sh"]
+CMD ["/opt/zeta/manager/entrypoint.sh"]
