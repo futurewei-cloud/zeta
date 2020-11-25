@@ -57,21 +57,21 @@ else
     exit 1
 fi
 
-manager_ip=$(kubectl get node $(kubectl get pods -o wide | grep zeta-manager | awk '{print $7}' | cut -d/ -f1) -o wide | grep kind | awk '{print $6}' | cut -d/ -f1)
-
-response=$(curl -H 'Content-Type: application/json' -X POST \
-    -d '{"name":"zgc0",
-          "description":"zgc0",
-          "ip_start":"20.0.0.0",
-          "ip_end":"20.0.0.255",
-          "port_ibo":"8300"}' \
-      $manager_ip:80/zgcs)
-
-zgc_id=$(echo $response | sed 's/\\[tn]//g' | cut -d':' -f 7 | tr -d '"}' | xargs)
-tenant_network="tenant_network"
-zgc_network="zgc_network"
-
 if [[ "$K8S_TYPE" == "kind" ]]; then
+    # Populate default zgc for KIND deployment
+    manager_ip=$(kubectl get node $(kubectl get pods -o wide | grep zeta-manager | awk '{print $7}' | cut -d/ -f1) -o wide | grep kind | awk '{print $6}' | cut -d/ -f1)
+
+    response=$(curl -H 'Content-Type: application/json' -X POST \
+        -d '{"name":"zgc0",
+            "description":"zgc0",
+            "ip_start":"20.0.0.0",
+            "ip_end":"20.0.0.255",
+            "port_ibo":"8300"}' \
+        $manager_ip:80/zgcs)
+
+    zgc_id=$(echo $response | sed 's/\\[tn]//g' | cut -d':' -f 7 | tr -d '"}' | xargs)
+    tenant_network="tenant_network"
+    zgc_network="zgc_network"
 
     # Register node containers in KIND deployment
     inf_control="eth0"
