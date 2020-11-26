@@ -81,7 +81,7 @@ def create_droplet(name, ip, mac, itf, network, zgc_id):
                                                                   version='v1',
                                                                   namespace='default',
                                                                   plural='droplets', 
-                                                                  body=droplet_body)0
+                                                                  body=droplet_body)
         logger.info('Response for create droplet: {}'.format(update_response))
     except ApiException as e:
         logger.error('Exception when Creating droplets: {}'.format(e))
