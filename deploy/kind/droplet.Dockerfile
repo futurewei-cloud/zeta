@@ -5,6 +5,7 @@
 
 FROM fwnetworking/zeta_dev:latest
 COPY . /var/zeta/
+RUN apt-get update
 RUN apt-get install -y systemd
 RUN ln -snf /var/zeta/build/xdp /trn_xdp
 RUN ln -snf /var/zeta/build/bin /trn_bin

@@ -26,6 +26,7 @@ spec:
       labels:
         app: zeta-manager
     spec:
+      serviceAccountName: zeta
       containers:
       - env:
         - name: FLASK_ENV
