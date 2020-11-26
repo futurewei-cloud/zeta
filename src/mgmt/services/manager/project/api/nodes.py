@@ -9,7 +9,7 @@
 
 import os
 import uuid
-
+import logging
 from flask import (
     Blueprint, jsonify, request
 )
@@ -54,7 +54,7 @@ def delete_droplet(name):
                                                                   name=name,
                                                                   body=client.V1DeleteOptions(),
                                                                   propagation_policy="Orphan")
-        logger.info('Response for delete droplet: {}'.format(update_response))
+        logger.info('Response for delete droplet: {}'.format(delete_response))
     except ApiException as e:
         logger.error('Exception when deleting droplet: {}\n{}'.format(name, e))
 
@@ -82,7 +82,7 @@ def create_droplet(name, ip, mac, itf, network, zgc_id):
                                                                   namespace='default',
                                                                   plural='droplets', 
                                                                   body=droplet_body)
-        logger.info('Response for create droplet: {}'.format(update_response))
+        logger.info('Response for create droplet: {}'.format(create_response))
     except ApiException as e:
         logger.error('Exception when Creating droplets: {}'.format(e))
 
