@@ -54,7 +54,7 @@ class Droplet(KubeObject):
             "mac": self.mac,
             "ip": self.ip,
             "status": self.status,
-            "itf": self.phy_itf
+            "itf": self.phy_itf,
             "network": self.network,
             "zgc_id": self.zgc_id
         }
