@@ -23,6 +23,6 @@ FROM fwnetworking/python_base:latest
 COPY build/operator /opt/zeta/operator
 COPY build/bin /opt/zeta/bin
 COPY deploy/etc/luigi.cfg /etc/luigi/luigi.cfg
-RUN pip3 install /opt/zeta/operator
-RUN ln -snf /opt/zeta/bin /trn_bin
+RUN ln -snf /opt/zeta/bin /trn_bin && \
+    pip3 install /opt/zeta/operator
 CMD kopf run --standalone /opt/zeta/operator/operator.py

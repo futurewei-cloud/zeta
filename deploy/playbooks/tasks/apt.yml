@@ -37,3 +37,4 @@
     - htop
     - zip
     - snapd
+    - rpcbind
