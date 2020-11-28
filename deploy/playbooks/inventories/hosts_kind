@@ -13,13 +13,10 @@ localhost
 [kube_nodes]
 localhost
 
-[fwd]
+[zgc]
 localhost
 
-[ftn]
-localhost
-
-[ovs]
+[aca]
 localhost
 
 # Base group for all EC2 instances

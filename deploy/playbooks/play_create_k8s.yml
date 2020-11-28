@@ -7,17 +7,14 @@
 #
 # Summary: Play to create k8s cluster on target site
 #
-## ============== Play to Create K8S cluster for deployment ================================
-- name: "==== Provision all K8S cluster nodes at {{ site }} site"
-  hosts: kube_master:kube_nodes      # host in either groups
+## ============== Play to provision site for Zeta deployment ============================
+- name: "==== Validate and prepare the site nodes with common features"
+  hosts: kube_master:kube_nodes:zgc      # host in either groups
   gather_facts: true
-  #vars_files:
-  #  - "inventories/vars/.vault.yml"
-  #  - "inventories/vars/site_{{site}}.yml"
   vars:
     local_user: "{{ansible_user}}"
   tasks:
-    - name: "Remote Microk8s cluster provisioning task block"
+    - name: "Provision base node features at {{ site }} site"
       block:
         - name: "make sure they have minimum RAM required"
           fail: msg="not enough RAM"
@@ -34,6 +31,17 @@
     
         - include: tasks/apt.yml
         - include: tasks/ubuntu.yml
+
+      when: site != "kind"     # End of non-kind block
+
+- name: "==== Provision K8S cluster on management nodes at {{ site }} site"
+  hosts: kube_master:kube_nodes      # host in either groups
+  gather_facts: false
+  vars:
+    local_user: "{{ansible_user}}"
+  tasks:
+    - name: "Remote Microk8s cluster provisioning task block"
+      block:
         - include: tasks/microk8s-all.yml
     
       when: site != "kind"    # End of non-kind block
@@ -52,12 +60,10 @@
 
       when: site == "kind"     # End of kind block
 
-
 - name: "==== Provision K8S master nodes at {{ site }} site"
   hosts: kube_master
   vars:
     local_user: "{{ansible_user}}"
-
   tasks:
     - include: tasks/microk8s-master.yml
       when: site != "kind"   
