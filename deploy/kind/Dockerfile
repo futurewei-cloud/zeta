@@ -18,8 +18,11 @@
 # FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 # THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#
+# Summary: Zeta Kind node container in KIND deployment
+#
 
-FROM fwnetworking/kindnode:latest
+FROM fwnetworking/kindnode:zeta
 COPY . /var/zeta/
 RUN ln -snf /var/zeta/build/bin /trn_bin
 RUN ln -snf /var/zeta/build/xdp /trn_xdp
