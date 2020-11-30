@@ -20,8 +20,9 @@
 # THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 FROM fwnetworking/python_base:latest
-COPY . /var/zeta/
-RUN pip3 install /var/zeta/deploy/
-RUN ln -snf /var/zeta/build/bin /trn_bin
+COPY build/operator /opt/zeta/operator
+COPY build/bin /opt/zeta/bin
 COPY deploy/etc/luigi.cfg /etc/luigi/luigi.cfg
-CMD kopf run --standalone /var/zeta/src/mgmt/operator/operator.py
+RUN ln -snf /opt/zeta/bin /trn_bin && \
+    pip3 install /opt/zeta/operator
+CMD kopf run --standalone /opt/zeta/operator/operator.py

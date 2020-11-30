@@ -1,0 +1,49 @@
+---
+#
+# SPDX-License-Identifier: MIT
+#
+# Copyright (c) 2020 The Authors.
+# Authors: Bin Liang  <@liangbin>
+#
+# Summary: Tasks for ZGC nodes provisioning
+#
+# ----------------------------------------------------
+# Provision ZGC node  
+# ----------------------------------------------------
+
+- name: "Copy ZGC node executables to /trn_bin"
+  become: yes
+  copy:
+      src: ../../build/bin/
+      dest: /trn_bin
+      mode: '0755'
+      force: yes
+
+- name: "Copy ZGC node pbf objects to /trn_xdp"
+  become: yes
+  copy:
+      src: ../../build/xdp/
+      dest: /trn_xdp
+      force: yes
+
+- name: "Symbol link pbf filesystem"
+  become: yes
+  shell: ln -s /sys/fs/bpf /bpffs
+  args: 
+    executable: /bin/bash
+
+# ----------------------------------------------------
+# Bootstrap ZGC Node
+# ----------------------------------------------------
+
+- name: "Kick start ZGC Daemon"
+  become: yes
+  shell: |
+    /etc/init.d/rpcbind restart
+    /etc/init.d/rsyslog restart
+    ip link set eth2 promisc on
+    ip link set dev eth1 up mtu 9000
+    ip link set dev eth2 up mtu 9000
+    nohup /trn_bin/transitd >/tmp/transitd.std 2>&1 &
+  args: 
+    executable: /bin/bash
