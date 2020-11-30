@@ -39,7 +39,7 @@ class Droplet(KubeObject):
         self.ip = []
         self.mac = []
         self.zgc_id = ''
-        self.phy_itf = 'eth0'
+        self.phy_itf = ''
         self.name = name
         if spec is not None:
             self.set_obj_spec(spec)
