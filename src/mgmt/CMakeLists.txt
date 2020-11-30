@@ -32,3 +32,33 @@ add_custom_target(
     proto ALL
     DEPENDS ${PROTO_READY}
 )
+
+set(OPERATOR_STAMP ${CMAKE_BINARY_DIR}/operator.stamp)
+
+add_custom_command(
+  OUTPUT ${OPERATOR_STAMP}
+  COMMAND ${CMAKE_COMMAND} -E rm -rf ${CMAKE_BINARY_DIR}/operator
+  COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_LIST_DIR}/operator ${CMAKE_BINARY_DIR}/operator
+  COMMAND ${CMAKE_COMMAND} -E touch ${OPERATOR_STAMP}
+  VERBATIM
+)
+
+add_custom_target(
+    operator ALL
+    DEPENDS ${OPERATOR_STAMP}
+)
+
+set(MANAGER_STAMP ${CMAKE_BINARY_DIR}/manager.stamp)
+
+add_custom_command(
+  OUTPUT ${MANAGER_STAMP}
+  COMMAND ${CMAKE_COMMAND} -E rm -rf ${CMAKE_BINARY_DIR}/manager
+  COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_LIST_DIR}/services/manager ${CMAKE_BINARY_DIR}/manager
+  COMMAND ${CMAKE_COMMAND} -E touch ${MANAGER_STAMP}
+  VERBATIM
+)
+
+add_custom_target(
+    manager ALL
+    DEPENDS ${MANAGER_STAMP}
+)

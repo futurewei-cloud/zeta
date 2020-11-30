@@ -11,15 +11,11 @@
 node-0
 
 [kube_nodes]
-node-1
 
-[fwd]
-node-2
+[zgc]
+node-[1:2]
 
-[ftn]
-node-2
-
-[ovs]
+[aca]
 node-[3:4]
 
 # Logic group to load group_vars for lab
