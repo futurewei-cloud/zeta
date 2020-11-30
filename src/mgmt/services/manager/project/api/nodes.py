@@ -17,10 +17,10 @@ from functools import reduce
 from kubernetes.client.rest import ApiException
 from project.api.models import Node
 from project import db
-from .models import Zgc
+from project.api.models import Zgc
+from project.api.utils import getGWsFromIpRange, get_mac_from_ip
 from kubernetes import client, config
 import json
-from .vpcs import getGWsFromIpRange, MAC_PRIVATE, int_to_mac
 
 logger = logging.getLogger()
 config.load_incluster_config()
@@ -28,10 +28,6 @@ obj_api = client.CustomObjectsApi()
 
 nodes_blueprint = Blueprint('nodes', __name__)
 
-def get_mac_from_ip(ip_string):
-    start= reduce(lambda a,b: a<<8 | b, map(int, ip_string.split('.')))
-    mac = int_to_mac(start | MAC_PRIVATE)
-    return mac
 
 def update_droplet(droplet):
     try:
