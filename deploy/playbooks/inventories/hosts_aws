@@ -12,16 +12,12 @@
 node-0
 
 [kube_nodes]
+
+[zgc]
 node-[1:2]
 
-[fwd]
+[aca]
 node-[3:4]
-
-[ftn]
-node-[5:6]
-
-[ovs]
-node-[7:8]
 
 # Use aws for group_vars
 [aws:children]
@@ -30,6 +26,3 @@ launched
 # Base group for all EC2 instances
 # In format:
 [launched]
-node-2  ansible_host='13.56.250.159' private_ip='192.168.0.99' region='us-west-1' instance_id='i-0bd9d489c107f93b7'
-node-1  ansible_host='54.183.218.5' private_ip='192.168.0.15' region='us-west-1' instance_id='i-04833eeab7a6248fd'
-node-0  ansible_host='18.144.13.20' private_ip='192.168.0.101' region='us-west-1' instance_id='i-015ed0d6c179e13ff'

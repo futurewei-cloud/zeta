@@ -2,6 +2,10 @@
 # Copyright (c) 2020 The Authors.
 
 # Authors: Phu Tran          <@phudtran>
+#          Bin Liang         <@liangbin>
+#
+# Summary: Zeta droplet node container in KIND deployment
+#
 
 FROM fwnetworking/zeta_droplet:latest
 

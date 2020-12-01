@@ -9,20 +9,21 @@
 # base image
 FROM python:3.8.1-slim
 
-# install netcat
-RUN apt-get update && \
-    apt-get -y install netcat && \
-    apt-get clean
-
 # set working directory
-WORKDIR /usr/src/app
+WORKDIR /opt/zeta/manager
 
 # Add app
-COPY . /usr/src/app
+COPY build/manager /opt/zeta/manager
+COPY build/bin /opt/zeta/bin
 
-# Setup app
-RUN pip install -r requirements.txt && \
-    chmod +x /usr/src/app/entrypoint.sh
+# install netcat and manager
+RUN apt-get update && \
+    apt-get -y install netcat && \
+    apt-get clean && \
+    pip3 install /opt/zeta/manager/
+
+#RUN pip install -r requirements.txt && \
+#    chmod +x /usr/src/app/entrypoint.sh
 
 # Run app
-CMD ["/usr/src/app/entrypoint.sh"]
+CMD ["/opt/zeta/manager/entrypoint.sh"]

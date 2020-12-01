@@ -19,23 +19,22 @@
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 # THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-FROM python:3.7
-RUN apt-get update -y
-RUN apt-get install -y net-tools
-RUN apt-get install -y ethtool
-RUN apt-get install -y sudo
-RUN pip3 install PyYAML
-RUN pip3 install kopf
-RUN pip3 install netaddr
-RUN pip3 install ipaddress
-RUN pip3 install pyroute2
-RUN pip3 install rpyc
-RUN pip3 install kubernetes==11.0.0
-RUN pip3 install luigi==2.8.12
-RUN pip3 install grpcio
-RUN pip3 install protobuf
-RUN pip3 install fs
-RUN mkdir -p /var/run/luigi
-RUN mkdir -p /var/log/luigi
-RUN mkdir -p /var/lib/luigi
-RUN mkdir -p /etc/luigi
+#FROM python:3.7
+FROM python:3.8.1-slim
+RUN apt-get update -y && apt-get install -y \
+    net-tools \
+    ethtool \
+    sudo
+RUN pip3 install \
+    PyYAML \
+    kopf \
+    netaddr \
+    ipaddress \
+    pyroute2 \
+    rpyc \
+    kubernetes==11.0.0 \
+    luigi==2.8.12 \
+    grpcio \
+    protobuf \
+    fs
+RUN mkdir -p /var/{run/luigi,log,lib} /etc/luigi
