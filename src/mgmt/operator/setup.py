@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
     name='zeta',
     version='0.1.0',
-    packages=find_packages(include=['zeta', 'zeta.*']),
+    packages=find_packages(),
     install_requires=[
         'PyYAML',
         'kopf',

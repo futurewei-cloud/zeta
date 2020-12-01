@@ -8,7 +8,7 @@
 # Summary: Play to deploy Zeta services on target k8s cluster
 #
 ## ============== Play to deploy zeta services to target cluster ================================
-- name: "==== Deploy Zeta services"
+- name: "==== Deploy Zeta management services"
   hosts: localhost
   connection: local
   gather_facts: false
@@ -42,3 +42,12 @@
         K8S_TYPE: "{{k8s_type}}"
       register: "output"
     - debug: var=output.stdout_lines
+
+- name: "==== provision Zeta Gateway Cluster"
+  hosts: zgc
+  vars:
+    local_user: "{{ansible_user}}"
+  gather_facts: false
+  tasks:
+    - include: tasks/zgc-node.yml
+      when: site != "kind"
