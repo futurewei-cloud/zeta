@@ -199,7 +199,6 @@ def all_nodes():
         response_object = [node.to_json() for node in Node.query.all()]
     return jsonify(response_object)
 
-
 @nodes_blueprint.route('/nodes/ping', methods=['GET'])
 def ping_nodes():
     return jsonify({
