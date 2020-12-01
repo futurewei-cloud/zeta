@@ -57,6 +57,8 @@ else
     exit 1
 fi
 
+sleep 10s
+
 manager_ip=$(kubectl get node $(kubectl get pods -o wide | grep zeta-manager | awk '{print $7}' | cut -d/ -f1) -o wide | grep kind | awk '{print $6}' | cut -d/ -f1)
 
 response=$(curl -H 'Content-Type: application/json' -X POST \
