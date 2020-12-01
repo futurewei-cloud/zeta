@@ -1,3 +1,6 @@
+from project.api import settings
+from functools import reduce
+
 MAC_PRIVATE = 0x828300000000
 
 # Convert to GW array
