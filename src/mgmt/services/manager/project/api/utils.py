@@ -1,7 +1,12 @@
-from project.api import settings
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2020 The Authors.
+#
+# Authors: Rio Zhu <@zzxgzgz>
+#
+
+from project.api.settings import MAC_PRIVATE
 from functools import reduce
 
-MAC_PRIVATE = 0x828300000000
 
 # Convert to GW array
 def int_to_mac(macint):
@@ -10,8 +15,8 @@ def int_to_mac(macint):
                      in zip(*[iter('{:012x}'.format(macint))]*2)])
 
 def getGWsFromIpRange(firstIp,lastIp):
-    start= reduce(lambda a,b: a<<8 | b, map(int, firstIp.split(".")))
-    end = reduce(lambda a,b: a<<8 | b, map(int, lastIp.split(".")))
+    start= ip_to_int(firstIp)
+    end = ip_to_int(lastIp)
     gws = []
     for ipint in range(start,end+1):
         gw = {}
@@ -20,14 +25,10 @@ def getGWsFromIpRange(firstIp,lastIp):
         gws.append(gw.copy())
     return gws
 
-def extendVpcResp(vpc):
-    respond = vpc.to_json()
-    respond['port_ibo'] = settings.activeZgc["port_ibo"]
-    respond['gws'] = getGWsFromIpRange(settings.activeZgc["ip_start"], settings.activeZgc["ip_end"])
-    return respond
-
-
 def get_mac_from_ip(ip_string):
-    start= reduce(lambda a,b: a<<8 | b, map(int, ip_string.split('.')))
+    start= ip_to_int(ip_string)
     mac = int_to_mac(start | MAC_PRIVATE)
     return mac
+
+def ip_to_int(ip_string):
+    return reduce(lambda a,b: a<<8 | b, map(int, ip_string.split(".")))

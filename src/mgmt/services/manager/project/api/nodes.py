@@ -22,7 +22,6 @@ from project.api.utils import getGWsFromIpRange, get_mac_from_ip
 import json
 import operator
 from project.api.settings import zgc_cidr_range
-from copy import deepcopy
 
 
 logger = logging.getLogger()
@@ -90,7 +89,6 @@ def all_nodes():
     if request.method == 'POST':
         post_data = request.get_json()
         post_data['node_id'] = str(uuid.uuid4())
-        response_object = deepcopy(post_data)
 
         # Try to get the existing droplets        
         all_droplets_in_zgc = obj_api.list_cluster_custom_object(group='zeta.com',
@@ -103,6 +101,7 @@ def all_nodes():
         ip_range = zgc_cidr_range.split('/')
         cidr_list = ip_range[0].split('.')
 
+        # Only zgc_cidr postfix 8, 16 and 24 are supported
         for i in range(int(ip_range[1])//8):
             zgc_ip_list[i] = cidr_list[i]
 
@@ -195,6 +194,7 @@ def all_nodes():
         # commit change to data at last
         db.session.add(Node(**post_data))
         db.session.commit()
+        response_object = post_data
     else:
         response_object = [node.to_json() for node in Node.query.all()]
     return jsonify(response_object)

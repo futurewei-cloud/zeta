@@ -8,7 +8,6 @@
 
 
 import os
-from functools import reduce
 
 from flask import (
     Blueprint, jsonify, request
@@ -17,12 +16,16 @@ from flask import (
 from project.api import settings
 from project.api.models import Vpc
 from project import db
-from project.api.utils import extendVpcResp
+from project.api.utils import getGWsFromIpRange
 
 
 vpcs_blueprint = Blueprint('vpcs', __name__)
 
-
+def extendVpcResp(vpc):
+    respond = vpc.to_json()
+    respond['port_ibo'] = settings.activeZgc["port_ibo"]
+    respond['gws'] = getGWsFromIpRange(settings.activeZgc["ip_start"], settings.activeZgc["ip_end"])
+    return respond
 
 @vpcs_blueprint.route('/vpcs', methods=['GET', 'POST'])
 def all_vpcs():
