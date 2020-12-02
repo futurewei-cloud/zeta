@@ -24,5 +24,7 @@
 # Get full path of current ROOT no matter where it's placed and invoked
 ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." >/dev/null 2>&1 && pwd )"
 
+kubectl apply -f $ROOT/deploy/etc/deployments/zgc_cluster_config.yaml
+
 source $ROOT/deploy/install/create_crds.sh $ROOT
 source $ROOT/deploy/install/deploy_zeta_operator.sh

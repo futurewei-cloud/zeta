@@ -36,9 +36,10 @@ class Droplet(KubeObject):
         super().__init__(name, obj_api, opr_store, spec)
         self.kind = "Droplet"
         self.plural = "droplets"
-        self.ip = ""
-        self.mac = ""
-        self.phy_itf = 'eth0'
+        self.ip = []
+        self.mac = []
+        self.zgc_id = ''
+        self.phy_itf = ''
         if spec is not None:
             self.set_obj_spec(spec)
 
@@ -51,7 +52,9 @@ class Droplet(KubeObject):
             "mac": self.mac,
             "ip": self.ip,
             "status": self.status,
-            "itf": self.phy_itf
+            "itf": self.phy_itf,
+            "network": self.network,
+            "zgc_id": self.zgc_id
         }
 
         return self.obj
@@ -61,3 +64,5 @@ class Droplet(KubeObject):
         self.mac = get_spec_val('mac', spec)
         self.ip = get_spec_val('ip', spec)
         self.phy_itf = get_spec_val('itf', spec)
+        self.network = get_spec_val('network', spec)
+        self.zgc_id = get_spec_val('zgc_id', spec)

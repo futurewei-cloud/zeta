@@ -57,6 +57,8 @@ else
     exit 1
 fi
 
+sleep 10s
+
 if [[ "$K8S_TYPE" == "kind" ]]; then
     # Populate default zgc for KIND deployment
     manager_ip=$(kubectl get node $(kubectl get pods -o wide | grep zeta-manager | awk '{print $7}' | cut -d/ -f1) -o wide | grep kind | awk '{print $6}' | cut -d/ -f1)

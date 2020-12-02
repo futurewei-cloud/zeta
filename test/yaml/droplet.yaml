@@ -8,7 +8,11 @@ kind: Droplet
 metadata:
   name: d0
 spec:
-  mac: "0000:0000:0000:0001"
-  ip: "10.0.0.1"
+  mac: 
+  - "0000:0000:0000:0001"
+  - "0000:0000:0000:0002"
+  ip: 
+  - "10.0.0.1"
+  - "10.0.0.2"
   interface: "eth0"
   status: "Init"

@@ -24,7 +24,7 @@ import luigi
 from workflows.common.bootstrap import *
 from workflows.common.create import *
 from workflows.common.delete import *
-from workflows.common. provisioned import *
+from workflows.common.provisioned import *
 
 
 class ZetaWorkflowFactory():

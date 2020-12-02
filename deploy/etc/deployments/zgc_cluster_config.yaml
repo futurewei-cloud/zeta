@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2020 The Authors.
+
+# Authors: Rio Zhu <@zzxgzgz>
+#
+# Summary: ConfigMap to store zgc cluster's settings.
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: zgc-cluster-config
+  labels:
+    name: zgc-cluster-config
+data:
+  cidr: 10.0.0.0/24
+  MAC_PRIVATE: "0x828300000000"
