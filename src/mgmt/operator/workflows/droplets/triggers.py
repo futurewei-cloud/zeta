@@ -58,7 +58,7 @@ def droplet_opr_on_droplet_provisioned(body, spec, **kwargs):
 @kopf.on.delete(group, version, RESOURCES.droplets, retries=OBJ_DEFAULTS.kopf_max_retries)
 def droplet_opr_on_droplet_delete(body, spec, **kwargs):
     param = HandlerParam()
-    param.name = spec['name']
+    param.name = kwargs['name']
     param.body = body
     param.spec = spec
     param.workflow_func = droplet_delete

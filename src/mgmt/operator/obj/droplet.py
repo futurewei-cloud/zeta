@@ -40,7 +40,6 @@ class Droplet(KubeObject):
         self.mac = []
         self.zgc_id = ''
         self.phy_itf = ''
-        self.name = name
         if spec is not None:
             self.set_obj_spec(spec)
 
@@ -50,7 +49,6 @@ class Droplet(KubeObject):
 
     def get_obj_spec(self):
         self.obj = {
-            "name": self.name,
             "mac": self.mac,
             "ip": self.ip,
             "status": self.status,

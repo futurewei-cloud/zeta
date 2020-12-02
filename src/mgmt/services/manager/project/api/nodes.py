@@ -41,7 +41,7 @@ def update_droplet(droplet):
                                                                    body=droplet)
         logger.info('Response for update droplet: {}'.format(update_response))
     except ApiException as e:
-        logger.error('Exception when updating exsiting droplet: {}'.format(e))
+        logger.error('Exception when updating existing droplet: {}'.format(e))
 
 def delete_droplet(name):
     try:
@@ -122,9 +122,9 @@ def all_nodes():
             number_of_ip_new_droplet_gets = total_ip // (number_of_droplets + 1) 
             ip_for_new_droplet = []
             modified_droplets = dict()
-            if number_of_ip_new_droplet_gets > 0 : # each droplet should have 1 or more ip, assign ip / mac from exiting droplets
+            if number_of_ip_new_droplet_gets > 0 : # each droplet should have 1 or more ip, assign ip / mac from existing droplets
                 current_length_of_ip_list = len(ip_for_new_droplet)
-                # sort these droplets in decending order, so droplet with the most IPs will be in the front.
+                # sort these droplets in descending order, so droplet with the most IPs will be in the front.
                 droplet_that_can_give_ip_mac.sort(key=lambda x : len(x['spec']['ip']), reverse=True)
                 while len(ip_for_new_droplet) < number_of_ip_new_droplet_gets:
                     for droplet in droplet_that_can_give_ip_mac:
@@ -256,7 +256,7 @@ def single_node(node_id):
 
             number_of_droplets_to_assign = len(all_droplets_in_zgc)
 
-            # Sort these droplets in accending order, so the droplet with the least IPs will be in the front.
+            # Sort these droplets in ascending order, so the droplet with the least IPs will be in the front.
             all_droplets_in_zgc.sort(key=lambda x : len(x['spec']['ip']), reverse=False)
             modified_droplets = dict()
             for index in range(ip_amount):
@@ -265,7 +265,7 @@ def single_node(node_id):
                 all_droplets_in_zgc[index % number_of_droplets_to_assign]['spec']['ip'].append(ip)
                 all_droplets_in_zgc[index % number_of_droplets_to_assign]['spec']['mac'].append(mac)
                 modified_droplet_name = all_droplets_in_zgc[index % number_of_droplets_to_assign]['metadata']['name']
-                if modified_droplet_name not in modified_droplets: 
+                if modified_droplet_name not in modified_droplets:
                     modified_droplets[modified_droplet_name] = all_droplets_in_zgc[index % number_of_droplets_to_assign]
 
             delete_droplet(name=tenant_droplet_name)
