@@ -22,6 +22,7 @@
 import logging
 import json
 from common.common import run_cmd
+from common.constants import KIND
 
 logger = logging.getLogger()
 
@@ -36,8 +37,14 @@ class TrnRpc:
         self.trn_cli = f'''/trn_bin/transit -s {self.ip} '''
         self.trn_cli_load_transit_xdp = f'''{self.trn_cli} load-transit-xdp -i {self.phy_itf} -j'''
         self.trn_cli_unload_transit_xdp = f'''{self.trn_cli} unload-transit-xdp -i {self.phy_itf} -j'''
+        self.trn_cli_update_dft = f'''{self.trn_cli} update-dft -i {self.phy_itf} -j'''
+        self.trn_cli_update_ftn = f'''{self.trn_cli} update-ftn -i {self.phy_itf} -j'''
         self.trn_cli_update_ep = f'''{self.trn_cli} update-ep -i {self.phy_itf} -j'''
+        self.trn_cli_get_dft = f'''{self.trn_cli} get-dft -i {self.phy_itf} -j'''
+        self.trn_cli_get_ftn = f'''{self.trn_cli} get-ftn -i {self.phy_itf} -j'''
         self.trn_cli_get_ep = f'''{self.trn_cli} get-ep -i {self.phy_itf} -j'''
+        self.trn_cli_delete_dft = f'''{self.trn_cli} delete-dft -i {self.phy_itf} -j'''
+        self.trn_cli_delete_ftn = f'''{self.trn_cli} delete-ep -i {self.phy_itf} -j'''
         self.trn_cli_delete_ep = f'''{self.trn_cli} delete-ep -i {self.phy_itf} -j'''
         self.trn_cli_load_pipeline_stage = f'''{self.trn_cli} load-pipeline-stage -i {self.phy_itf} -j'''
         self.trn_cli_unload_pipeline_stage = f'''{self.trn_cli} unload-pipeline-stage -i {self.phy_itf} -j'''
@@ -46,6 +53,84 @@ class TrnRpc:
             self.xdp_path = "/trn_xdp/trn_transit_xdp_ebpf.o"
         else:
             self.xdp_path = "/trn_xdp/trn_transit_xdp_ebpf_debug.o"
+
+    def update_dft(self, dft):
+        jsonconf = {
+            "id": dft.id,
+            "zeta_type": "0",
+            "table": dft.table
+        }
+
+        jsonconf = json.dumps(jsonconf)
+        cmd = f'''{self.trn_cli_update_dft} \'{jsonconf}\''''
+        logger.info("update_dft: {}".format(cmd))
+        returncode, text = run_cmd(cmd)
+        logger.info("returns {} {}".format(returncode, text))
+
+    def update_ftn(self, ftn, ftn_next):
+        ftn_droplet = ftn.droplet
+        ftn_next_droplet = ftn_next.droplet
+        jsonconf = {
+            "id": ftn.id,
+            "zeta_type": "1",
+            "ip": ftn.store.get_obj(KIND.droplet, ftn_droplet).ip,
+            "mac": ftn.store.get_obj(KIND.droplet, ftn_droplet).mac,
+            "next_ip": ftn_next.store.get_obj(KIND.droplet, ftn_next_droplet).ip,
+            "next_mac": ftn_next.store.get_obj(KIND.droplet, ftn_next_droplet).mac
+        }
+        jsonconf = json.dumps(jsonconf)
+        cmd = f'''{self.trn_cli_update_ftn} \'{jsonconf}\''''
+        logger.info("update_ftn: {}".format(cmd))
+        returncode, text = run_cmd(cmd)
+        logger.info("returns {} {}".format(returncode, text))
+
+    def get_dft(self, dft_id):
+        jsonconf = {
+            "id": dft_id,
+            "zeta_type": "0"
+        }
+
+        jsonconf = json.dumps(jsonconf)
+        cmd = f'''{self.trn_cli_get_dft} \'{jsonconf}\''''
+        logger.info("get_dft: {}".format(cmd))
+        returncode, text = run_cmd(cmd)
+        logger.info("returns {} {}".format(returncode, text))
+
+    def get_ftn(self, ftn_id):
+        jsonconf = {
+            "id": ftn_id,
+            "zeta_type": "1",
+        }
+
+        jsonconf = json.dumps(jsonconf)
+        cmd = f'''{self.trn_cli_get_ftn} \'{jsonconf}\''''
+        logger.info("get_dft: {}".format(cmd))
+        returncode, text = run_cmd(cmd)
+        logger.info("returns {} {}".format(returncode, text))
+
+    def delete_dft(self, dft_id):
+        jsonconf = {
+            "id": dft_id,
+            "zeta_type": "0"
+        }
+
+        jsonconf = json.dumps(jsonconf)
+        cmd = f'''{self.trn_cli_delete_dft} \'{jsonconf}\''''
+        logger.info("delete_dft: {}".format(cmd))
+        returncode, text = run_cmd(cmd)
+        logger.info("returns {} {}".format(returncode, text))
+
+    def delete_ftn(self, ftn_id):
+        jsonconf = {
+            "id": ftn_id,
+            "zeta_type": "1"
+        }
+
+        jsonconf = json.dumps(jsonconf)
+        cmd = f'''{self.trn_cli_delete_ftn} \'{jsonconf}\''''
+        logger.info("delete_dft: {}".format(cmd))
+        returncode, text = run_cmd(cmd)
+        logger.info("returns {} {}".format(returncode, text))
 
     def get_substrate_ep_json(self, ip, mac):
         jsonconf = {

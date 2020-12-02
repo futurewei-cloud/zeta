@@ -89,7 +89,9 @@ int trn_user_metadata_free(struct user_metadata_t *md)
 int trn_bpf_maps_init(struct user_metadata_t *md)
 {
 	md->jmp_table_map = bpf_map__next(NULL, md->obj);
-	md->endpoints_map = bpf_map__next(md->jmp_table_map, md->obj);
+	md->dfts_map = bpf_map__next(md->jmp_table_map, md->obj);
+	md->ftns_map = bpf_map__next(md->dfts_map, md->obj);
+	md->endpoints_map = bpf_map__next(md->ftns_map, md->obj);
 	md->hosted_endpoints_iface_map =
 		bpf_map__next(md->endpoints_map, md->obj);
 	md->interface_config_map =
@@ -101,16 +103,18 @@ int trn_bpf_maps_init(struct user_metadata_t *md)
 	md->ep_host_cache = bpf_map__next(md->ep_flow_host_cache, md->obj);
 	md->xdpcap_hook_map = bpf_map__next(md->ep_host_cache, md->obj);
 
-	if (!md->endpoints_map || !md->hosted_endpoints_iface_map ||
-	    !md->interface_config_map || !md->interfaces_map ||
-	    !md->fwd_flow_mod_cache || !md->rev_flow_mod_cache ||
-	    !md->ep_flow_host_cache || !md->ep_host_cache ||
-	    !md->xdpcap_hook_map || !md->jmp_table_map) {
+	if (!md->dfts_map || !md->ftns_map || !md->endpoints_map ||
+	    !md->hosted_endpoints_iface_map || !md->interface_config_map ||
+	    !md->interfaces_map || !md->fwd_flow_mod_cache ||
+	    !md->rev_flow_mod_cache || !md->ep_flow_host_cache ||
+	    !md->ep_host_cache || !md->xdpcap_hook_map || !md->jmp_table_map) {
 		TRN_LOG_ERROR("Failure finding maps objects.");
 		return 1;
 	}
 
 	md->jmp_table_fd = bpf_map__fd(md->jmp_table_map);
+	md->dfts_map_fd = bpf_map__fd(md->dfts_map);
+	md->ftns_map_fd = bpf_map__fd(md->ftns_map);
 	md->endpoints_map_fd = bpf_map__fd(md->endpoints_map);
 	md->interface_config_map_fd = bpf_map__fd(md->interface_config_map);
 	md->hosted_endpoints_iface_map_fd =
@@ -144,6 +148,28 @@ static int get_unused_itf_index(struct user_metadata_t *md)
 			return i;
 	}
 	return -1;
+}
+
+int trn_update_dft(struct user_metadata_t *md, struct zeta_key_t *dft_key,
+		   struct dft_t *dft)
+{
+	int err = bpf_map_update_elem(md->dfts_map_fd, dft_key, dft, 0);
+	if (err) {
+		TRN_LOG_ERROR("Store DFT mapping failed (err:%d).", err);
+		return 1;
+	}
+	return 0;
+}
+
+int trn_update_ftn(struct user_metadata_t *md, struct zeta_key_t *ftn_key,
+		   struct ftn_t *ftn)
+{
+	int err = bpf_map_update_elem(md->ftns_map_fd, ftn_key, ftn, 0);
+	if (err) {
+		TRN_LOG_ERROR("Store FTN mapping failed (err:%d).", err);
+		return 1;
+	}
+	return 0;
 }
 
 int trn_update_endpoint(struct user_metadata_t *md,
@@ -181,6 +207,28 @@ int trn_update_endpoint(struct user_metadata_t *md,
 		return 1;
 	}
 
+	return 0;
+}
+
+int trn_get_dft(struct user_metadata_t *md, struct zeta_key_t *dft_key,
+		struct dft_t *dft)
+{
+	int err = bpf_map_lookup_elem(md->dfts_map_fd, dft_key, dft);
+	if (err) {
+		TRN_LOG_ERROR("Querying DFT mapping failed (err:%d).", err);
+		return 1;
+	}
+	return 0;
+}
+
+int trn_get_ftn(struct user_metadata_t *md, struct zeta_key_t *ftn_key,
+		struct ftn_t *ftn)
+{
+	int err = bpf_map_lookup_elem(md->ftns_map_fd, ftn_key, ftn);
+	if (err) {
+		TRN_LOG_ERROR("Querying FTN mapping failed (err:%d).", err);
+		return 1;
+	}
 	return 0;
 }
 
@@ -253,7 +301,8 @@ int trn_add_prog(struct user_metadata_t *md, unsigned int prog_idx,
 		TRN_LOG_ERROR("Error openning bpf file: %s\n", prog_path);
 		return 1;
 	}
-
+	_SET_INNER_MAP(dfts_map);
+	_SET_INNER_MAP(ftns_map);
 	_SET_INNER_MAP(endpoints_map);
 	_SET_INNER_MAP(hosted_endpoints_iface_map);
 	_SET_INNER_MAP(interface_config_map);
@@ -287,6 +336,8 @@ int trn_add_prog(struct user_metadata_t *md, unsigned int prog_idx,
 		goto error;
 	}
 
+	_UPDATE_INNER_MAP(dfts_map);
+	_UPDATE_INNER_MAP(ftns_map);
 	_UPDATE_INNER_MAP(endpoints_map);
 	_UPDATE_INNER_MAP(hosted_endpoints_iface_map);
 	_UPDATE_INNER_MAP(interface_config_map);
@@ -311,6 +362,26 @@ int trn_remove_prog(struct user_metadata_t *md, unsigned int prog_idx)
 		TRN_LOG_ERROR("Error add prog to trn jmp table (err:%d).", err);
 	}
 	bpf_object__close(md->ebpf_progs[prog_idx].obj);
+	return 0;
+}
+
+int trn_delete_dft(struct user_metadata_t *md, struct zeta_key_t *dft_key)
+{
+	int err = bpf_map_delete_elem(md->dfts_map_fd, dft_key);
+	if (err) {
+		TRN_LOG_ERROR("Deleting DFT mapping failed (err:%d).", err);
+		return 1;
+	}
+	return 0;
+}
+
+int trn_delete_ftn(struct user_metadata_t *md, struct zeta_key_t *ftn_key)
+{
+	int err = bpf_map_delete_elem(md->ftns_map_fd, ftn_key);
+	if (err) {
+		TRN_LOG_ERROR("Deleting FTN mapping failed (err:%d).", err);
+		return 1;
+	}
 	return 0;
 }
 

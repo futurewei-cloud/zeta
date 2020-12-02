@@ -28,6 +28,10 @@
 #define __ALIGNED_64__ __attribute__((aligned(64)))
 #define __ALWAYS_INLINE__ __attribute__((__always_inline__))
 
+#define TRAN_ZETA_TYPE_DFT = 1
+#define TRAN_ZETA_TYPE_FTN = 0
+#define TRAN_MAX_MAGLEV_TABLE_SIZE 10000
+
 #define TRAN_MAX_NEP 65537
 #define TRAN_MAX_REMOTES 256
 #define TRAN_MAX_ITF 256
@@ -56,9 +60,26 @@ enum trn_xdp_stage_t {
 	XDP_SCALED_EP_PROC
 };
 
+struct zeta_key_t {
+	__u32 id;
+	__u32 zeta_type;
+} __attribute__((packed));
+
 struct endpoint_key_t {
 	__u32 tunip[3];
 } __attribute__((packed));
+
+struct dft_t {
+	__u32 table_len;
+	__u32 table[TRAN_MAX_MAGLEV_TABLE_SIZE];
+} __attribute__((packed, aligned(4)));
+
+struct ftn_t {
+	__u32 ip;
+	__u32 next_ip;
+	unsigned char mac[6];
+	unsigned char next_mac[6];
+} __attribute__((packed, aligned(4)));
 
 struct endpoint_t {
 	__u32 eptype;

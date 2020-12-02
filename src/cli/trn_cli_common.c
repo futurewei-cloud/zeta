@@ -60,6 +60,118 @@ int trn_cli_parse_xdp(const cJSON *jsonobj, rpc_trn_xdp_intf_t *xdp_intf)
 	return 0;
 }
 
+int trn_cli_parse_dft(const cJSON *jsonobj, struct rpc_trn_dft_t *dft)
+{
+	cJSON *id = cJSON_GetObjectItem(jsonobj, "id");
+	cJSON *zeta_type = cJSON_GetObjectItem(jsonobj, "zeta_type");
+	cJSON *entry = NULL;
+	cJSON *table = cJSON_GetObjectItem(jsonobj, "table");
+
+	if (id == NULL) {
+		print_err("Error: DFT ID Error\n");
+		return -EINVAL;
+	} else if (cJSON_IsNumber(id)) {
+		dft->id = atoi(id->valuestring);
+	}
+
+	if (zeta_type == NULL) {
+		print_err("Error: Zeta zeta_type Error\n");
+		return -EINVAL;
+	} else if (cJSON_IsNumber(zeta_type)) {
+		dft->zeta_type = atoi(zeta_type->valuestring);
+	}
+
+	int i = 0;
+	dft->table.table_len = 0;
+	cJSON_ArrayForEach(entry, table)
+	{
+		if (cJSON_IsNumber(entry)) {
+			dft->table.table_val[i] = atoi(entry->valuestring);
+			dft->table.table_len++;
+		} else {
+			print_err("Error: Table entry is non-string\n");
+			return -EINVAL;
+		}
+		i++;
+		if (i == RPC_TRN_MAX_MAGLEV_TABLE_SIZE) {
+			print_err(
+				"Warning: Table entries reached max limited\n");
+			break;
+		}
+	}
+	return 0;
+}
+
+int trn_cli_parse_ftn(const cJSON *jsonobj, struct rpc_trn_ftn_t *ftn)
+{
+	cJSON *id = cJSON_GetObjectItem(jsonobj, "id");
+	cJSON *zeta_type = cJSON_GetObjectItem(jsonobj, "zeta_type");
+	cJSON *ip = cJSON_GetObjectItem(jsonobj, "ip");
+	cJSON *mac = cJSON_GetObjectItem(jsonobj, "mac");
+	cJSON *next_ip = cJSON_GetObjectItem(jsonobj, "next_ip");
+	cJSON *next_mac = cJSON_GetObjectItem(jsonobj, "next_mac");
+
+	if (id == NULL) {
+		print_err("Error: DFT ID Error\n");
+		return -EINVAL;
+	} else if (cJSON_IsNumber(id)) {
+		ftn->id = atoi(id->valuestring);
+	}
+
+	if (zeta_type == NULL) {
+		print_err("Error: Zeta zeta_type Error\n");
+		return -EINVAL;
+	} else if (cJSON_IsNumber(zeta_type)) {
+		ftn->zeta_type = atoi(zeta_type->valuestring);
+	}
+
+	if (ip != NULL && cJSON_IsString(ip)) {
+		struct sockaddr_in sa;
+		inet_pton(AF_INET, ip->valuestring, &(sa.sin_addr));
+		ftn->ip = sa.sin_addr.s_addr;
+	} else {
+		print_err("Error: IP is missing or non-string\n");
+		return -EINVAL;
+	}
+	if (mac != NULL && cJSON_IsString(mac)) {
+		if (6 == sscanf(mac->valuestring,
+				"%hhx:%hhx:%hhx:%hhx:%hhx:%hhx%*c",
+				&ftn->mac[0], &ftn->mac[1], &ftn->mac[2],
+				&ftn->mac[3], &ftn->mac[4], &ftn->mac[5])) {
+		} else {
+			print_err("Error: Invalid MAC\n");
+			return -EINVAL;
+		}
+	} else {
+		print_err("MAC is missing or non-string\n");
+		return -EINVAL;
+	}
+
+	if (next_ip != NULL && cJSON_IsString(next_ip)) {
+		struct sockaddr_in sa;
+		inet_pton(AF_INET, next_ip->valuestring, &(sa.sin_addr));
+		ftn->next_ip = sa.sin_addr.s_addr;
+	} else {
+		print_err("Error: Next IP is missing or non-string\n");
+		return -EINVAL;
+	}
+	if (next_mac != NULL && cJSON_IsString(next_mac)) {
+		if (6 == sscanf(next_mac->valuestring,
+				"%hhx:%hhx:%hhx:%hhx:%hhx:%hhx%*c",
+				&ftn->next_mac[0], &ftn->next_mac[1],
+				&ftn->next_mac[2], &ftn->next_mac[3],
+				&ftn->next_mac[4], &ftn->next_mac[5])) {
+		} else {
+			print_err("Error: Invalid Next MAC\n");
+			return -EINVAL;
+		}
+	} else {
+		print_err("Next MAC is missing or non-string\n");
+		return -EINVAL;
+	}
+	return 0;
+}
+
 int trn_cli_parse_ep(const cJSON *jsonobj, struct rpc_trn_endpoint_t *ep)
 {
 	cJSON *tunnel_id = cJSON_GetObjectItem(jsonobj, "tunnel_id");
@@ -154,6 +266,27 @@ int trn_cli_parse_ep(const cJSON *jsonobj, struct rpc_trn_endpoint_t *ep)
 		}
 	}
 
+	return 0;
+}
+
+int trn_cli_parse_zeta_key(const cJSON *jsonobj,
+			   struct rpc_trn_zeta_key_t *zeta_key)
+{
+	cJSON *id = cJSON_GetObjectItem(jsonobj, "id");
+	cJSON *zeta_type = cJSON_GetObjectItem(jsonobj, "zeta_type");
+
+	if (id == NULL) {
+		print_err("Error: Zeta ID Error\n");
+		return -EINVAL;
+	} else if (cJSON_IsNumber(id)) {
+		zeta_key->id = atoi(id->valuestring);
+	}
+	if (zeta_type == NULL) {
+		print_err("Error: Zeta zeta_type Error\n");
+		return -EINVAL;
+	} else if (cJSON_IsNumber(zeta_type)) {
+		zeta_key->zeta_type = atoi(zeta_type->valuestring);
+	}
 	return 0;
 }
 

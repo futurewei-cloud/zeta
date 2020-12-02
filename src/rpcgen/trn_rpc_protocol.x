@@ -28,6 +28,9 @@
 
 /*----- Data types. ----- */
 
+/* At most 10 chains, size has to be prime and 100x number of chains */
+const RPC_TRN_MAX_MAGLEV_TABLE_SIZE = 10000;
+
 /* Upper limit on maximum number of enpoint hosts */
 const RPC_TRN_MAX_REMOTE_IPS = 256;
 
@@ -37,6 +40,22 @@ const RPC_TRN_ERROR = 2;
 const RPC_TRN_FATAL = 3;
 const RPC_TRN_NOT_IMPLEMENTED = 4;
 
+struct rpc_trn_dft_t {
+       string interface<20>;
+       uint32_t zeta_type;
+       uint32_t id;
+       uint32_t table<RPC_TRN_MAX_MAGLEV_TABLE_SIZE>;
+};
+
+struct rpc_trn_ftn_t {
+       string interface<20>;
+       uint32_t zeta_type;
+       uint32_t id;
+       uint32_t ip;
+       unsigned char mac[6];
+       uint32_t next_ip;
+       unsigned char next_mac[6];
+};
 
 /* Defines an endpoint (all types) */
 struct rpc_trn_endpoint_t {
@@ -48,6 +67,12 @@ struct rpc_trn_endpoint_t {
        string hosted_interface<20>;
        string veth<20>;
        uint64_t tunid;
+};
+
+struct rpc_trn_zeta_key_t {
+       string interface<20>;
+       uint32_t zeta_type;
+       uint32_t id;
 };
 
 /* Defines a unique key to get/delete an RP (in DP) */
@@ -103,18 +128,24 @@ struct rpc_trn_ebpf_prog_stage_t {
 
 program RPC_TRANSIT_REMOTE_PROTOCOL {
         version RPC_TRANSIT_ALFAZERO {
-                int UPDATE_EP(rpc_trn_endpoint_t) = 1;
+                int UPDATE_DFT(rpc_trn_dft_t) = 1;
+                int UPDATE_FTN(rpc_trn_ftn_t) = 2;
+                int UPDATE_EP(rpc_trn_endpoint_t) = 3;
 
-                int DELETE_EP(rpc_trn_endpoint_key_t) = 2;
+                int DELETE_DFT(rpc_trn_zeta_key_t) = 4;
+                int DELETE_FTN(rpc_trn_zeta_key_t) = 5;
+                int DELETE_EP(rpc_trn_endpoint_key_t) = 6;
 
-                rpc_trn_endpoint_t GET_EP(rpc_trn_endpoint_key_t) = 3;
+                rpc_trn_dft_t GET_DFT(rpc_trn_zeta_key_t) = 7;
+                rpc_trn_ftn_t GET_FTN(rpc_trn_zeta_key_t) = 8;
+                rpc_trn_endpoint_t GET_EP(rpc_trn_endpoint_key_t) = 9;
 
-                int LOAD_TRANSIT_XDP(rpc_trn_xdp_intf_t) = 4;
+                int LOAD_TRANSIT_XDP(rpc_trn_xdp_intf_t) = 10;
 
-                int UNLOAD_TRANSIT_XDP(rpc_intf_t) = 5;
+                int UNLOAD_TRANSIT_XDP(rpc_intf_t) = 11;
 
-                int LOAD_TRANSIT_XDP_PIPELINE_STAGE(rpc_trn_ebpf_prog_t) = 6;
-                int UNLOAD_TRANSIT_XDP_PIPELINE_STAGE(rpc_trn_ebpf_prog_stage_t) = 7;
+                int LOAD_TRANSIT_XDP_PIPELINE_STAGE(rpc_trn_ebpf_prog_t) = 12;
+                int UNLOAD_TRANSIT_XDP_PIPELINE_STAGE(rpc_trn_ebpf_prog_stage_t) = 13;
           } = 1;
 
 } =  0x20009051;

@@ -54,6 +54,8 @@ struct ebpf_prog_stage_t {
 	int prog_fd;
 	struct bpf_object *obj;
 
+	int dfts_map_ref_fd;
+	int ftns_map_ref_fd;
 	int endpoints_map_ref_fd;
 	int interface_config_map_ref_fd;
 	int hosted_endpoints_iface_map_ref_fd;
@@ -64,6 +66,8 @@ struct ebpf_prog_stage_t {
 	int ep_flow_host_cache_ref_fd;
 	int ep_host_cache_ref_fd;
 
+	struct bpf_map *dfts_map_ref;
+	struct bpf_map *ftns_map_ref;
 	struct bpf_map *endpoints_map_ref;
 	struct bpf_map *hosted_endpoints_iface_map_ref;
 	struct bpf_map *interface_config_map_ref;
@@ -86,6 +90,8 @@ struct user_metadata_t {
 	int itf_idx[TRAN_MAX_ITF];
 
 	int jmp_table_fd;
+	int dfts_map_fd;
+	int ftns_map_fd;
 	int endpoints_map_fd;
 	int interface_config_map_fd;
 	int hosted_endpoints_iface_map_fd;
@@ -96,6 +102,8 @@ struct user_metadata_t {
 	int ep_host_cache_fd;
 
 	struct bpf_map *jmp_table_map;
+	struct bpf_map *dfts_map;
+	struct bpf_map *ftns_map;
 	struct bpf_map *endpoints_map;
 	struct bpf_map *hosted_endpoints_iface_map;
 	struct bpf_map *interface_config_map;
@@ -117,11 +125,27 @@ int trn_user_metadata_free(struct user_metadata_t *md);
 
 int trn_bpf_maps_init(struct user_metadata_t *md);
 
+int trn_update_dft(struct user_metadata_t *md, struct zeta_key_t *dft_key,
+		   struct dft_t *dft);
+
+int trn_update_ftn(struct user_metadata_t *md, struct zeta_key_t *ftn_key,
+		   struct ftn_t *ftn);
+
 int trn_update_endpoint(struct user_metadata_t *md,
 			struct endpoint_key_t *epkey, struct endpoint_t *ep);
 
+int trn_get_dft(struct user_metadata_t *md, struct zeta_key_t *dft_key,
+		struct dft_t *dft);
+
+int trn_get_ftn(struct user_metadata_t *md, struct zeta_key_t *ftn_key,
+		struct ftn_t *ftn);
+
 int trn_get_endpoint(struct user_metadata_t *md, struct endpoint_key_t *epkey,
 		     struct endpoint_t *ep);
+
+int trn_delete_dft(struct user_metadata_t *md, struct zeta_key_t *zeta_key);
+
+int trn_delete_ftn(struct user_metadata_t *md, struct zeta_key_t *zeta_key);
 
 int trn_delete_endpoint(struct user_metadata_t *md,
 			struct endpoint_key_t *epkey);

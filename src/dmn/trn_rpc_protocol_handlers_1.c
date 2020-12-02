@@ -81,6 +81,102 @@ void trn_itf_table_delete(char *itf)
 	INTF_DELETE();
 }
 
+int *update_dft_1_svc(rpc_trn_dft_t *dft, struct svc_req *rqstp)
+{
+	UNUSED(rqstp);
+	static int result;
+	result = 0;
+	int rc;
+	char *itf = dft->interface;
+	struct zeta_key_t dft_key;
+	struct dft_t dft_val;
+
+	TRN_LOG_DEBUG("update_dft_1 dft id: %d", dft->id);
+
+	struct user_metadata_t *md = trn_itf_table_find(itf);
+
+	if (!md) {
+		TRN_LOG_ERROR("Cannot find interface metadata for %s", itf);
+		result = RPC_TRN_ERROR;
+		goto error;
+	}
+
+	dft_key.id = dft->id;
+	dft_key.zeta_type = dft->zeta_type;
+	dft_val.table_len = dft->table.table_len;
+	if (dft_val.table_len > TRAN_MAX_MAGLEV_TABLE_SIZE) {
+		TRN_LOG_WARN(
+			"Number of maximum remote Table entries exceeded %d!",
+			TRAN_MAX_REMOTES);
+		result = RPC_TRN_ERROR;
+		goto error;
+	}
+
+	if (dft_val.table_len > 0) {
+		memcpy(dft_val.table, dft->table.table_val,
+		       dft_val.table_len * sizeof(dft_val.table[0]));
+	}
+	rc = trn_update_dft(md, &dft_key, &dft_val);
+
+	if (rc != 0) {
+		TRN_LOG_ERROR(
+			"Cannot update transit XDP with dft %d on interface %s",
+			dft_key.id, itf);
+		result = RPC_TRN_ERROR;
+		goto error;
+	}
+
+	return &result;
+
+error:
+	return &result;
+}
+
+int *update_ftn_1_svc(rpc_trn_ftn_t *ftn, struct svc_req *rqstp)
+{
+	UNUSED(rqstp);
+	static int result;
+	result = 0;
+	int rc;
+	char *itf = ftn->interface;
+	struct zeta_key_t ftn_key;
+	struct ftn_t ftn_val;
+
+	TRN_LOG_DEBUG("update_ftn_1 ftn id: %d", ftn->id);
+
+	struct user_metadata_t *md = trn_itf_table_find(itf);
+
+	if (!md) {
+		TRN_LOG_ERROR("Cannot find interface metadata for %s", itf);
+		result = RPC_TRN_ERROR;
+		goto error;
+	}
+
+	ftn_key.id = ftn->id;
+	ftn_key.zeta_type = ftn->zeta_type;
+
+	ftn_val.ip = ftn->ip;
+	ftn_val.next_ip = ftn->next_ip;
+	memcpy(ftn_val.mac, ftn->mac, 6 * sizeof(ftn_val.mac[0]));
+	memcpy(ftn_val.next_mac, ftn->next_mac,
+	       6 * sizeof(ftn_val.next_mac[0]));
+
+	rc = trn_update_ftn(md, &ftn_key, &ftn_val);
+
+	if (rc != 0) {
+		TRN_LOG_ERROR(
+			"Cannot update transit XDP with ftn %d on interface %s",
+			ftn->id, itf);
+		result = RPC_TRN_ERROR;
+		goto error;
+	}
+
+	return &result;
+
+error:
+	return &result;
+}
+
 int *update_ep_1_svc(rpc_trn_endpoint_t *ep, struct svc_req *rqstp)
 {
 	UNUSED(rqstp);
@@ -156,6 +252,78 @@ error:
 	return &result;
 }
 
+int *delete_dft_1_svc(rpc_trn_zeta_key_t *argp, struct svc_req *rqstp)
+{
+	UNUSED(rqstp);
+	static int result;
+	result = 0;
+	int rc;
+	struct zeta_key_t dft_key;
+
+	TRN_LOG_DEBUG("delete_dft_1 dft id: %d on interface: %s", argp->id,
+		      argp->interface);
+
+	struct user_metadata_t *md = trn_itf_table_find(argp->interface);
+
+	if (!md) {
+		TRN_LOG_ERROR("Cannot find interface metadata for %s",
+			      argp->interface);
+		result = RPC_TRN_ERROR;
+		goto error;
+	}
+
+	dft_key.id = argp->id;
+	dft_key.zeta_type = argp->zeta_type;
+	rc = trn_delete_dft(md, &dft_key);
+
+	if (rc != 0) {
+		TRN_LOG_ERROR("Failure deleting dft %d on interface %s",
+			      argp->id, argp->interface);
+		result = RPC_TRN_ERROR;
+		goto error;
+	}
+
+	return &result;
+error:
+	return &result;
+}
+
+int *delete_ftn_1_svc(rpc_trn_zeta_key_t *argp, struct svc_req *rqstp)
+{
+	UNUSED(rqstp);
+	static int result;
+	result = 0;
+	int rc;
+	struct zeta_key_t ftn_key;
+
+	TRN_LOG_DEBUG("delete_ftn_1 dft id: %d on interface: %s", argp->id,
+		      argp->interface);
+
+	struct user_metadata_t *md = trn_itf_table_find(argp->interface);
+
+	if (!md) {
+		TRN_LOG_ERROR("Cannot find interface metadata for %s",
+			      argp->interface);
+		result = RPC_TRN_ERROR;
+		goto error;
+	}
+
+	ftn_key.id = argp->id;
+	ftn_key.zeta_type = argp->zeta_type;
+	rc = trn_delete_ftn(md, &ftn_key);
+
+	if (rc != 0) {
+		TRN_LOG_ERROR("Failure deleting ftn %d on interface %s",
+			      argp->id, argp->interface);
+		result = RPC_TRN_ERROR;
+		goto error;
+	}
+
+	return &result;
+error:
+	return &result;
+}
+
 int *delete_ep_1_svc(rpc_trn_endpoint_key_t *argp, struct svc_req *rqstp)
 {
 	UNUSED(rqstp);
@@ -194,6 +362,91 @@ int *delete_ep_1_svc(rpc_trn_endpoint_key_t *argp, struct svc_req *rqstp)
 
 	return &result;
 error:
+	return &result;
+}
+
+rpc_trn_dft_t *get_dft_1_svc(rpc_trn_zeta_key_t *argp, struct svc_req *rqstp)
+{
+	UNUSED(rqstp);
+	static rpc_trn_dft_t result;
+	result.table.table_len = 0;
+	int rc;
+	struct zeta_key_t dft_key;
+	struct dft_t dft_val;
+
+	TRN_LOG_DEBUG("get_dft_1 dft id: %d on interface: %s", argp->id,
+		      argp->interface);
+
+	struct user_metadata_t *md = trn_itf_table_find(argp->interface);
+
+	if (!md) {
+		TRN_LOG_ERROR("Cannot find interface metadata for %s",
+			      argp->interface);
+		goto error;
+	}
+
+	dft_key.id = argp->id;
+	dft_key.zeta_type = argp->zeta_type;
+	rc = trn_get_dft(md, &dft_key, &dft_val);
+
+	if (rc != 0) {
+		TRN_LOG_ERROR("Cannot get dft %d on interface %s", argp->id,
+			      argp->interface);
+		goto error;
+	}
+	result.interface = argp->interface;
+	result.id = argp->id;
+	result.zeta_type = argp->zeta_type;
+	result.table.table_len = dft_val.table_len;
+	result.table.table_val = dft_val.table;
+	return &result;
+
+error:
+	result.interface = "";
+	return &result;
+}
+
+rpc_trn_ftn_t *get_ftn_1_svc(rpc_trn_zeta_key_t *argp, struct svc_req *rqstp)
+{
+	UNUSED(rqstp);
+	static rpc_trn_ftn_t result;
+	memset(result.mac, 0, sizeof(result.mac));
+	memset(result.next_mac, 0, sizeof(result.next_mac));
+	int rc;
+	struct zeta_key_t ftn_key;
+	struct ftn_t ftn_val;
+
+	TRN_LOG_DEBUG("get_ftn_1 ftn id: %d on interface: %s", argp->id,
+		      argp->interface);
+
+	struct user_metadata_t *md = trn_itf_table_find(argp->interface);
+
+	if (!md) {
+		TRN_LOG_ERROR("Cannot find interface metadata for %s",
+			      argp->interface);
+		goto error;
+	}
+
+	ftn_key.id = argp->id;
+	ftn_key.zeta_type = argp->zeta_type;
+	rc = trn_get_ftn(md, &ftn_key, &ftn_val);
+
+	if (rc != 0) {
+		TRN_LOG_ERROR("Cannot get ftn %d on interface %s", argp->id,
+			      argp->interface);
+		goto error;
+	}
+	result.interface = argp->interface;
+	result.id = argp->id;
+	result.zeta_type = argp->zeta_type;
+	result.ip = ftn_val.ip;
+	result.next_ip = ftn_val.next_ip;
+	memcpy(result.mac, ftn_val.mac, sizeof(ftn_val.mac));
+	memcpy(result.next_mac, ftn_val.next_mac, sizeof(ftn_val.next_mac));
+	return &result;
+
+error:
+	result.interface = "";
 	return &result;
 }
 
