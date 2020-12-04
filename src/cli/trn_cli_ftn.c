@@ -154,6 +154,7 @@ void dump_ftn(struct rpc_trn_ftn_t *ftn)
 {
 	print_msg("Interface: %s\n", ftn->interface);
 	print_msg("Ftn ID: %d\n", ftn->id);
+	print_msg("Ftn Position: %d\n", ftn->position);
 	print_msg("IP: 0x%x\n", ftn->ip);
 	print_msg("MAC: %s\n", ftn->mac);
 	print_msg("Next IP: 0x%x\n", ftn->ip);

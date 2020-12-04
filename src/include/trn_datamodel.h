@@ -30,6 +30,11 @@
 
 #define TRAN_ZETA_TYPE_DFT = 1
 #define TRAN_ZETA_TYPE_FTN = 0
+
+#define TRAN_FTN_TYPE_HEAD = 0
+#define TRAN_FTN_TYPE_MIDDLE = 1
+#define TRAN_FTN_TYPE_TAIL = 2
+
 #define TRAN_MAX_MAGLEV_TABLE_SIZE 10000
 
 #define TRAN_MAX_NEP 65537
@@ -75,6 +80,7 @@ struct dft_t {
 } __attribute__((packed, aligned(4)));
 
 struct ftn_t {
+	__u8 position;
 	__u32 ip;
 	__u32 next_ip;
 	unsigned char mac[6];

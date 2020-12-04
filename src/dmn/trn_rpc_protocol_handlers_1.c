@@ -155,6 +155,7 @@ int *update_ftn_1_svc(rpc_trn_ftn_t *ftn, struct svc_req *rqstp)
 	ftn_key.id = ftn->id;
 	ftn_key.zeta_type = ftn->zeta_type;
 
+	ftn_val.position = ftn->position;
 	ftn_val.ip = ftn->ip;
 	ftn_val.next_ip = ftn->next_ip;
 	memcpy(ftn_val.mac, ftn->mac, 6 * sizeof(ftn_val.mac[0]));
@@ -439,6 +440,7 @@ rpc_trn_ftn_t *get_ftn_1_svc(rpc_trn_zeta_key_t *argp, struct svc_req *rqstp)
 	result.interface = argp->interface;
 	result.id = argp->id;
 	result.zeta_type = argp->zeta_type;
+	result.position = ftn_val.position;
 	result.ip = ftn_val.ip;
 	result.next_ip = ftn_val.next_ip;
 	memcpy(result.mac, ftn_val.mac, sizeof(ftn_val.mac));

@@ -73,6 +73,7 @@ class TrnRpc:
         jsonconf = {
             "id": ftn.id,
             "zeta_type": "1",
+            "ftn_position": ftn.position,
             "ip": ftn.store.get_obj(KIND.droplet, ftn_droplet).ip,
             "mac": ftn.store.get_obj(KIND.droplet, ftn_droplet).mac,
             "next_ip": ftn_next.store.get_obj(KIND.droplet, ftn_next_droplet).ip,

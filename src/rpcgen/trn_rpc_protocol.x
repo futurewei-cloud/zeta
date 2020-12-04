@@ -49,6 +49,7 @@ struct rpc_trn_dft_t {
 
 struct rpc_trn_ftn_t {
        string interface<20>;
+       uint8_t position;
        uint32_t zeta_type;
        uint32_t id;
        uint32_t ip;

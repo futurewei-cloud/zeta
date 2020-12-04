@@ -70,22 +70,28 @@ int trn_cli_parse_dft(const cJSON *jsonobj, struct rpc_trn_dft_t *dft)
 	if (id == NULL) {
 		print_err("Error: DFT ID Error\n");
 		return -EINVAL;
-	} else if (cJSON_IsNumber(id)) {
+	} else if (cJSON_IsString(id)) {
 		dft->id = atoi(id->valuestring);
+	} else {
+		print_err("Error: ID Error\n");
+		return -EINVAL;
 	}
 
 	if (zeta_type == NULL) {
 		print_err("Error: Zeta zeta_type Error\n");
 		return -EINVAL;
-	} else if (cJSON_IsNumber(zeta_type)) {
+	} else if (cJSON_IsString(zeta_type)) {
 		dft->zeta_type = atoi(zeta_type->valuestring);
+	} else {
+		print_err("Error: Zeta Type Error\n");
+		return -EINVAL;
 	}
 
 	int i = 0;
 	dft->table.table_len = 0;
 	cJSON_ArrayForEach(entry, table)
 	{
-		if (cJSON_IsNumber(entry)) {
+		if (cJSON_IsString(entry)) {
 			dft->table.table_val[i] = atoi(entry->valuestring);
 			dft->table.table_len++;
 		} else {
@@ -106,23 +112,40 @@ int trn_cli_parse_ftn(const cJSON *jsonobj, struct rpc_trn_ftn_t *ftn)
 {
 	cJSON *id = cJSON_GetObjectItem(jsonobj, "id");
 	cJSON *zeta_type = cJSON_GetObjectItem(jsonobj, "zeta_type");
+	cJSON *position = cJSON_GetObjectItem(jsonobj, "position");
 	cJSON *ip = cJSON_GetObjectItem(jsonobj, "ip");
 	cJSON *mac = cJSON_GetObjectItem(jsonobj, "mac");
 	cJSON *next_ip = cJSON_GetObjectItem(jsonobj, "next_ip");
 	cJSON *next_mac = cJSON_GetObjectItem(jsonobj, "next_mac");
 
 	if (id == NULL) {
-		print_err("Error: DFT ID Error\n");
+		print_err("Error: FTN ID Error\n");
 		return -EINVAL;
-	} else if (cJSON_IsNumber(id)) {
+	} else if (cJSON_IsString(id)) {
 		ftn->id = atoi(id->valuestring);
+	} else {
+		print_err("Error: ID Error\n");
+		return -EINVAL;
 	}
 
 	if (zeta_type == NULL) {
 		print_err("Error: Zeta zeta_type Error\n");
 		return -EINVAL;
-	} else if (cJSON_IsNumber(zeta_type)) {
+	} else if (cJSON_IsString(zeta_type)) {
 		ftn->zeta_type = atoi(zeta_type->valuestring);
+	} else {
+		print_err("Error: Zeta Type Error\n");
+		return -EINVAL;
+	}
+
+	if (position == NULL) {
+		print_err("Error: FTN Position Error\n");
+		return -EINVAL;
+	} else if (cJSON_IsString(id)) {
+		ftn->position = atoi(position->valuestring);
+	} else {
+		print_err("Error: Position Error\n");
+		return -EINVAL;
 	}
 
 	if (ip != NULL && cJSON_IsString(ip)) {
@@ -278,14 +301,21 @@ int trn_cli_parse_zeta_key(const cJSON *jsonobj,
 	if (id == NULL) {
 		print_err("Error: Zeta ID Error\n");
 		return -EINVAL;
-	} else if (cJSON_IsNumber(id)) {
+	} else if (cJSON_IsString(id)) {
 		zeta_key->id = atoi(id->valuestring);
+	} else {
+		print_err("Error: ID Error\n");
+		return -EINVAL;
 	}
+
 	if (zeta_type == NULL) {
 		print_err("Error: Zeta zeta_type Error\n");
 		return -EINVAL;
-	} else if (cJSON_IsNumber(zeta_type)) {
+	} else if (cJSON_IsString(zeta_type)) {
 		zeta_key->zeta_type = atoi(zeta_type->valuestring);
+	} else {
+		print_err("Error: Zeta Type Error\n");
+		return -EINVAL;
 	}
 	return 0;
 }
