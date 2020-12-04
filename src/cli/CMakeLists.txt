@@ -19,10 +19,16 @@ set_target_properties(transit PROPERTIES
 
 file(GLOB TEST_SOURCE ${CMAKE_CURRENT_LIST_DIR}/test/*.c ${CMAKE_CURRENT_LIST_DIR}/*.c)
 list(REMOVE_ITEM TEST_SOURCE ${CMAKE_CURRENT_LIST_DIR}/trn_cli.c)
-set(CLI_MOCKS "-Wl,--wrap=update_ep_1 \
-    -Wl,--wrap=load_transit_xdp_1 \
+set(CLI_MOCKS "-Wl,--wrap=load_transit_xdp_1 \
     -Wl,--wrap=unload_transit_xdp_1 \
+    -Wl,--wrap=update_dft_1 \
+    -Wl,--wrap=update_ftn_1 \
+    -Wl,--wrap=update_ep_1 \
+    -Wl,--wrap=get_dft_1 \
+    -Wl,--wrap=get_ftn_1 \
     -Wl,--wrap=get_ep_1 \
+    -Wl,--wrap=delete_dft_1 \
+    -Wl,--wrap=delete_ftn_1 \
     -Wl,--wrap=delete_ep_1 \
     -Wl,--wrap=setrlimit")
 
