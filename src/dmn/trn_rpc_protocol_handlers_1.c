@@ -373,7 +373,7 @@ rpc_trn_dft_t *get_dft_1_svc(rpc_trn_zeta_key_t *argp, struct svc_req *rqstp)
 	result.table.table_len = 0;
 	int rc;
 	struct zeta_key_t dft_key;
-	struct dft_t dft_val;
+	static struct dft_t dft_val;
 
 	TRN_LOG_DEBUG("get_dft_1 dft id: %d on interface: %s", argp->id,
 		      argp->interface);
@@ -415,7 +415,7 @@ rpc_trn_ftn_t *get_ftn_1_svc(rpc_trn_zeta_key_t *argp, struct svc_req *rqstp)
 	memset(result.next_mac, 0, sizeof(result.next_mac));
 	int rc;
 	struct zeta_key_t ftn_key;
-	struct ftn_t ftn_val;
+	static struct ftn_t ftn_val;
 
 	TRN_LOG_DEBUG("get_ftn_1 ftn id: %d on interface: %s", argp->id,
 		      argp->interface);
@@ -462,7 +462,7 @@ rpc_trn_endpoint_t *get_ep_1_svc(rpc_trn_endpoint_key_t *argp,
 	memset(result.mac, 0, sizeof(result.mac));
 	int rc;
 	struct endpoint_key_t epkey;
-	struct endpoint_t epval;
+	static struct endpoint_t epval;
 
 	TRN_LOG_DEBUG("get_ep_1 ep tunid: %ld, ip: 0x%x,"
 		      " on interface: %s",

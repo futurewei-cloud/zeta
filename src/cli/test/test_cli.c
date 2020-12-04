@@ -224,9 +224,8 @@ static int check_dft_equal(const LargestIntegralType value,
 	      cmpfunc);
 
 	for (i = 0; i < dft->table.table_len; i++) {
-		if (c_dft->table.table_val[i] != dft->table.table_val[i]) {
-			return false;
-		}
+		assert_int_equal(c_dft->table.table_val[i],
+				 dft->table.table_val[i]);
 	}
 
 	return true;
@@ -237,7 +236,6 @@ static int check_ftn_equal(const LargestIntegralType value,
 {
 	struct rpc_trn_ftn_t *ftn = (struct rpc_trn_ftn_t *)value;
 	struct rpc_trn_ftn_t *c_ftn = (struct rpc_trn_ftn_t *)check_value_data;
-	int i;
 
 	assert_string_equal(ftn->interface, c_ftn->interface);
 	assert_int_equal(ftn->id, c_ftn->id);
