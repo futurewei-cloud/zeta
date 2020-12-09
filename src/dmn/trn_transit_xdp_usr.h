@@ -129,35 +129,33 @@ int trn_user_metadata_free(struct user_metadata_t *md);
 
 int trn_bpf_maps_init(struct user_metadata_t *md);
 
-int trn_update_dft(struct user_metadata_t *md, struct zeta_key_t *dft_key,
+int trn_update_dft(struct user_metadata_t *md, __u32 *dft_key,
 		   struct dft_t *dft);
 
-int trn_update_chain(struct user_metadata_t *md, struct zeta_key_t *ftn_key,
+int trn_update_chain(struct user_metadata_t *md, __u32 *ftn_key,
 		     struct chain_t *chain);
 
-int trn_update_ftn(struct user_metadata_t *md, struct zeta_key_t *ftn_key,
+int trn_update_ftn(struct user_metadata_t *md, __u32 *ftn_key,
 		   struct ftn_t *ftn);
 
 int trn_update_endpoint(struct user_metadata_t *md,
 			struct endpoint_key_t *epkey, struct endpoint_t *ep);
 
-int trn_get_dft(struct user_metadata_t *md, struct zeta_key_t *dft_key,
-		struct dft_t *dft);
+int trn_get_dft(struct user_metadata_t *md, __u32 *dft_key, struct dft_t *dft);
 
-int trn_get_chain(struct user_metadata_t *md, struct zeta_key_t *chain_key,
+int trn_get_chain(struct user_metadata_t *md, __u32 *chain_key,
 		  struct chain_t *chain);
 
-int trn_get_ftn(struct user_metadata_t *md, struct zeta_key_t *ftn_key,
-		struct ftn_t *ftn);
+int trn_get_ftn(struct user_metadata_t *md, __u32 *ftn_key, struct ftn_t *ftn);
 
 int trn_get_endpoint(struct user_metadata_t *md, struct endpoint_key_t *epkey,
 		     struct endpoint_t *ep);
 
-int trn_delete_dft(struct user_metadata_t *md, struct zeta_key_t *zeta_key);
+int trn_delete_dft(struct user_metadata_t *md, __u32 *zeta_key);
 
-int trn_delete_chain(struct user_metadata_t *md, struct zeta_key_t *zeta_key);
+int trn_delete_chain(struct user_metadata_t *md, __u32 *zeta_key);
 
-int trn_delete_ftn(struct user_metadata_t *md, struct zeta_key_t *zeta_key);
+int trn_delete_ftn(struct user_metadata_t *md, __u32 *zeta_key);
 
 int trn_delete_endpoint(struct user_metadata_t *md,
 			struct endpoint_key_t *epkey);

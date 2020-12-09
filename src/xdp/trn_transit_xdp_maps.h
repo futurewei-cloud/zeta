@@ -44,30 +44,30 @@ BPF_ANNOTATE_KV_PAIR(jmp_table, __u32, __u32);
 
 struct bpf_map_def SEC("maps") dfts_map = {
 	.type = BPF_MAP_TYPE_HASH,
-	.key_size = sizeof(struct zeta_key_t),
+	.key_size = sizeof(__u32),
 	.value_size = sizeof(struct dft_t),
 	.max_entries = 1,
 	.map_flags = 0,
 };
-BPF_ANNOTATE_KV_PAIR(dfts_map, struct zeta_key_t, struct dft_t);
+BPF_ANNOTATE_KV_PAIR(dfts_map, __u32, struct dft_t);
 
 struct bpf_map_def SEC("maps") chains_map = {
 	.type = BPF_MAP_TYPE_HASH,
-	.key_size = sizeof(struct zeta_key_t),
+	.key_size = sizeof(__u32),
 	.value_size = sizeof(struct chain_t),
 	.max_entries = MAX_CHAIN,
 	.map_flags = 0,
 };
-BPF_ANNOTATE_KV_PAIR(chains_map, struct zeta_key_t, struct chain_t);
+BPF_ANNOTATE_KV_PAIR(chains_map, __u32, struct chain_t);
 
 struct bpf_map_def SEC("maps") ftns_map = {
 	.type = BPF_MAP_TYPE_HASH,
-	.key_size = sizeof(struct zeta_key_t),
+	.key_size = sizeof(__u32),
 	.value_size = sizeof(struct ftn_t),
 	.max_entries = MAX_FTN,
 	.map_flags = 0,
 };
-BPF_ANNOTATE_KV_PAIR(ftns_map, struct zeta_key_t, struct ftn_t);
+BPF_ANNOTATE_KV_PAIR(ftns_map, __u32, struct ftn_t);
 
 struct bpf_map_def SEC("maps") endpoints_map = {
 	.type = BPF_MAP_TYPE_HASH,

@@ -153,7 +153,7 @@ static int get_unused_itf_index(struct user_metadata_t *md)
 	return -1;
 }
 
-int trn_update_dft(struct user_metadata_t *md, struct zeta_key_t *dft_key,
+int trn_update_dft(struct user_metadata_t *md, __u32 *dft_key,
 		   struct dft_t *dft)
 {
 	int err = bpf_map_update_elem(md->dfts_map_fd, dft_key, dft, 0);
@@ -164,7 +164,7 @@ int trn_update_dft(struct user_metadata_t *md, struct zeta_key_t *dft_key,
 	return 0;
 }
 
-int trn_update_chain(struct user_metadata_t *md, struct zeta_key_t *chain_key,
+int trn_update_chain(struct user_metadata_t *md, __u32 *chain_key,
 		     struct chain_t *chain)
 {
 	int err = bpf_map_update_elem(md->chains_map_fd, chain_key, chain, 0);
@@ -175,7 +175,7 @@ int trn_update_chain(struct user_metadata_t *md, struct zeta_key_t *chain_key,
 	return 0;
 }
 
-int trn_update_ftn(struct user_metadata_t *md, struct zeta_key_t *ftn_key,
+int trn_update_ftn(struct user_metadata_t *md, __u32 *ftn_key,
 		   struct ftn_t *ftn)
 {
 	int err = bpf_map_update_elem(md->ftns_map_fd, ftn_key, ftn, 0);
@@ -224,8 +224,7 @@ int trn_update_endpoint(struct user_metadata_t *md,
 	return 0;
 }
 
-int trn_get_dft(struct user_metadata_t *md, struct zeta_key_t *dft_key,
-		struct dft_t *dft)
+int trn_get_dft(struct user_metadata_t *md, __u32 *dft_key, struct dft_t *dft)
 {
 	int err = bpf_map_lookup_elem(md->dfts_map_fd, dft_key, dft);
 	if (err) {
@@ -235,7 +234,7 @@ int trn_get_dft(struct user_metadata_t *md, struct zeta_key_t *dft_key,
 	return 0;
 }
 
-int trn_get_chain(struct user_metadata_t *md, struct zeta_key_t *chain_key,
+int trn_get_chain(struct user_metadata_t *md, __u32 *chain_key,
 		  struct chain_t *chain)
 {
 	int err = bpf_map_lookup_elem(md->chains_map_fd, chain_key, chain);
@@ -246,8 +245,7 @@ int trn_get_chain(struct user_metadata_t *md, struct zeta_key_t *chain_key,
 	return 0;
 }
 
-int trn_get_ftn(struct user_metadata_t *md, struct zeta_key_t *ftn_key,
-		struct ftn_t *ftn)
+int trn_get_ftn(struct user_metadata_t *md, __u32 *ftn_key, struct ftn_t *ftn)
 {
 	int err = bpf_map_lookup_elem(md->ftns_map_fd, ftn_key, ftn);
 	if (err) {
@@ -392,7 +390,7 @@ int trn_remove_prog(struct user_metadata_t *md, unsigned int prog_idx)
 	return 0;
 }
 
-int trn_delete_dft(struct user_metadata_t *md, struct zeta_key_t *dft_key)
+int trn_delete_dft(struct user_metadata_t *md, __u32 *dft_key)
 {
 	int err = bpf_map_delete_elem(md->dfts_map_fd, dft_key);
 	if (err) {
@@ -402,7 +400,7 @@ int trn_delete_dft(struct user_metadata_t *md, struct zeta_key_t *dft_key)
 	return 0;
 }
 
-int trn_delete_chain(struct user_metadata_t *md, struct zeta_key_t *chain_key)
+int trn_delete_chain(struct user_metadata_t *md, __u32 *chain_key)
 {
 	int err = bpf_map_delete_elem(md->chains_map_fd, chain_key);
 	if (err) {
@@ -412,7 +410,7 @@ int trn_delete_chain(struct user_metadata_t *md, struct zeta_key_t *chain_key)
 	return 0;
 }
 
-int trn_delete_ftn(struct user_metadata_t *md, struct zeta_key_t *ftn_key)
+int trn_delete_ftn(struct user_metadata_t *md, __u32 *ftn_key)
 {
 	int err = bpf_map_delete_elem(md->ftns_map_fd, ftn_key);
 	if (err) {

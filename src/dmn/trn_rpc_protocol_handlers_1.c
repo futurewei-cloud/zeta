@@ -88,7 +88,7 @@ int *update_dft_1_svc(rpc_trn_dft_t *dft, struct svc_req *rqstp)
 	result = 0;
 	int rc;
 	char *itf = dft->interface;
-	struct zeta_key_t dft_key;
+	__u32 dft_key;
 	struct dft_t dft_val;
 
 	TRN_LOG_DEBUG("update_dft_1 dft id: %d", dft->id);
@@ -101,7 +101,7 @@ int *update_dft_1_svc(rpc_trn_dft_t *dft, struct svc_req *rqstp)
 		goto error;
 	}
 
-	dft_key.id = dft->id;
+	dft_key = dft->id;
 	dft_val.table_len = dft->table.table_len;
 	if (dft_val.table_len > TRAN_MAX_MAGLEV_TABLE_SIZE) {
 		TRN_LOG_WARN(
@@ -120,7 +120,7 @@ int *update_dft_1_svc(rpc_trn_dft_t *dft, struct svc_req *rqstp)
 	if (rc != 0) {
 		TRN_LOG_ERROR(
 			"Cannot update transit XDP with dft %d on interface %s",
-			dft_key.id, itf);
+			dft_key, itf);
 		result = RPC_TRN_ERROR;
 		goto error;
 	}
@@ -138,7 +138,7 @@ int *update_chain_1_svc(rpc_trn_chain_t *chain, struct svc_req *rqstp)
 	result = 0;
 	int rc;
 	char *itf = chain->interface;
-	struct zeta_key_t chain_key;
+	__u32 chain_key;
 	struct chain_t chain_val;
 
 	TRN_LOG_DEBUG("update_chain_1 chain id: %d", chain->id);
@@ -151,7 +151,7 @@ int *update_chain_1_svc(rpc_trn_chain_t *chain, struct svc_req *rqstp)
 		goto error;
 	}
 
-	chain_key.id = chain->id;
+	chain_key = chain->id;
 
 	chain_val.tail_ftn = chain->tail_ftn;
 
@@ -178,7 +178,7 @@ int *update_ftn_1_svc(rpc_trn_ftn_t *ftn, struct svc_req *rqstp)
 	result = 0;
 	int rc;
 	char *itf = ftn->interface;
-	struct zeta_key_t ftn_key;
+	__u32 ftn_key;
 	struct ftn_t ftn_val;
 
 	TRN_LOG_DEBUG("update_ftn_1 ftn id: %d", ftn->id);
@@ -191,7 +191,7 @@ int *update_ftn_1_svc(rpc_trn_ftn_t *ftn, struct svc_req *rqstp)
 		goto error;
 	}
 
-	ftn_key.id = ftn->id;
+	ftn_key = ftn->id;
 
 	ftn_val.position = ftn->position;
 	ftn_val.ip = ftn->ip;
@@ -297,7 +297,7 @@ int *delete_dft_1_svc(rpc_trn_zeta_key_t *argp, struct svc_req *rqstp)
 	static int result;
 	result = 0;
 	int rc;
-	struct zeta_key_t dft_key;
+	__u32 dft_key;
 
 	TRN_LOG_DEBUG("delete_dft_1 dft id: %d on interface: %s", argp->id,
 		      argp->interface);
@@ -311,7 +311,7 @@ int *delete_dft_1_svc(rpc_trn_zeta_key_t *argp, struct svc_req *rqstp)
 		goto error;
 	}
 
-	dft_key.id = argp->id;
+	dft_key = argp->id;
 	rc = trn_delete_dft(md, &dft_key);
 
 	if (rc != 0) {
@@ -332,7 +332,7 @@ int *delete_chain_1_svc(rpc_trn_zeta_key_t *argp, struct svc_req *rqstp)
 	static int result;
 	result = 0;
 	int rc;
-	struct zeta_key_t chain_key;
+	__u32 chain_key;
 
 	TRN_LOG_DEBUG("delete_chain_1 chain id: %d on interface: %s", argp->id,
 		      argp->interface);
@@ -346,7 +346,7 @@ int *delete_chain_1_svc(rpc_trn_zeta_key_t *argp, struct svc_req *rqstp)
 		goto error;
 	}
 
-	chain_key.id = argp->id;
+	chain_key = argp->id;
 	rc = trn_delete_chain(md, &chain_key);
 
 	if (rc != 0) {
@@ -367,7 +367,7 @@ int *delete_ftn_1_svc(rpc_trn_zeta_key_t *argp, struct svc_req *rqstp)
 	static int result;
 	result = 0;
 	int rc;
-	struct zeta_key_t ftn_key;
+	__u32 ftn_key;
 
 	TRN_LOG_DEBUG("delete_ftn_1 ftn id: %d on interface: %s", argp->id,
 		      argp->interface);
@@ -381,7 +381,7 @@ int *delete_ftn_1_svc(rpc_trn_zeta_key_t *argp, struct svc_req *rqstp)
 		goto error;
 	}
 
-	ftn_key.id = argp->id;
+	ftn_key = argp->id;
 	rc = trn_delete_ftn(md, &ftn_key);
 
 	if (rc != 0) {
@@ -443,7 +443,7 @@ rpc_trn_dft_t *get_dft_1_svc(rpc_trn_zeta_key_t *argp, struct svc_req *rqstp)
 	static rpc_trn_dft_t result;
 	result.table.table_len = 0;
 	int rc;
-	struct zeta_key_t dft_key;
+	__u32 dft_key;
 	static struct dft_t dft_val;
 
 	TRN_LOG_DEBUG("get_dft_1 dft id: %d on interface: %s", argp->id,
@@ -457,7 +457,7 @@ rpc_trn_dft_t *get_dft_1_svc(rpc_trn_zeta_key_t *argp, struct svc_req *rqstp)
 		goto error;
 	}
 
-	dft_key.id = argp->id;
+	dft_key = argp->id;
 	rc = trn_get_dft(md, &dft_key, &dft_val);
 
 	if (rc != 0) {
@@ -482,7 +482,7 @@ rpc_trn_chain_t *get_chain_1_svc(rpc_trn_zeta_key_t *argp,
 	UNUSED(rqstp);
 	static rpc_trn_chain_t result;
 	int rc;
-	struct zeta_key_t chain_key;
+	__u32 chain_key;
 	static struct chain_t chain_val;
 
 	TRN_LOG_DEBUG("get_chain_1 chain id: %d on interface: %s", argp->id,
@@ -496,7 +496,7 @@ rpc_trn_chain_t *get_chain_1_svc(rpc_trn_zeta_key_t *argp,
 		goto error;
 	}
 
-	chain_key.id = argp->id;
+	chain_key = argp->id;
 	rc = trn_get_chain(md, &chain_key, &chain_val);
 
 	if (rc != 0) {
@@ -522,7 +522,7 @@ rpc_trn_ftn_t *get_ftn_1_svc(rpc_trn_zeta_key_t *argp, struct svc_req *rqstp)
 	memset(result.mac, 0, sizeof(result.mac));
 	memset(result.next_mac, 0, sizeof(result.next_mac));
 	int rc;
-	struct zeta_key_t ftn_key;
+	__u32 ftn_key;
 	static struct ftn_t ftn_val;
 
 	TRN_LOG_DEBUG("get_ftn_1 ftn id: %d on interface: %s", argp->id,
@@ -536,7 +536,7 @@ rpc_trn_ftn_t *get_ftn_1_svc(rpc_trn_zeta_key_t *argp, struct svc_req *rqstp)
 		goto error;
 	}
 
-	ftn_key.id = argp->id;
+	ftn_key = argp->id;
 	rc = trn_get_ftn(md, &ftn_key, &ftn_val);
 
 	if (rc != 0) {

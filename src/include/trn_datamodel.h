@@ -62,10 +62,6 @@ enum trn_xdp_stage_t {
 	XDP_SCALED_EP_PROC
 };
 
-struct zeta_key_t {
-	__u32 id;
-} __attribute__((packed));
-
 struct endpoint_key_t {
 	__u32 tunip[3];
 } __attribute__((packed));
