@@ -31,7 +31,8 @@
 #include "trn_datamodel.h"
 
 #define MAX_EP 65537
-#define MAX_FTN 65537
+#define MAX_FTN 512
+#define MAX_CHAIN 128
 
 struct bpf_map_def SEC("maps") jmp_table = {
 	.type = BPF_MAP_TYPE_PROG_ARRAY,
@@ -49,6 +50,15 @@ struct bpf_map_def SEC("maps") dfts_map = {
 	.map_flags = 0,
 };
 BPF_ANNOTATE_KV_PAIR(dfts_map, struct zeta_key_t, struct dft_t);
+
+struct bpf_map_def SEC("maps") chains_map = {
+	.type = BPF_MAP_TYPE_HASH,
+	.key_size = sizeof(struct zeta_key_t),
+	.value_size = sizeof(struct chain_t),
+	.max_entries = MAX_CHAIN,
+	.map_flags = 0,
+};
+BPF_ANNOTATE_KV_PAIR(chains_map, struct zeta_key_t, struct chain_t);
 
 struct bpf_map_def SEC("maps") ftns_map = {
 	.type = BPF_MAP_TYPE_HASH,

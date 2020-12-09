@@ -102,12 +102,11 @@ int *update_dft_1_svc(rpc_trn_dft_t *dft, struct svc_req *rqstp)
 	}
 
 	dft_key.id = dft->id;
-	dft_key.zeta_type = dft->zeta_type;
 	dft_val.table_len = dft->table.table_len;
 	if (dft_val.table_len > TRAN_MAX_MAGLEV_TABLE_SIZE) {
 		TRN_LOG_WARN(
 			"Number of maximum remote Table entries exceeded %d!",
-			TRAN_MAX_REMOTES);
+			TRAN_MAX_MAGLEV_TABLE_SIZE);
 		result = RPC_TRN_ERROR;
 		goto error;
 	}
@@ -122,6 +121,46 @@ int *update_dft_1_svc(rpc_trn_dft_t *dft, struct svc_req *rqstp)
 		TRN_LOG_ERROR(
 			"Cannot update transit XDP with dft %d on interface %s",
 			dft_key.id, itf);
+		result = RPC_TRN_ERROR;
+		goto error;
+	}
+
+	return &result;
+
+error:
+	return &result;
+}
+
+int *update_chain_1_svc(rpc_trn_chain_t *chain, struct svc_req *rqstp)
+{
+	UNUSED(rqstp);
+	static int result;
+	result = 0;
+	int rc;
+	char *itf = chain->interface;
+	struct zeta_key_t chain_key;
+	struct chain_t chain_val;
+
+	TRN_LOG_DEBUG("update_chain_1 chain id: %d", chain->id);
+
+	struct user_metadata_t *md = trn_itf_table_find(itf);
+
+	if (!md) {
+		TRN_LOG_ERROR("Cannot find interface metadata for %s", itf);
+		result = RPC_TRN_ERROR;
+		goto error;
+	}
+
+	chain_key.id = chain->id;
+
+	chain_val.tail_ftn = chain->tail_ftn;
+
+	rc = trn_update_chain(md, &chain_key, &chain_val);
+
+	if (rc != 0) {
+		TRN_LOG_ERROR(
+			"Cannot update transit XDP with chain %d on interface %s",
+			chain->id, itf);
 		result = RPC_TRN_ERROR;
 		goto error;
 	}
@@ -153,7 +192,6 @@ int *update_ftn_1_svc(rpc_trn_ftn_t *ftn, struct svc_req *rqstp)
 	}
 
 	ftn_key.id = ftn->id;
-	ftn_key.zeta_type = ftn->zeta_type;
 
 	ftn_val.position = ftn->position;
 	ftn_val.ip = ftn->ip;
@@ -274,11 +312,45 @@ int *delete_dft_1_svc(rpc_trn_zeta_key_t *argp, struct svc_req *rqstp)
 	}
 
 	dft_key.id = argp->id;
-	dft_key.zeta_type = argp->zeta_type;
 	rc = trn_delete_dft(md, &dft_key);
 
 	if (rc != 0) {
 		TRN_LOG_ERROR("Failure deleting dft %d on interface %s",
+			      argp->id, argp->interface);
+		result = RPC_TRN_ERROR;
+		goto error;
+	}
+
+	return &result;
+error:
+	return &result;
+}
+
+int *delete_chain_1_svc(rpc_trn_zeta_key_t *argp, struct svc_req *rqstp)
+{
+	UNUSED(rqstp);
+	static int result;
+	result = 0;
+	int rc;
+	struct zeta_key_t chain_key;
+
+	TRN_LOG_DEBUG("delete_chain_1 chain id: %d on interface: %s", argp->id,
+		      argp->interface);
+
+	struct user_metadata_t *md = trn_itf_table_find(argp->interface);
+
+	if (!md) {
+		TRN_LOG_ERROR("Cannot find interface metadata for %s",
+			      argp->interface);
+		result = RPC_TRN_ERROR;
+		goto error;
+	}
+
+	chain_key.id = argp->id;
+	rc = trn_delete_chain(md, &chain_key);
+
+	if (rc != 0) {
+		TRN_LOG_ERROR("Failure deleting chain %d on interface %s",
 			      argp->id, argp->interface);
 		result = RPC_TRN_ERROR;
 		goto error;
@@ -297,7 +369,7 @@ int *delete_ftn_1_svc(rpc_trn_zeta_key_t *argp, struct svc_req *rqstp)
 	int rc;
 	struct zeta_key_t ftn_key;
 
-	TRN_LOG_DEBUG("delete_ftn_1 dft id: %d on interface: %s", argp->id,
+	TRN_LOG_DEBUG("delete_ftn_1 ftn id: %d on interface: %s", argp->id,
 		      argp->interface);
 
 	struct user_metadata_t *md = trn_itf_table_find(argp->interface);
@@ -310,7 +382,6 @@ int *delete_ftn_1_svc(rpc_trn_zeta_key_t *argp, struct svc_req *rqstp)
 	}
 
 	ftn_key.id = argp->id;
-	ftn_key.zeta_type = argp->zeta_type;
 	rc = trn_delete_ftn(md, &ftn_key);
 
 	if (rc != 0) {
@@ -387,7 +458,6 @@ rpc_trn_dft_t *get_dft_1_svc(rpc_trn_zeta_key_t *argp, struct svc_req *rqstp)
 	}
 
 	dft_key.id = argp->id;
-	dft_key.zeta_type = argp->zeta_type;
 	rc = trn_get_dft(md, &dft_key, &dft_val);
 
 	if (rc != 0) {
@@ -397,9 +467,47 @@ rpc_trn_dft_t *get_dft_1_svc(rpc_trn_zeta_key_t *argp, struct svc_req *rqstp)
 	}
 	result.interface = argp->interface;
 	result.id = argp->id;
-	result.zeta_type = argp->zeta_type;
 	result.table.table_len = dft_val.table_len;
 	result.table.table_val = dft_val.table;
+	return &result;
+
+error:
+	result.interface = "";
+	return &result;
+}
+
+rpc_trn_chain_t *get_chain_1_svc(rpc_trn_zeta_key_t *argp,
+				 struct svc_req *rqstp)
+{
+	UNUSED(rqstp);
+	static rpc_trn_chain_t result;
+	int rc;
+	struct zeta_key_t chain_key;
+	static struct chain_t chain_val;
+
+	TRN_LOG_DEBUG("get_chain_1 chain id: %d on interface: %s", argp->id,
+		      argp->interface);
+
+	struct user_metadata_t *md = trn_itf_table_find(argp->interface);
+
+	if (!md) {
+		TRN_LOG_ERROR("Cannot find interface metadata for %s",
+			      argp->interface);
+		goto error;
+	}
+
+	chain_key.id = argp->id;
+	rc = trn_get_chain(md, &chain_key, &chain_val);
+
+	if (rc != 0) {
+		TRN_LOG_ERROR("Cannot get chain %d on interface %s", argp->id,
+			      argp->interface);
+		goto error;
+	}
+	result.interface = argp->interface;
+	result.id = argp->id;
+	result.tail_ftn = chain_val.tail_ftn;
+
 	return &result;
 
 error:
@@ -429,7 +537,6 @@ rpc_trn_ftn_t *get_ftn_1_svc(rpc_trn_zeta_key_t *argp, struct svc_req *rqstp)
 	}
 
 	ftn_key.id = argp->id;
-	ftn_key.zeta_type = argp->zeta_type;
 	rc = trn_get_ftn(md, &ftn_key, &ftn_val);
 
 	if (rc != 0) {
@@ -439,7 +546,6 @@ rpc_trn_ftn_t *get_ftn_1_svc(rpc_trn_zeta_key_t *argp, struct svc_req *rqstp)
 	}
 	result.interface = argp->interface;
 	result.id = argp->id;
-	result.zeta_type = argp->zeta_type;
 	result.position = ftn_val.position;
 	result.ip = ftn_val.ip;
 	result.next_ip = ftn_val.next_ip;

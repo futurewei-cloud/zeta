@@ -28,9 +28,6 @@
 #define __ALIGNED_64__ __attribute__((aligned(64)))
 #define __ALWAYS_INLINE__ __attribute__((__always_inline__))
 
-#define TRAN_ZETA_TYPE_DFT = 1
-#define TRAN_ZETA_TYPE_FTN = 0
-
 #define TRAN_FTN_TYPE_HEAD = 0
 #define TRAN_FTN_TYPE_MIDDLE = 1
 #define TRAN_FTN_TYPE_TAIL = 2
@@ -67,7 +64,6 @@ enum trn_xdp_stage_t {
 
 struct zeta_key_t {
 	__u32 id;
-	__u32 zeta_type;
 } __attribute__((packed));
 
 struct endpoint_key_t {
@@ -77,6 +73,10 @@ struct endpoint_key_t {
 struct dft_t {
 	__u32 table_len;
 	__u32 table[TRAN_MAX_MAGLEV_TABLE_SIZE];
+} __attribute__((packed, aligned(4)));
+
+struct chain_t {
+	__u32 tail_ftn;
 } __attribute__((packed, aligned(4)));
 
 struct ftn_t {

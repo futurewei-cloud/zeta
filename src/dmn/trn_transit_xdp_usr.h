@@ -55,6 +55,7 @@ struct ebpf_prog_stage_t {
 	struct bpf_object *obj;
 
 	int dfts_map_ref_fd;
+	int chains_map_ref_fd;
 	int ftns_map_ref_fd;
 	int endpoints_map_ref_fd;
 	int interface_config_map_ref_fd;
@@ -67,6 +68,7 @@ struct ebpf_prog_stage_t {
 	int ep_host_cache_ref_fd;
 
 	struct bpf_map *dfts_map_ref;
+	struct bpf_map *chains_map_ref;
 	struct bpf_map *ftns_map_ref;
 	struct bpf_map *endpoints_map_ref;
 	struct bpf_map *hosted_endpoints_iface_map_ref;
@@ -91,6 +93,7 @@ struct user_metadata_t {
 
 	int jmp_table_fd;
 	int dfts_map_fd;
+	int chains_map_fd;
 	int ftns_map_fd;
 	int endpoints_map_fd;
 	int interface_config_map_fd;
@@ -103,6 +106,7 @@ struct user_metadata_t {
 
 	struct bpf_map *jmp_table_map;
 	struct bpf_map *dfts_map;
+	struct bpf_map *chains_map;
 	struct bpf_map *ftns_map;
 	struct bpf_map *endpoints_map;
 	struct bpf_map *hosted_endpoints_iface_map;
@@ -128,6 +132,9 @@ int trn_bpf_maps_init(struct user_metadata_t *md);
 int trn_update_dft(struct user_metadata_t *md, struct zeta_key_t *dft_key,
 		   struct dft_t *dft);
 
+int trn_update_chain(struct user_metadata_t *md, struct zeta_key_t *ftn_key,
+		     struct chain_t *chain);
+
 int trn_update_ftn(struct user_metadata_t *md, struct zeta_key_t *ftn_key,
 		   struct ftn_t *ftn);
 
@@ -137,6 +144,9 @@ int trn_update_endpoint(struct user_metadata_t *md,
 int trn_get_dft(struct user_metadata_t *md, struct zeta_key_t *dft_key,
 		struct dft_t *dft);
 
+int trn_get_chain(struct user_metadata_t *md, struct zeta_key_t *chain_key,
+		  struct chain_t *chain);
+
 int trn_get_ftn(struct user_metadata_t *md, struct zeta_key_t *ftn_key,
 		struct ftn_t *ftn);
 
@@ -144,6 +154,8 @@ int trn_get_endpoint(struct user_metadata_t *md, struct endpoint_key_t *epkey,
 		     struct endpoint_t *ep);
 
 int trn_delete_dft(struct user_metadata_t *md, struct zeta_key_t *zeta_key);
+
+int trn_delete_chain(struct user_metadata_t *md, struct zeta_key_t *zeta_key);
 
 int trn_delete_ftn(struct user_metadata_t *md, struct zeta_key_t *zeta_key);
 

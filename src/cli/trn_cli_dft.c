@@ -8,6 +8,43 @@
  */
 #include "trn_cli.h"
 
+int trn_cli_parse_dft(const cJSON *jsonobj, struct rpc_trn_dft_t *dft)
+{
+	cJSON *id = cJSON_GetObjectItem(jsonobj, "id");
+	cJSON *entry = NULL;
+	cJSON *table = cJSON_GetObjectItem(jsonobj, "table");
+
+	if (id == NULL) {
+		print_err("Error: DFT ID Error\n");
+		return -EINVAL;
+	} else if (cJSON_IsString(id)) {
+		dft->id = atoi(id->valuestring);
+	} else {
+		print_err("Error: ID Error\n");
+		return -EINVAL;
+	}
+
+	int i = 0;
+	dft->table.table_len = 0;
+	cJSON_ArrayForEach(entry, table)
+	{
+		if (cJSON_IsString(entry)) {
+			dft->table.table_val[i] = atoi(entry->valuestring);
+			dft->table.table_len++;
+		} else {
+			print_err("Error: Table entry is non-string\n");
+			return -EINVAL;
+		}
+		i++;
+		if (i == TRAN_MAX_MAGLEV_TABLE_SIZE) {
+			print_err(
+				"Warning: Table entries reached max limited\n");
+			break;
+		}
+	}
+	return 0;
+}
+
 int trn_cli_update_dft_subcmd(CLIENT *clnt, int argc, char *argv[])
 {
 	ketopt_t om = KETOPT_INIT;
@@ -30,7 +67,7 @@ int trn_cli_update_dft_subcmd(CLIENT *clnt, int argc, char *argv[])
 	char rpc[] = "update_dft_1";
 
 	dft.interface = conf.intf;
-	uint32_t table[RPC_TRN_MAX_MAGLEV_TABLE_SIZE];
+	uint32_t table[TRAN_MAX_MAGLEV_TABLE_SIZE];
 	dft.table.table_val = table;
 	dft.table.table_len = 0;
 	int err = trn_cli_parse_dft(json_str, &dft);

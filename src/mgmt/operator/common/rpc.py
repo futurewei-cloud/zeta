@@ -38,12 +38,15 @@ class TrnRpc:
         self.trn_cli_load_transit_xdp = f'''{self.trn_cli} load-transit-xdp -i {self.phy_itf} -j'''
         self.trn_cli_unload_transit_xdp = f'''{self.trn_cli} unload-transit-xdp -i {self.phy_itf} -j'''
         self.trn_cli_update_dft = f'''{self.trn_cli} update-dft -i {self.phy_itf} -j'''
+        self.trn_cli_update_chain = f'''{self.trn_cli} update-chain -i {self.phy_itf} -j'''
         self.trn_cli_update_ftn = f'''{self.trn_cli} update-ftn -i {self.phy_itf} -j'''
         self.trn_cli_update_ep = f'''{self.trn_cli} update-ep -i {self.phy_itf} -j'''
         self.trn_cli_get_dft = f'''{self.trn_cli} get-dft -i {self.phy_itf} -j'''
+        self.trn_cli_get_chain = f'''{self.trn_cli} get-chain -i {self.phy_itf} -j'''
         self.trn_cli_get_ftn = f'''{self.trn_cli} get-ftn -i {self.phy_itf} -j'''
         self.trn_cli_get_ep = f'''{self.trn_cli} get-ep -i {self.phy_itf} -j'''
         self.trn_cli_delete_dft = f'''{self.trn_cli} delete-dft -i {self.phy_itf} -j'''
+        self.trn_cli_delete_chain = f'''{self.trn_cli} delete-chain -i {self.phy_itf} -j'''
         self.trn_cli_delete_ftn = f'''{self.trn_cli} delete-ep -i {self.phy_itf} -j'''
         self.trn_cli_delete_ep = f'''{self.trn_cli} delete-ep -i {self.phy_itf} -j'''
         self.trn_cli_load_pipeline_stage = f'''{self.trn_cli} load-pipeline-stage -i {self.phy_itf} -j'''
@@ -57,7 +60,6 @@ class TrnRpc:
     def update_dft(self, dft):
         jsonconf = {
             "id": dft.id,
-            "zeta_type": "0",
             "table": dft.table
         }
 
@@ -67,12 +69,23 @@ class TrnRpc:
         returncode, text = run_cmd(cmd)
         logger.info("returns {} {}".format(returncode, text))
 
+    def update_chain(self, chain):
+        jsonconf = {
+            "id": chain.id,
+            "tail_ftn": chain.tail
+        }
+
+        jsonconf = json.dumps(jsonconf)
+        cmd = f'''{self.trn_cli_update_chain} \'{jsonconf}\''''
+        logger.info("update_chain: {}".format(cmd))
+        returncode, text = run_cmd(cmd)
+        logger.info("returns {} {}".format(returncode, text))
+
     def update_ftn(self, ftn, ftn_next):
         ftn_droplet = ftn.droplet
         ftn_next_droplet = ftn_next.droplet
         jsonconf = {
             "id": ftn.id,
-            "zeta_type": "1",
             "ftn_position": ftn.position,
             "ip": ftn.store.get_obj(KIND.droplet, ftn_droplet).ip,
             "mac": ftn.store.get_obj(KIND.droplet, ftn_droplet).mac,
@@ -88,7 +101,6 @@ class TrnRpc:
     def get_dft(self, dft_id):
         jsonconf = {
             "id": dft_id,
-            "zeta_type": "0"
         }
 
         jsonconf = json.dumps(jsonconf)
@@ -97,10 +109,20 @@ class TrnRpc:
         returncode, text = run_cmd(cmd)
         logger.info("returns {} {}".format(returncode, text))
 
+    def get_chain(self, chain_id):
+        jsonconf = {
+            "id": chain_id,
+        }
+
+        jsonconf = json.dumps(jsonconf)
+        cmd = f'''{self.trn_cli_get_chain} \'{jsonconf}\''''
+        logger.info("get_chain: {}".format(cmd))
+        returncode, text = run_cmd(cmd)
+        logger.info("returns {} {}".format(returncode, text))
+
     def get_ftn(self, ftn_id):
         jsonconf = {
             "id": ftn_id,
-            "zeta_type": "1",
         }
 
         jsonconf = json.dumps(jsonconf)
@@ -112,7 +134,6 @@ class TrnRpc:
     def delete_dft(self, dft_id):
         jsonconf = {
             "id": dft_id,
-            "zeta_type": "0"
         }
 
         jsonconf = json.dumps(jsonconf)
@@ -121,10 +142,20 @@ class TrnRpc:
         returncode, text = run_cmd(cmd)
         logger.info("returns {} {}".format(returncode, text))
 
+    def delete_chain(self, chain_id):
+        jsonconf = {
+            "id": chain_id,
+        }
+
+        jsonconf = json.dumps(jsonconf)
+        cmd = f'''{self.trn_cli_delete_chain} \'{jsonconf}\''''
+        logger.info("delete_dft: {}".format(cmd))
+        returncode, text = run_cmd(cmd)
+        logger.info("returns {} {}".format(returncode, text))
+
     def delete_ftn(self, ftn_id):
         jsonconf = {
             "id": ftn_id,
-            "zeta_type": "1"
         }
 
         jsonconf = json.dumps(jsonconf)

@@ -24,6 +24,132 @@
  */
 #include "trn_cli.h"
 
+int trn_cli_parse_ep_key(const cJSON *jsonobj,
+			 struct rpc_trn_endpoint_key_t *ep)
+{
+	cJSON *tunnel_id = cJSON_GetObjectItem(jsonobj, "tunnel_id");
+	cJSON *ip = cJSON_GetObjectItem(jsonobj, "ip");
+
+	if (tunnel_id == NULL) {
+		ep->tunid = 0;
+		print_err("Warning: Tunnel ID default is used: %ld\n",
+			  ep->tunid);
+	} else if (cJSON_IsString(tunnel_id)) {
+		ep->tunid = atoi(tunnel_id->valuestring);
+	} else {
+		print_err("Error: Tunnel ID Error\n");
+		return -EINVAL;
+	}
+
+	if (ip != NULL && cJSON_IsString(ip)) {
+		struct sockaddr_in sa;
+		inet_pton(AF_INET, ip->valuestring, &(sa.sin_addr));
+		ep->ip = sa.sin_addr.s_addr;
+	} else {
+		print_err("Error: IP is missing or non-string\n");
+		return -EINVAL;
+	}
+
+	return 0;
+}
+
+int trn_cli_parse_ep(const cJSON *jsonobj, struct rpc_trn_endpoint_t *ep)
+{
+	cJSON *tunnel_id = cJSON_GetObjectItem(jsonobj, "tunnel_id");
+	cJSON *ip = cJSON_GetObjectItem(jsonobj, "ip");
+	cJSON *eptype = cJSON_GetObjectItem(jsonobj, "eptype");
+	cJSON *mac = cJSON_GetObjectItem(jsonobj, "mac");
+	cJSON *veth = cJSON_GetObjectItem(jsonobj, "veth");
+	cJSON *remote_ips = cJSON_GetObjectItem(jsonobj, "remote_ips");
+	cJSON *remote_ip = NULL;
+	cJSON *hosted_iface = cJSON_GetObjectItem(jsonobj, "hosted_iface");
+
+	if (veth == NULL) {
+		ep->veth = NULL;
+		print_err("Warning: missing veth.\n");
+	} else if (cJSON_IsString(
+			   veth)) { // This transit is hosting the endpoint
+		strcpy(ep->veth, veth->valuestring);
+	}
+
+	if (hosted_iface == NULL) {
+		ep->hosted_interface = NULL;
+		print_err(
+			"Warning: missing hosted interface, using default.\n");
+	} else if (cJSON_IsString(
+			   hosted_iface)) { // This transit is hosting the endpoint
+		strcpy(ep->hosted_interface, hosted_iface->valuestring);
+	}
+
+	if (tunnel_id == NULL) {
+		ep->tunid = 0;
+		print_err("Warning: Tunnel ID default is used: %ld\n",
+			  ep->tunid);
+	} else if (cJSON_IsString(tunnel_id)) {
+		ep->tunid = atoi(tunnel_id->valuestring);
+	} else {
+		print_err("Error: Tunnel ID Error\n");
+		return -EINVAL;
+	}
+
+	if (ip != NULL && cJSON_IsString(ip)) {
+		struct sockaddr_in sa;
+		inet_pton(AF_INET, ip->valuestring, &(sa.sin_addr));
+		ep->ip = sa.sin_addr.s_addr;
+	} else {
+		print_err("Error: IP is missing or non-string\n");
+		return -EINVAL;
+	}
+
+	if (eptype == NULL) {
+		ep->eptype = 0;
+		print_err("Warning: EP TYpe (default): %d\n", ep->eptype);
+	} else if (cJSON_IsString(eptype)) {
+		ep->eptype = atoi(eptype->valuestring);
+	} else {
+		print_err("Error: eptype ID Error\n");
+		return -EINVAL;
+	}
+
+	if (mac != NULL && cJSON_IsString(mac)) {
+		if (6 == sscanf(mac->valuestring,
+				"%hhx:%hhx:%hhx:%hhx:%hhx:%hhx%*c", &ep->mac[0],
+				&ep->mac[1], &ep->mac[2], &ep->mac[3],
+				&ep->mac[4], &ep->mac[5])) {
+		} else {
+			/* invalid mac */
+			print_err("Error: Invalid MAC\n");
+			return -EINVAL;
+		}
+	} else {
+		print_err("MAC is missing or non-string\n");
+		return -EINVAL;
+	}
+
+	int i = 0;
+	ep->remote_ips.remote_ips_len = 0;
+	cJSON_ArrayForEach(remote_ip, remote_ips)
+	{
+		if (cJSON_IsString(remote_ip)) {
+			struct sockaddr_in sa;
+			inet_pton(AF_INET, remote_ip->valuestring,
+				  &(sa.sin_addr));
+			ep->remote_ips.remote_ips_val[i] = sa.sin_addr.s_addr;
+			ep->remote_ips.remote_ips_len++;
+		} else {
+			print_err("Error: Remote IP is non-string\n");
+			return -EINVAL;
+		}
+		i++;
+		if (i == RPC_TRN_MAX_REMOTE_IPS) {
+			print_err("Warning: Remote IPS reached max limited\n");
+			break;
+		}
+	}
+
+	return 0;
+}
+
 int trn_cli_update_ep_subcmd(CLIENT *clnt, int argc, char *argv[])
 {
 	ketopt_t om = KETOPT_INIT;
