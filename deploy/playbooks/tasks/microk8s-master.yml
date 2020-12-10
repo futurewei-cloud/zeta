@@ -56,6 +56,7 @@
   ignore_errors: True
 
 - name: Wait for microk8s to be ready after updating the CSR
+  become: yes
   shell: "microk8s status --wait-ready"
   changed_when: False
 
@@ -95,7 +96,8 @@
 # Get microk8s status for services we want
 # ----------------------------------------------------
 - name: Get microk8s status
-  shell: "microk8s status"
+  become: yes
+  shell: "microk8s.status"
   changed_when: False
   register: microk8s_status
 
@@ -104,6 +106,7 @@
 # ----------------------------------------------------
 
 - name: MicroK8S - Enable RBAC
+  become: yes
   shell: "microk8s enable rbac"
   when: '"rbac: enabled" not in microk8s_status.stdout_lines'
 
@@ -112,6 +115,7 @@
 # ----------------------------------------------------
 
 - name: MicroK8S - Enable DNS
+  become: yes
   shell: "microk8s enable dns"
   when: '"dns: enabled" not in microk8s_status.stdout_lines'
 
@@ -145,6 +149,7 @@
 # ----------------------------------------------------
 
 - name: MicroK8S - Enable Ingress
+  become: yes
   shell: "microk8s enable ingress"
   when: '"ingress: enabled" not in microk8s_status.stdout_lines'
 
@@ -153,6 +158,7 @@
 # ----------------------------------------------------
 
 - name: MicroK8S - Enable Registry
+  become: yes
   shell: "microk8s enable registry"
   when: '"registry: enabled" not in microk8s_status.stdout_lines'
 
@@ -172,6 +178,7 @@
   when: '"metallb: enabled" not in microk8s_status.stdout_lines'
 
 - name: MetalLB - Enable MetalLB
+  become: yes
   shell: "microk8s enable metallb:{{metallb_ip_begin}}-{{metallb_ip_end}}"
   when: '"metallb: enabled" not in microk8s_status.stdout_lines'
 
