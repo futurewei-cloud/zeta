@@ -13,10 +13,15 @@ set -o errexit
 MY_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 DEPLOYMENTS_PATH="$MY_PATH/../etc/deployments"
 
+. $MY_PATH/common.s
+
 echo "Creating the zeta-manager deployment and service..."
 
 REGISTRY="$REG" \
 envsubst '$REGISTRY' < $DEPLOYMENTS_PATH/zeta-manager-deployment.yml > $DEPLOYMENTS_PATH/.zeta-manager-deployment.yml
+
+# Delete existing deployment and deploy
+delete_pods zeta-manager deployment &>/dev/null || true
 kubectl apply -f $DEPLOYMENTS_PATH/.zeta-manager-deployment.yml
 kubectl apply -f $DEPLOYMENTS_PATH/zeta-manager-service.yml
 kubectl wait --for=condition=ready pod -l app=zeta-manager --timeout=300s

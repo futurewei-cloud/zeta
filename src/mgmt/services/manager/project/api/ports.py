@@ -26,29 +26,30 @@ ports_blueprint = Blueprint('ports', __name__)
 @ports_blueprint.route('/ports', methods=['GET', 'POST'])
 def all_ports():
     if request.method == 'POST':
-        post_data = request.get_json()
-        port = Port(
-            port_id = post_data.get('port_id'),
-            mac_port = post_data.get('mac_port'),
-            vpc_id = post_data.get('vpc_id'))
+        portList = request.get_json()
+        for post_data in portList:
+            port = Port(
+                port_id = post_data.get('port_id'),
+                mac_port = post_data.get('mac_port'),
+                vpc_id = post_data.get('vpc_id'))
 
-        host = Host.query.filter_by(ip_node=post_data.get('ip_node')).first()
-        if host is None:
-            host = Host(
-                mac_node = post_data.get('mac_node'),
-                ip_node = post_data.get('ip_node'))
-            host.host_id=str(uuid.uuid4())
-            db.session.add(host)
-        port.host_id = host.host_id
-        
-        for ip in post_data['ips_port']:
-            ep = EP(**ip)
-            ep.port_id = post_data['port_id']
-            port.eps.append(ep)
+            host = Host.query.filter_by(ip_node=post_data.get('ip_node')).first()
+            if host is None:
+                host = Host(
+                    mac_node = post_data.get('mac_node'),
+                    ip_node = post_data.get('ip_node'))
+                host.host_id=str(uuid.uuid4())
+                db.session.add(host)
+            port.host_id = host.host_id
 
-        db.session.add(port)
-        db.session.commit()
-        response_object = post_data
+            for ip in post_data['ips_port']:
+                ep = EP(**ip)
+                ep.port_id = post_data['port_id']
+                port.eps.append(ep)
+
+            db.session.add(port)
+            db.session.commit()
+        response_object = portList
     else:
         response_object = [port.to_json() for port in Port.query.all()]
     return jsonify(response_object)

@@ -69,10 +69,13 @@ def single_zgc(zgc_id):
         response_object = {}
         if 'zgc_id' in settings.activeZgc and settings.activeZgc["zgc_id"] == zgc_id:
             zgc = Zgc.query.first()
-            settings.activeZgc["zgc_id"] = zgc.zgc_id
-            settings.activeZgc["ip_start"] = zgc.ip_start
-            settings.activeZgc["ip_end"] = zgc.ip_end
-            settings.activeZgc["port_ibo"] = zgc.port_ibo
+            if zgc is not None:
+                settings.activeZgc["zgc_id"] = zgc.zgc_id
+                settings.activeZgc["ip_start"] = zgc.ip_start
+                settings.activeZgc["ip_end"] = zgc.ip_end
+                settings.activeZgc["port_ibo"] = zgc.port_ibo
+            else:
+                settings.activeZgc.clear()
     return jsonify(response_object)
 
 
