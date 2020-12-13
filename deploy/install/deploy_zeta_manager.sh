@@ -13,7 +13,7 @@ set -o errexit
 MY_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 DEPLOYMENTS_PATH="$MY_PATH/../etc/deployments"
 
-. $MY_PATH/common.s
+. $MY_PATH/common.sh
 
 echo "Creating the zeta-manager deployment and service..."
 
