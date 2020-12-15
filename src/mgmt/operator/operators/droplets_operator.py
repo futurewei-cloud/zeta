@@ -66,9 +66,9 @@ class DropletOperator(ObjectOperator):
                 return self.store.store["Droplet"][d]
         return None
 
-    def assign_droplet(self, obj):
-        droplets = set(self.store.get_all_obj_type(
-            KIND.droplet)) - self.allocated_droplets
+    def assign_droplet(self, obj, network):
+        droplets = set(self.store.get_all_network_droplets(
+            network)) - self.allocated_droplets
         if len(droplets) == 0:
             return False
         d = random.sample(droplets, 1)[0]
@@ -81,8 +81,9 @@ class DropletOperator(ObjectOperator):
         if obj.droplet == "":
             return False
         self.allocated_droplets.remove(obj.droplet)
+        logger.info("Unassigned droplet {} from {}".format(
+            obj.droplet, obj.name))
         obj.droplet = ""
-        logger.info("Unassigned droplet {} from {}".format(d, obj.name))
         return True
 
     def get_unallocated_droplets(self):

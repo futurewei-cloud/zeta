@@ -54,6 +54,9 @@ class OBJ_DEFAULTS:
     # at least 100x greater than size and prime.
     default_maglev_table_size = 307
 
+    tenant_net = "tenant"
+    zgc_net = "zgc"
+
 
 class RESOURCES:
     dfts = "dfts"

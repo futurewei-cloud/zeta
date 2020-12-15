@@ -22,6 +22,7 @@
 import logging
 import inspect
 from common.constants import KIND
+from common.constants import OBJ_DEFAULTS
 
 logger = logging.getLogger()
 
@@ -38,14 +39,20 @@ class OprStore(object):
     def _init(self, **kwargs):
         logger.info(kwargs)
         self.store = {}
-        self.store[KIND.droplet] = {}
         self.store[KIND.fwd] = {}
         self.store[KIND.ftn] = {}
         self.store[KIND.chain] = {}
         self.store[KIND.dft] = {}
 
+        self.store[KIND.droplet] = {}
+        self.store[OBJ_DEFAULTS.zgc_net] = {}
+        self.store[OBJ_DEFAULTS.tenant_net] = {}
+
     def update_obj(self, obj):
         if obj.kind in self.store:
+            if obj.kind == KIND.droplet:
+                # Special case to differentiate between ZGC and Tenant droplets
+                self.store[obj.network][obj.name] = obj
             self.store[obj.kind][obj.name] = obj
         else:
             logger.info("Unknown object type {}".format(obj.kind))
@@ -82,3 +89,6 @@ class OprStore(object):
         for obj in self.store[kind].values():
             logger.info("{}: {}, Spec: {}".format(
                 kind, obj.name, obj.get_obj_spec()))
+
+    def get_all_network_droplets(self, network):
+        return self.store[network].keys()

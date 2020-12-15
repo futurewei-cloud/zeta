@@ -15,9 +15,9 @@ from workflows.dfts.delete import *
 from workflows.dfts.provisioned import *
 
 
-@kopf.on.resume(group, version, RESOURCES.dfts, when=LAMBDAS.status_init, retries=OBJ_DEFAULTS.kopf_max_retries)
-@kopf.on.update(group, version, RESOURCES.dfts, when=LAMBDAS.status_init, retries=OBJ_DEFAULTS.kopf_max_retries)
-@kopf.on.create(group, version, RESOURCES.dfts, when=LAMBDAS.status_init, retries=OBJ_DEFAULTS.kopf_max_retries)
+@kopf.on.resume(group, version, RESOURCES.dfts, when=LAMBDAS.status_init)
+@kopf.on.update(group, version, RESOURCES.dfts, when=LAMBDAS.status_init)
+@kopf.on.create(group, version, RESOURCES.dfts, when=LAMBDAS.status_init)
 def dft_opr_on_dft_init(body, spec, **kwargs):
     param = HandlerParam()
     param.name = kwargs['name']

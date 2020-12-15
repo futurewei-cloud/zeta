@@ -8,6 +8,7 @@ from operators.ftns_operator import *
 from operators.chains_operator import *
 from operators.dfts_operator import *
 from operators.droplets_operator import *
+from common.constants import OBJ_DEFAULTS
 
 dfts_opr = DftOperator()
 chains_opr = ChainOperator()
@@ -28,5 +29,5 @@ def ftn_create(task, ftn, name, body, spec):
     if len(droplets_opr.get_unallocated_droplets()) < 1:
         task.raise_temporary_error(
             "No droplets available for FTN")
-    droplets_opr.assign_droplet(ftn)
+    droplets_opr.assign_droplet(ftn, OBJ_DEFAULTS.zgc_net)
     return ftn

@@ -5,10 +5,13 @@
 
 from common.workflow import *
 from operators.ftns_operator import *
+from operators.droplets_operator import *
 
 ftns_opr = FtnOperator()
+droplets_opr = DropletOperator()
 
 
 def ftn_delete(task, ftn, name, body, spec):
     logger.info("Deleting Ftn {}!".format(name))
+    droplets_opr.unassign_droplet(ftn)
     return ftn

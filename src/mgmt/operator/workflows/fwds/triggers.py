@@ -15,9 +15,9 @@ from workflows.fwds.delete import *
 from workflows.fwds.provisioned import *
 
 
-@kopf.on.resume(group, version, RESOURCES.fwds, when=LAMBDAS.status_init, retries=OBJ_DEFAULTS.kopf_max_retries)
-@kopf.on.update(group, version, RESOURCES.fwds, when=LAMBDAS.status_init, retries=OBJ_DEFAULTS.kopf_max_retries)
-@kopf.on.create(group, version, RESOURCES.fwds, when=LAMBDAS.status_init, retries=OBJ_DEFAULTS.kopf_max_retries)
+@kopf.on.resume(group, version, RESOURCES.fwds, when=LAMBDAS.status_init)
+@kopf.on.update(group, version, RESOURCES.fwds, when=LAMBDAS.status_init)
+@kopf.on.create(group, version, RESOURCES.fwds, when=LAMBDAS.status_init)
 def fwd_opr_on_fwd_init(body, spec, **kwargs):
     param = HandlerParam()
     param.name = kwargs['name']
