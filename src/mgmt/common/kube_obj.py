@@ -20,6 +20,7 @@ class KubeObject(object):
         self.status = OBJ_STATUS.obj_status_init
         self.plural = ""
         self.kind = ""
+        self.id = ""
 
     def get_name(self):
         return self.name

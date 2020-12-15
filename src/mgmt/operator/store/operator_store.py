@@ -45,6 +45,8 @@ class OprStore(object):
         self.store[KIND.dft] = {}
 
         self.store[KIND.droplet] = {}
+
+        # network -> droplet store
         self.store[OBJ_DEFAULTS.zgc_net] = {}
         self.store[OBJ_DEFAULTS.tenant_net] = {}
 
@@ -77,8 +79,11 @@ class OprStore(object):
         else:
             logger.info("Unknown object type {}".format(kind))
 
-    def get_all_obj_type(self, kind):
+    def get_all_obj_type_name(self, kind):
         return self.store[kind].keys()
+
+    def get_all_obj_type_obj(self, kind):
+        return self.store[kind].values()
 
     def contains_obj(self, name, kind):
         if name in self.store[kind]:

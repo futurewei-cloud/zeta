@@ -13,5 +13,7 @@ droplets_opr = DropletOperator()
 
 def fwd_delete(task, fwd, name, body, spec):
     logger.info("Deleting Fwd {}!".format(name))
+    if not fwd:
+        fwd = fwds_opr.get_stored_obj(name, spec)
     droplets_opr.unassign_droplet(fwd)
     return fwd

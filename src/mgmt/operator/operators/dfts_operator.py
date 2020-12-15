@@ -9,6 +9,7 @@ from kubernetes import client, config
 from common.constants import *
 from common.common import *
 from common.object_operator import ObjectOperator
+from common.id_allocator import IdAllocator
 from obj.dft import Dft
 from store.operator_store import OprStore
 from common.maglev_table import MaglevTable
@@ -28,6 +29,7 @@ class DftOperator(ObjectOperator):
     def __init__(self, **kwargs):
         logger.info(kwargs)
         self.store = OprStore()
+        self.id_allocator = IdAllocator()
         config.load_incluster_config()
         self.obj_api = client.CustomObjectsApi()
 
@@ -49,6 +51,6 @@ class DftOperator(ObjectOperator):
             return
         dft = Dft(OBJ_DEFAULTS.default_dft, self.obj_api, self.store)
         dft.numchains = OBJ_DEFAULTS.default_n_chains
-        dft.numchainreplicas = OBJ_DEFAULTS.default_n_replicas
+        dft.numchainreplicas = OBJ_DEFAULTS.default_n_ftn_replicas
         dft.maglev_table = MaglevTable(OBJ_DEFAULTS.default_maglev_table_size)
         dft.create_obj()

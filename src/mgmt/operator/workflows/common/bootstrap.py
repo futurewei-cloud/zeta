@@ -30,5 +30,5 @@ class CommonOperatorStart(WorkflowTask):
         dfts_opr.query_existing_dfts()
         dfts_opr.create_default_dft()
         fwds_opr.create_default_fwds(
-            OBJ_DEFAULTS.default_n_replicas, OBJ_DEFAULTS.default_dft)
+            OBJ_DEFAULTS.default_n_fwds, OBJ_DEFAULTS.default_dft)
         self.finalize()

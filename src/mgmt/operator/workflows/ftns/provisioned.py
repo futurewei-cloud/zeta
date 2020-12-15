@@ -11,4 +11,6 @@ ftns_opr = FtnOperator()
 
 def ftn_provisioned(task, ftn, name, body, spec):
     logger.info("Provisioned Ftn {}!".format(name))
+    if not ftn:
+        ftn = ftns_opr.get_stored_obj(name, spec)
     return ftn

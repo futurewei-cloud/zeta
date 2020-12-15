@@ -64,8 +64,20 @@ async def on_startup(logger, **kwargs):
         pass
     logger.info("Running luigid central scheduler pid={}!".format(pid))
 
+    configmap = read_config_map()
+    if configmap:
+        OBJ_DEFAULTS.default_dft = configmap.data["defualt_dft"]
+        OBJ_DEFAULTS.defualt_dft_id = configmap.data["defualt_dft_id"]
+        OBJ_DEFAULTS.default_n_fwds = int(configmap.data["default_n_fwds"])
+        OBJ_DEFAULTS.default_n_ftns = int(configmap.data["default_n_ftns"])
+        OBJ_DEFAULTS.default_n_chains = int(configmap.data["default_n_chains"])
+
     start_time = time.time()
 
     run_workflow(wffactory().CommonOperatorStart(param=param))
 
     logger.info("Bootstrap time:  %s seconds ---" % (time.time() - start_time))
+
+
+def read_config_map():
+    return kube_read_config_map(client.CoreV1Api(), "zgc-cluster-config", "default")

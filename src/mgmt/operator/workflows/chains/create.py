@@ -25,4 +25,10 @@ def chain_create(task, chain, name, body, spec):
     ftns_opr.create_n_ftns(chain)
     chain.tail = chain.ftns[chain.size - 1]
     chain.head = chain.ftns[0]
+
+    # Add chain to parent DFT table, generate maglev, update kubernetes dft obj
+    dft = dfts_opr.store.get_obj(chain.dft, KIND.dft)
+    dft.maglev_table.add(chain.id)
+    dft.table = dft.maglev_table.get_table()
+    dft.update_obj()
     return chain

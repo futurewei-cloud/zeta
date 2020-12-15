@@ -171,9 +171,9 @@ class TrnRpc:
         returncode, text = run_cmd(cmd)
         logger.info("returns {} {}".format(returncode, text))
 
-    def delete_dft(self, dft_id):
+    def delete_dft(self, dft):
         jsonconf = {
-            "id": dft_id,
+            "id": dft.id,
         }
 
         jsonconf = json.dumps(jsonconf)

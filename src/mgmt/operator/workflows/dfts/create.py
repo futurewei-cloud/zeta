@@ -20,4 +20,5 @@ def dft_create(task, dft, name, body, spec):
         task.raise_temporary_error(
             "No droplets available for DFT")
     chains_opr.create_n_chains(dft)
+    logger.info("DFT table: {}".format(dft.table))
     return dft

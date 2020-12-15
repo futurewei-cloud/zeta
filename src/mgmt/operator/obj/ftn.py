@@ -26,6 +26,7 @@ class Ftn(KubeObject):
 
     def get_obj_spec(self):
         self.obj = {
+            "id": self.id,
             "status": self.status,
             "dft": self.dft,
             "droplet": self.droplet,
@@ -37,6 +38,7 @@ class Ftn(KubeObject):
 
     def set_obj_spec(self, spec):
         # K8s APIs
+        self.id = get_spec_val('id', spec)
         self.status = get_spec_val('status', spec)
         self.dft = get_spec_val('dft', spec)
         self.droplet = get_spec_val('droplet', spec)

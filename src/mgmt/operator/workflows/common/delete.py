@@ -6,6 +6,7 @@
 import logging
 from common.workflow import *
 from common.object_operator import ObjectOperator
+from common.constants import KIND
 
 logger = logging.getLogger()
 objs_opr = ObjectOperator()
@@ -19,5 +20,7 @@ class CommonDelete(WorkflowTask):
             self.param.name, self.param.body["kind"], self.param.spec)
         obj = self.param.workflow_func(self, obj, self.param.name,
                                        self.param.body, self.param.spec)
-        objs_opr.store_delete_obj(obj)
+        if obj.kind != KIND.dft:
+            objs_opr.id_allocator.reclaim_id(obj.id, obj.name)
+        objs_opr.store.delete_obj(obj.name, obj.kind)
         self.finalize()

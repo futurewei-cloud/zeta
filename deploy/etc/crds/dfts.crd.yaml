@@ -28,6 +28,14 @@ spec:
           type: array
           items:
             type: string
+        chains:
+          type: array
+          items:
+            type: string
+        fwds:
+          type: array
+          items:
+            type: string
   additionalPrinterColumns:
     - name: Status
       type: string

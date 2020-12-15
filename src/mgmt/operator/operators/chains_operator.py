@@ -9,6 +9,7 @@ from kubernetes import client, config
 from common.constants import *
 from common.common import *
 from common.object_operator import ObjectOperator
+from common.id_allocator import IdAllocator
 from store.operator_store import OprStore
 from obj.chain import Chain
 
@@ -27,6 +28,7 @@ class ChainOperator(ObjectOperator):
     def __init__(self, **kwargs):
         logger.info(kwargs)
         self.store = OprStore()
+        self.id_allocator = IdAllocator()
         config.load_incluster_config()
         self.obj_api = client.CustomObjectsApi()
 
@@ -50,5 +52,3 @@ class ChainOperator(ObjectOperator):
             chain.dft = dft.name
             chain.size = dft.numchainreplicas
             chain.create_obj()
-            dft.maglev_table.add(chain.name)
-        dft.table = dft.maglev_table.table

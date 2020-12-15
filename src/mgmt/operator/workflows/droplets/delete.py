@@ -27,4 +27,6 @@ droplets_opr = DropletOperator()
 
 def droplet_delete(task, droplet, name, body, spec):
     logger.info("Deleting droplet {}!".format(name))
+    if not droplet:
+        droplet = droplets_opr.get_stored_obj(name, spec)
     return droplet

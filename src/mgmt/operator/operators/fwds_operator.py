@@ -9,6 +9,7 @@ from common.constants import *
 from common.common import *
 from common.object_operator import ObjectOperator
 from store.operator_store import OprStore
+from common.id_allocator import IdAllocator
 from obj.fwd import Fwd
 from kubernetes import client, config
 
@@ -27,6 +28,7 @@ class FwdOperator(ObjectOperator):
     def __init__(self, **kwargs):
         logger.info(kwargs)
         self.store = OprStore()
+        self.id_allocator = IdAllocator()
         config.load_incluster_config()
         self.obj_api = client.CustomObjectsApi()
 

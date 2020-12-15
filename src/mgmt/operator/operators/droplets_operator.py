@@ -24,6 +24,7 @@ import random
 from common.constants import *
 from common.common import *
 from common.object_operator import ObjectOperator
+from common.id_allocator import IdAllocator
 from kubernetes import client, config
 from obj.droplet import Droplet
 from store.operator_store import OprStore
@@ -43,6 +44,7 @@ class DropletOperator(ObjectOperator):
     def __init__(self, **kwargs):
         logger.info(kwargs)
         self.store = OprStore()
+        self.id_allocator = IdAllocator()
         config.load_incluster_config()
         self.obj_api = client.CustomObjectsApi()
         self.allocated_droplets = set()
@@ -87,5 +89,5 @@ class DropletOperator(ObjectOperator):
         return True
 
     def get_unallocated_droplets(self):
-        return set(self.store.get_all_obj_type(
+        return set(self.store.get_all_obj_type_name(
             KIND.droplet)) - self.allocated_droplets

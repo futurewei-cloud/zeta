@@ -22,8 +22,6 @@ def fwd_create(task, fwd, name, body, spec):
     if not dfts_opr.store.contains_obj(fwd.dft, KIND.dft):
         task.raise_temporary_error(
             "DFT {} not yet created!".format(fwd.dft))
-    if len(droplets_opr.get_unallocated_droplets()) < 1:
-        task.raise_temporary_error(
-            "No droplets available for FWD")
-    droplets_opr.assign_droplet(fwd, OBJ_DEFAULTS.tenant_net)
+    if not droplets_opr.assign_droplet(fwd, OBJ_DEFAULTS.tenant_net):
+        task.raise_temporary_error("No droplets available for FWD")
     return fwd
