@@ -12,13 +12,16 @@ chains_opr = ChainOperator()
 droplets_opr = DropletOperator()
 
 
-def dft_create(task, dft, name, body, spec):
+def dft_create(task, dft, name, body, spec, diff):
     logger.info("Creating DFT {}!".format(name))
     if not dft:
         dft = dfts_opr.get_stored_obj(name, spec)
     if len(droplets_opr.get_unallocated_droplets()) < 1:
         task.raise_temporary_error(
             "No droplets available for DFT")
-    chains_opr.create_n_chains(dft)
+    if dft.numchains < 0:
+        task.raise_permanent_error("DFT numchains cannot be less than 0")
+    chains_opr.create_n_chains(
+        dft, dft.numchains, OBJ_DEFAULTS.default_n_ftn_replicas)
     logger.info("DFT table: {}".format(dft.table))
     return dft

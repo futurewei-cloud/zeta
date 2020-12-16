@@ -15,7 +15,7 @@ fwds_opr = FwdOperator()
 droplets_opr = DropletOperator()
 
 
-def fwd_create(task, fwd, name, body, spec):
+def fwd_create(task, fwd, name, body, spec, diff):
     logger.info("Creating Fwd {}!".format(name))
     if not fwd:
         fwd = fwds_opr.get_stored_obj(name, spec)

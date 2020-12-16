@@ -47,11 +47,6 @@ spec:
       priority: 0
       JSONPath: .spec.numchains
       description: The number of chains in the DFT
-    - name: Numchainreplicas
-      type: integer
-      priority: 0
-      JSONPath: .spec.numchainreplicas
-      description: The number of replica ftns in each chain
     - name: CreateTime
       type: string
       priority: 0

@@ -50,4 +50,5 @@ class FwdOperator(ObjectOperator):
             fwd_name = default_dft + '-fwd-' + str(i)
             fwd = Fwd(fwd_name, self.obj_api, self.store)
             fwd.dft = default_dft
+            fwd.id = self.id_allocator.allocate_id(fwd.name)
             fwd.create_obj()

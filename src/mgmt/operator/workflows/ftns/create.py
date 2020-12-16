@@ -16,7 +16,7 @@ ftns_opr = FtnOperator()
 droplets_opr = DropletOperator()
 
 
-def ftn_create(task, ftn, name, body, spec):
+def ftn_create(task, ftn, name, body, spec, diff):
     logger.info("Creating Ftn {}!".format(name))
     if not ftn:
         ftn = ftns_opr.get_stored_obj(name, spec)

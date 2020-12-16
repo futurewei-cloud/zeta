@@ -8,21 +8,41 @@ from common.workflow import *
 from operators.chains_operator import *
 from operators.dfts_operator import *
 from operators.ftns_operator import *
+from operators.fwds_operator import *
+from operators.droplets_operator import *
 
 logger = logging.getLogger()
 chains_opr = ChainOperator()
 dfts_opr = DftOperator()
 ftns_opr = FtnOperator()
+fwds_opr = FwdOperator()
+droplets_opr = DropletOperator()
 
 
-def chain_delete(task, chain, name, body, spec):
+def chain_delete(task, chain, name, body, spec, diff):
     logger.info("Deleting Chain {}!".format(name))
     if not chain:
         chain = chains_opr.get_stored_obj(name, spec)
 
     # Delete chain from parent DFT table, generate maglev, update kubernetes dft obj
-    dft = dfts_opr.store.get_obj(chain.dft, KIND.dft)
-    dft.maglev_table.remove(chain.id)
-    dft.table = dft.maglev_table.get_table()
-    dft.update_obj()
+    dft_obj = dfts_opr.store.get_obj(chain.dft, KIND.dft)
+    if dft_obj:  # Single chain deleted
+        dft_obj.chains.remove(chain.name)
+        dft_obj.maglev_table.remove(chain.id)
+        dft_obj.table = dft_obj.maglev_table.get_table()
+        dft_obj.update_obj()
+        # Delete chain information from all FWDs
+        for fwd in dft_obj.fwds:
+            fwd_obj = fwds_opr.store.get_obj(fwd, KIND.fwd)
+            droplet_obj = droplets_opr.store.get_obj(
+                fwd_obj.droplet, KIND.droplet)
+            droplet_obj.rpc.delete_chain(chain)
+        # TODO: Remove chain, scale in: Do chain augmentation
+    else:  # Entire DFT was deleted
+        fwd_objs = fwds_opr.store.get_all_obj_type_obj(KIND.fwd)
+        for fwd_obj in fwd_objs:
+            droplet_obj = droplets_opr.store.get_obj(
+                fwd_obj.droplet, KIND.droplet)
+            droplet_obj.rpc.delete_chain(chain)
+
     return chain

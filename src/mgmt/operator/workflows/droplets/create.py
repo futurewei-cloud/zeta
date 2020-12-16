@@ -25,8 +25,9 @@ from operators.droplets_operator import *
 droplets_opr = DropletOperator()
 
 
-def droplet_create(task, droplet, name, body, spec):
+def droplet_create(task, droplet, name, body, spec, diff):
     logger.info("Creating droplet {}!".format(name))
     if not droplet:
         droplet = droplets_opr.get_stored_obj(name, spec)
+    droplet.rpc.load_transit_xdp()
     return droplet

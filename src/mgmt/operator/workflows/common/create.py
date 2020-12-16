@@ -19,8 +19,8 @@ class CommonCreate(WorkflowTask):
         obj = objs_opr.store_get_obj(
             self.param.name, self.param.body["kind"], self.param.spec)
         obj = self.param.workflow_func(self, obj, self.param.name,
-                                       self.param.body, self.param.spec)
-        if obj.kind != KIND.dft:
+                                       self.param.body, self.param.spec, self.param.diff)
+        if obj.id != "":  # ID already allocated
             obj.id = objs_opr.id_allocator.allocate_id(obj.name)
         objs_opr.set_object_provisioned(obj)
         self.finalize()

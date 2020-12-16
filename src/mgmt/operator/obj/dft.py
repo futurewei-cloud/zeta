@@ -19,10 +19,9 @@ class Dft(KubeObject):
         self.maglev_table = None
         self.table = []
         self.numchains = 0
-        self.numchainreplicas = 0
         self.chains = []
         self.fwds = []
-        self.id = "0"
+        self.id = OBJ_DEFAULTS.default_dft_id
         if spec is not None:
             self.set_obj_spec(spec)
 
@@ -31,7 +30,6 @@ class Dft(KubeObject):
             "id": self.id,
             "status": self.status,
             "numchains": self.numchains,
-            "numchainreplicas": self.numchainreplicas,
             "table": self.table,
             "chains": self.chains,
             "fwds": self.fwds
@@ -44,7 +42,6 @@ class Dft(KubeObject):
         self.id = get_spec_val('id', spec)
         self.status = get_spec_val('status', spec)
         self.numchains = get_spec_val('numchains', spec)
-        self.numchainreplicas = get_spec_val('numchainreplicas', spec)
         self.table = get_spec_val('table', spec)
         self.fwds = get_spec_val('fwds', spec)
         self.chains = get_spec_val('chains', spec)

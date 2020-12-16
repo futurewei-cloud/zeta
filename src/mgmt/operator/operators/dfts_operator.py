@@ -51,6 +51,5 @@ class DftOperator(ObjectOperator):
             return
         dft = Dft(OBJ_DEFAULTS.default_dft, self.obj_api, self.store)
         dft.numchains = OBJ_DEFAULTS.default_n_chains
-        dft.numchainreplicas = OBJ_DEFAULTS.default_n_ftn_replicas
         dft.maglev_table = MaglevTable(OBJ_DEFAULTS.default_maglev_table_size)
         dft.create_obj()
