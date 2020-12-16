@@ -49,6 +49,11 @@ spec:
       priority: 0
       JSONPath: .spec.itf
       description: The main interface of the droplet
+    - name: IpControl
+      type: string
+      priority: 0
+      JSONPath: .spec.ip_control
+      description: The Node ZGC interface ip
     - name: CreateTime
       type: string
       priority: 0

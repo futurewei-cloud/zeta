@@ -18,6 +18,6 @@ def ftn_delete(task, ftn, name, body, spec, diff):
     if not ftn:
         ftn = ftns_opr.get_stored_obj(name, spec)
     droplet_obj = droplets_opr.store.get_obj(ftn.droplet, KIND.droplet)
-    droplet_obj.delete_ftn(ftn)
+    droplet_obj.rpc.delete_ftn(ftn)
     droplets_opr.unassign_droplet(ftn)
     return ftn

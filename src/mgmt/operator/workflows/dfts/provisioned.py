@@ -33,6 +33,6 @@ def dft_provisioned(task, dft, name, body, spec, diff):
 
 
 def process_change(dft, field, old, new):
-    logger.info("diff_field:{}, from:{}, to:{}".format(field, old, new))
     if field[0] == 'spec' and field[1] == 'numchains':
+        logger.info("diff_field:{}, from:{}, to:{}".format(field, old, new))
         return chains_opr.process_numchain_change(dft, int(old), int(new))

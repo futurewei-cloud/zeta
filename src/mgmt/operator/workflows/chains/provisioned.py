@@ -50,6 +50,6 @@ def chain_provisioned(task, chain, name, body, spec, diff):
 
 
 def process_change(chain, field, old, new):
-    logger.info("diff_field:{}, from:{}, to:{}".format(field, old, new))
     if field[0] == 'spec' and field[1] == 'size':
+        logger.info("diff_field:{}, from:{}, to:{}".format(field, old, new))
         return ftns_opr.process_numchainreplicas_change(chain, int(old), int(new))

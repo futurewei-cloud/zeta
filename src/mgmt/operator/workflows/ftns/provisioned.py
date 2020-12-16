@@ -24,13 +24,19 @@ def ftn_provisioned(task, ftn, name, body, spec, diff):
 
     # Derive FTN position
     if next_ftn_index == chain_obj.size:  # FTN is tail
-        droplet_obj.update_ftn(ftn, None, 2)
+        droplet_obj.rpc.update_ftn(ftn.id, droplet_obj, None, 2)
     elif ftn_index == 0:  # FTN is head
         next_ftn_obj = chains_opr.store.get_obj(
             chain_obj.ftns[next_ftn_index], KIND.ftn)
-        droplet_obj.update_ftn(ftn, next_ftn_obj, 0)
+        next_ftn_droplet_obj = droplets_opr.store.get_obj(
+            next_ftn_obj.droplet, KIND.droplet)
+        droplet_obj.rpc.update_ftn(
+            ftn.id, droplet_obj, next_ftn_droplet_obj, 0)
     else:  # FTN is middle
         next_ftn_obj = chains_opr.store.get_obj(
             chain_obj.ftns[next_ftn_index], KIND.ftn)
-        droplet_obj.update_ftn(ftn, next_ftn_obj, 1)
+        next_ftn_droplet_obj = droplets_opr.store.get_obj(
+            next_ftn_obj.droplet, KIND.droplet)
+        droplet_obj.rpc.update_ftn(
+            ftn.id, droplet_obj, next_ftn_droplet_obj, 1)
     return ftn
