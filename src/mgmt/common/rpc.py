@@ -131,7 +131,7 @@ class TrnRpc:
             next_mac = ftn_next_droplet_obj.mac
         jsonconf = {
             "id": ftn_id,
-            "ftn_position": position,
+            "ftn_position": str(position),
             "ip": ip,
             "mac": mac,
             "next_ip": next_ip,
