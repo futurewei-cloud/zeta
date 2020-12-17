@@ -20,7 +20,7 @@ class CommonCreate(WorkflowTask):
             self.param.name, self.param.body["kind"], self.param.spec)
         obj = self.param.workflow_func(self, obj, self.param.name,
                                        self.param.body, self.param.spec, self.param.diff)
-        if obj.id != "":  # ID already allocated
+        if obj.id == "":  # ID not allocated
             obj.id = objs_opr.id_allocator.allocate_id(obj.name)
         objs_opr.set_object_provisioned(obj)
         self.finalize()

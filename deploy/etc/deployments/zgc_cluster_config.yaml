@@ -17,5 +17,5 @@ data:
   defualt_dft: "dft0"
   defualt_dft_id: "0"
   default_n_chains: "1"
-  default_n_fwds: "1"
-  default_n_ftns: "1"
+  default_n_fwds: "3"
+  default_n_ftns: "3"

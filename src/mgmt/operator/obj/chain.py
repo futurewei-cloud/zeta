@@ -16,8 +16,6 @@ class Chain(KubeObject):
         super().__init__(name, obj_api, opr_store, spec)
         self.kind = "Chain"
         self.plural = "chains"
-        self.head = ""
-        self.tail = ""
         self.dft = ""
         self.size = 0
         self.ftns = []
@@ -28,8 +26,6 @@ class Chain(KubeObject):
         self.obj = {
             "id": self.id,
             "status": self.status,
-            "head": self.head,
-            "tail": self.tail,
             "ftns": self.ftns,
             "dft": self.dft,
             "size": self.size

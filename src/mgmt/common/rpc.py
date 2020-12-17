@@ -122,16 +122,16 @@ class TrnRpc:
         logger.info("returns {} {}".format(returncode, text))
 
     def update_ftn(self, ftn_id, ftn_droplet_obj, ftn_next_droplet_obj, position):
-        ip = ftn_droplet_obj.ip
-        mac = ftn_droplet_obj.mac
+        ip = ftn_droplet_obj.ip[0]
+        mac = ftn_droplet_obj.mac[0]
         next_ip = ""
         next_mac = ""
         if ftn_next_droplet_obj:
-            next_ip = ftn_next_droplet_obj.ip
-            next_mac = ftn_next_droplet_obj.mac
+            next_ip = ftn_next_droplet_obj.ip[0]
+            next_mac = ftn_next_droplet_obj.mac[0]
         jsonconf = {
             "id": ftn_id,
-            "ftn_position": str(position),
+            "position": str(position),
             "ip": ip,
             "mac": mac,
             "next_ip": next_ip,

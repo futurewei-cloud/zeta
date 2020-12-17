@@ -24,5 +24,5 @@ def chain_create(task, chain, name, body, spec, diff):
             "Parent DFT {} not yet created!".format(chain.dft))
     if chain.size < 0:
         task.raise_permanent_error("Chain size cannot be less than 0")
-    ftns_opr.create_n_ftns(chain, chain.size)
+    ftns_opr.create_n_ftns(chain, chain.size, task)
     return chain

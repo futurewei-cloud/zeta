@@ -34,16 +34,6 @@ spec:
       priority: 0
       JSONPath: .spec.status
       description: The Current Status of the Chain
-    - name: Head
-      type: string
-      priority: 0
-      JSONPath: .spec.head
-      description: The head of the chain
-    - name: Tail
-      type: string
-      priority: 0
-      JSONPath: .spec.tail
-      description: The tail of the chain
     - name: Dft
       type: string
       priority: 0

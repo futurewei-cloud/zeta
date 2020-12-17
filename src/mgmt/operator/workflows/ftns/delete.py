@@ -6,11 +6,9 @@
 from common.workflow import *
 from operators.ftns_operator import *
 from operators.droplets_operator import *
-from operators.chains_operator import *
 
 ftns_opr = FtnOperator()
 droplets_opr = DropletOperator()
-chains_opr = ChainOperator()
 
 
 def ftn_delete(task, ftn, name, body, spec, diff):
@@ -18,6 +16,8 @@ def ftn_delete(task, ftn, name, body, spec, diff):
     if not ftn:
         ftn = ftns_opr.get_stored_obj(name, spec)
     droplet_obj = droplets_opr.store.get_obj(ftn.droplet, KIND.droplet)
-    droplet_obj.rpc.delete_ftn(ftn)
+
+    # Don't need to run delete_ftn, unload of XDP cleans it up.
+    droplet_obj.rpc.unload_transit_xdp()
     droplets_opr.unassign_droplet(ftn)
     return ftn

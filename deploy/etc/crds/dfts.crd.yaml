@@ -47,6 +47,11 @@ spec:
       priority: 0
       JSONPath: .spec.numchains
       description: The number of chains in the DFT
+    - name: Numfwds
+      type: integer
+      priority: 0
+      JSONPath: .spec.numfwds
+      description: The number of fwds in the DFT
     - name: CreateTime
       type: string
       priority: 0

@@ -59,19 +59,26 @@ int trn_cli_parse_ftn(const cJSON *jsonobj, struct rpc_trn_ftn_t *ftn)
 	}
 
 	if (next_ip != NULL && cJSON_IsString(next_ip)) {
-		struct sockaddr_in sa;
-		inet_pton(AF_INET, next_ip->valuestring, &(sa.sin_addr));
-		ftn->next_ip = sa.sin_addr.s_addr;
+		if (next_ip->valuestring[0] == '\0') {
+			ftn->next_ip = 0;
+		} else {
+			struct sockaddr_in sa;
+			inet_pton(AF_INET, next_ip->valuestring,
+				  &(sa.sin_addr));
+			ftn->next_ip = sa.sin_addr.s_addr;
+		}
 	} else {
 		print_err("Error: Next IP is missing or non-string\n");
 		return -EINVAL;
 	}
 	if (next_mac != NULL && cJSON_IsString(next_mac)) {
-		if (6 == sscanf(next_mac->valuestring,
-				"%hhx:%hhx:%hhx:%hhx:%hhx:%hhx%*c",
-				&ftn->next_mac[0], &ftn->next_mac[1],
-				&ftn->next_mac[2], &ftn->next_mac[3],
-				&ftn->next_mac[4], &ftn->next_mac[5])) {
+		if (next_mac->valuestring[0] == '\0') {
+			ftn->next_mac[0] = '\0';
+		} else if (6 == sscanf(next_mac->valuestring,
+				       "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx%*c",
+				       &ftn->next_mac[0], &ftn->next_mac[1],
+				       &ftn->next_mac[2], &ftn->next_mac[3],
+				       &ftn->next_mac[4], &ftn->next_mac[5])) {
 		} else {
 			print_err("Error: Invalid Next MAC\n");
 			return -EINVAL;

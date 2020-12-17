@@ -27,22 +27,13 @@ def chain_delete(task, chain, name, body, spec, diff):
     # Delete chain from parent DFT table, generate maglev, update kubernetes dft obj
     dft_obj = dfts_opr.store.get_obj(chain.dft, KIND.dft)
     if dft_obj:  # Single chain deleted
-        dft_obj.chains.remove(chain.name)
-        dft_obj.maglev_table.remove(chain.id)
-        dft_obj.table = dft_obj.maglev_table.get_table()
-        dft_obj.update_obj()
         # Delete chain information from all FWDs
         for fwd in dft_obj.fwds:
             fwd_obj = fwds_opr.store.get_obj(fwd, KIND.fwd)
             droplet_obj = droplets_opr.store.get_obj(
                 fwd_obj.droplet, KIND.droplet)
             droplet_obj.rpc.delete_chain(chain)
-        # TODO: Remove chain, scale in: Do chain augmentation
-    else:  # Entire DFT was deleted
-        fwd_objs = fwds_opr.store.get_all_obj_type_obj(KIND.fwd)
-        for fwd_obj in fwd_objs:
-            droplet_obj = droplets_opr.store.get_obj(
-                fwd_obj.droplet, KIND.droplet)
-            droplet_obj.rpc.delete_chain(chain)
-
+    for ftn_name in chain.ftns:
+        ftn_obj = ftns_opr.store.get_obj(ftn_name, KIND.ftn)
+        ftn_obj.delete_obj()
     return chain

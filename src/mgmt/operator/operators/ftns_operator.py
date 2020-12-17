@@ -45,32 +45,40 @@ class FtnOperator(ObjectOperator):
     def get_stored_obj(self, name, spec):
         return Ftn(name, self.obj_api, self.store, spec)
 
-    def create_n_ftns(self, chain, size):
+    def create_n_ftns(self, chain_obj, size, task):
         for i in range(size):
-            ftn_name = chain.name + '-ftn-' + str(i)
+            ftn_name = chain_obj.name + '-ftn-' + str(i)
             ftn = Ftn(ftn_name, self.obj_api, self.store)
-            ftn.parent_chain = chain.name
-            ftn.dft = chain.dft
+            ftn.parent_chain = chain_obj.name
+            ftn.dft = chain_obj.dft
             ftn.id = self.id_allocator.allocate_id(ftn.name)
-            chain.ftns.append(ftn.name)
             ftn.create_obj()
-        chain.tail = chain.ftns[-1]
-        chain.head = chain.ftns[0]
+            chain_obj.ftns.insert(0, ftn.name)
+        # Update all FTNs in chain
+        self.update_chain_ftns(chain_obj)
 
-    def delete_n_ftns(self, chain, numchainreplicas):
-        if numchainreplicas > len(chain.size):
-            logger.info("Can't delete more FTNs than available.")
-            return
+    def delete_n_ftns(self, chain_obj, numchainreplicas, task):
+        if numchainreplicas > len(chain_obj.size):
+            task.raise_permanent_error(
+                "Can't delete more FTNs than available.")
         for i in range(numchainreplicas):
-            ftn_obj = self.store.get_obj(chain.ftns[i], KIND.ftn)
+            ftn_obj = self.store.get_obj(chain_obj.ftns[i], KIND.ftn)
+            chain_obj.ftns.remove(ftn_obj.name)
             ftn_obj.delete_obj()
+        # Update all FTNs in chain
+        self.update_chain_ftns(chain_obj)
 
-    def process_numchainreplicas_change(self, chain, old, new):
+    def process_numchainreplicas_change(self, chain, old, new, task):
         diff = new - old
         if diff > 0:
             logger.info("Scaling out ftns per chain: {}".format(abs(diff)))
-            self.create_n_ftns(chain, abs(diff))
+            self.create_n_ftns(chain, abs(diff), task)
 
         if diff < 0:
             logger.info("Scaling in ftns per chain: {}".format(abs(diff)))
-            self.delete_n_ftns(chain, abs(diff))
+            self.delete_n_ftns(chain, abs(diff), task)
+
+    def update_chain_ftns(self, chain_obj):
+        for ftn_name in chain_obj.ftns:
+            ftn_obj = self.store.get_obj(ftn_name, KIND.ftn)
+            ftn_obj.update_obj()

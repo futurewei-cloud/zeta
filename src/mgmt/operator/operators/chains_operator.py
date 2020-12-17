@@ -45,29 +45,37 @@ class ChainOperator(ObjectOperator):
     def get_stored_obj(self, name, spec):
         return Chain(name, self.obj_api, self.store, spec)
 
-    def create_n_chains(self, dft, numchains, numchainreplicas):
+    def create_n_chains(self, dft_obj, numchains, numchainreplicas, task):
         for i in range(numchains):
-            chain_name = dft.name + '-chain-' + str(i)
-            chain = Chain(chain_name, self.obj_api, self.store)
-            chain.dft = dft.name
-            chain.size = numchainreplicas
-            chain.id = self.id_allocator.allocate_id(chain.name)
-            chain.create_obj()
+            chain_name = dft_obj.name + '-chain-' + str(i)
+            chain_obj = Chain(chain_name, self.obj_api, self.store)
+            chain_obj.dft = dft_obj.name
+            chain_obj.size = numchainreplicas
+            chain_obj.id = self.id_allocator.allocate_id(chain_obj.name)
+            chain_obj.create_obj()
 
-    def delete_n_chains(self, dft, numchains):
-        if numchains > len(dft.numchains):
-            logger.info("Can't delete more Chains than available.")
-            return
+            dft_obj.chains.append(chain_obj.name)
+            dft_obj.maglev_table.add(chain_obj.id)
+        dft_obj.table = dft_obj.maglev_table.get_table()
+
+    def delete_n_chains(self, dft_obj, numchains, task):
+        if numchains > len(dft_obj.numchains):
+            task.raise_permanent_error(
+                "Can't delete more Chains than available.")
         for i in range(numchains):
-            chain_obj = self.store.get_obj(dft.chains[i], KIND.chain)
+            chain_obj = self.store.get_obj(dft_obj.chains[i], KIND.chain)
+
+            dft_obj.chains.remove(chain_obj.name)
+            dft_obj.maglev_table.remove(chain_obj.id)
             chain_obj.delete_obj()
+        dft_obj.table = dft_obj.maglev_table.get_table()
 
-    def process_numchain_change(self, dft, old, new):
+    def process_numchain_change(self, dft_obj, old, new, task):
         diff = new - old
         if diff > 0:
             logger.info("Scaling out chain by {}".format(abs(diff)))
             self.create_n_chains(
-                dft, abs(diff), OBJ_DEFAULTS.default_n_ftn_replicas)
+                dft_obj, abs(diff), OBJ_DEFAULTS.default_n_ftns, task)
         if diff < 0:
             logger.info("Scaling in chains by {}".format(abs(diff)))
-            self.delete_n_chains(dft, abs(diff))
+            self.delete_n_chains(dft_obj, abs(diff), task)

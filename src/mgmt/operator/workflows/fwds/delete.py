@@ -21,15 +21,8 @@ def fwd_delete(task, fwd, name, body, spec, diff):
     logger.info("Deleting Fwd {}!".format(name))
     if not fwd:
         fwd = fwds_opr.get_stored_obj(name, spec)
-
-    dft_obj = dfts_opr.store.get_obj(fwd.dft, KIND.dft)
-    fwd_droplet_obj = droplets_opr.store.get_obj(fwd.droplet, KIND.droplet)
-
-    # Delete DFT hash table, chain information from FWD
-    for chain in dft_obj.chains:
-        chain_obj = chains_opr.store.get_obj(chain, KIND.chain)
-        fwd_droplet_obj.rpc.delete_chain(chain_obj)
-    fwd_droplet_obj.rpc.delete_dft(dft_obj)
-
+    droplet_obj = droplets_opr.store.get_obj(fwd.droplet, KIND.droplet)
+    # Don't need to run delete_dft and delete chain, unload of XDP cleans it up
+    droplet_obj.rpc.unload_transit_xdp()
     droplets_opr.unassign_droplet(fwd)
     return fwd

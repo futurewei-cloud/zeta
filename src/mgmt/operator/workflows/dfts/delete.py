@@ -23,9 +23,8 @@ def dft_delete(task, dft, name, body, spec, diff):
     for chain in dft.chains:
         chain_obj = chains_opr.store.get_obj(chain, KIND.chain)
         chain_obj.delete_obj()
-    # Delete dft's maglev table from all fwds
+    # Delete all fwds
     for fwd in dft.fwds:
         fwd_obj = fwds_opr.store.get_obj(fwd, KIND.fwd)
-        droplet = droplets_opr.store.get_obj(fwd_obj.droplet, KIND.droplet)
-        droplet.delete_dft(dft)
+        fwd_obj.delete_obj()
     return dft

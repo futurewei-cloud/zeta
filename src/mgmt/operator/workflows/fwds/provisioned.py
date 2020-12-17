@@ -26,6 +26,8 @@ def fwd_provisioned(task, fwd, name, body, spec, diff):
 
     for chain in dft_obj.chains:
         chain_obj = chains_opr.store.get_obj(chain, KIND.chain)
-        fwd_droplet_obj.rpc.update_chain(chain_obj)
+        if len(chain_obj.ftns) > 0:
+            tail_ftn = ftns_opr.store.get_obj(chain_obj.ftns[-1], KIND.ftn)
+            fwd_droplet_obj.rpc.update_chain(chain_obj, tail_ftn)
     fwd_droplet_obj.rpc.update_dft(dft_obj)
     return fwd
