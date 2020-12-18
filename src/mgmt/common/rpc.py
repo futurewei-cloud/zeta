@@ -109,10 +109,14 @@ class TrnRpc:
         returncode, text = run_cmd(cmd)
         logger.info("returns {} {}".format(returncode, text))
 
-    def update_chain(self, chain, ftn):
+    def update_chain(self, chain, ftn_droplet_obj, ftn_id):
+        ip = ftn_droplet_obj.ip[0]
+        mac = ftn_droplet_obj.mac[0]
         jsonconf = {
             "id": chain.id,
-            "tail_ftn": ftn.id
+            "tail_ftn": ftn_id,
+            "tail_ftn_ip": ip,
+            "tail_ftn_mac": mac
         }
 
         jsonconf = json.dumps(jsonconf)

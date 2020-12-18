@@ -54,6 +54,8 @@ struct rpc_trn_ftn_t {
 struct rpc_trn_chain_t {
        uint32_t id;
        uint32_t tail_ftn;
+       uint32_t tail_ftn_ip;
+       unsigned char tail_ftn_mac[6];
 };
 
 struct rpc_trn_zeta_key_t {

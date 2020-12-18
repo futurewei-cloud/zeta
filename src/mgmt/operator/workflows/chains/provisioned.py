@@ -39,7 +39,12 @@ def chain_provisioned(task, chain, name, body, spec, diff):
         fwd_obj = fwds_opr.store.get_obj(fwd, KIND.fwd)
         droplet_obj = droplets_opr.store.get_obj(
             fwd_obj.droplet, KIND.droplet)
-        droplet_obj.rpc.update_chain(chain, tail_ftn_obj)
+        tail_ftn_droplet_obj = droplets_opr.store.get_obj(
+            tail_ftn_obj.droplet, KIND.droplet)
+        if not tail_ftn_droplet_obj:
+            task.raise_temporary_error("FTN droplet not provisioned")
+        droplet_obj.rpc.update_chain(
+            chain, tail_ftn_droplet_obj, tail_ftn_obj.id)
     return chain
 
 

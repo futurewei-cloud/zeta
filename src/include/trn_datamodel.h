@@ -125,6 +125,8 @@ struct dft_t {
 
 struct chain_t {
 	__u32 tail_ftn;
+	__u32 tail_ftn_ip;
+	unsigned char tail_ftn_mac[6];
 } __attribute__((packed, aligned(4)));
 
 struct ftn_t {

@@ -177,27 +177,29 @@ static int check_ep_equal(const LargestIntegralType value,
 	assert_int_equal(ep->xdp_ep.val.hip, c_ep->xdp_ep.val.hip);
 
 	assert_memory_equal(ep->xdp_ep.val.mac, c_ep->xdp_ep.val.mac,
-		sizeof(ep->xdp_ep.val.mac));
+			    sizeof(ep->xdp_ep.val.mac));
 
 	assert_memory_equal(ep->xdp_ep.val.hmac, c_ep->xdp_ep.val.hmac,
-		sizeof(ep->xdp_ep.val.hmac));
+			    sizeof(ep->xdp_ep.val.hmac));
 
 	return true;
 }
 
 static int check_ep_batch_equal(const LargestIntegralType value,
-			  const LargestIntegralType check_value_data)
+				const LargestIntegralType check_value_data)
 {
 	rpc_trn_endpoint_batch_t *epb = (rpc_trn_endpoint_batch_t *)value;
-	rpc_trn_endpoint_batch_t *c_epb = (rpc_trn_endpoint_batch_t *)check_value_data;
+	rpc_trn_endpoint_batch_t *c_epb =
+		(rpc_trn_endpoint_batch_t *)check_value_data;
 
-	assert_int_equal(epb->rpc_trn_endpoint_batch_t_len, 
-		c_epb->rpc_trn_endpoint_batch_t_len);
+	assert_int_equal(epb->rpc_trn_endpoint_batch_t_len,
+			 c_epb->rpc_trn_endpoint_batch_t_len);
 
 	trn_ep_t *ep = (trn_ep_t *)epb->rpc_trn_endpoint_batch_t_val;
 	trn_ep_t *c_ep = (trn_ep_t *)c_epb->rpc_trn_endpoint_batch_t_val;
 	for (unsigned int i = 0; i < epb->rpc_trn_endpoint_batch_t_len; i++) {
-		assert_true(check_ep_equal((LargestIntegralType)ep, (LargestIntegralType)c_ep));
+		assert_true(check_ep_equal((LargestIntegralType)ep,
+					   (LargestIntegralType)c_ep));
 	}
 	return true;
 }
@@ -205,10 +207,8 @@ static int check_ep_batch_equal(const LargestIntegralType value,
 static int check_ep_key_equal(const LargestIntegralType value,
 			      const LargestIntegralType check_value_data)
 {
-	rpc_endpoint_key_t *ep_key =
-		(rpc_endpoint_key_t *)value;
-	rpc_endpoint_key_t *c_ep_key =
-		(rpc_endpoint_key_t *)check_value_data;
+	rpc_endpoint_key_t *ep_key = (rpc_endpoint_key_t *)value;
+	rpc_endpoint_key_t *c_ep_key = (rpc_endpoint_key_t *)check_value_data;
 
 	assert_int_equal(ep_key->vni, c_ep_key->vni);
 
@@ -244,12 +244,12 @@ static int check_chain_equal(const LargestIntegralType value,
 			     const LargestIntegralType check_value_data)
 {
 	rpc_trn_chain_t *chain = (rpc_trn_chain_t *)value;
-	rpc_trn_chain_t *c_chain =
-		(rpc_trn_chain_t *)check_value_data;
+	rpc_trn_chain_t *c_chain = (rpc_trn_chain_t *)check_value_data;
 
 	assert_int_equal(chain->id, c_chain->id);
 	assert_int_equal(chain->tail_ftn, c_chain->tail_ftn);
-
+	assert_int_equal(chain->tail_ftn_ip, c_chain->tail_ftn_ip);
+	assert_string_equal(chain->tail_ftn_mac, c_chain->tail_ftn_mac);
 	return true;
 }
 
@@ -264,7 +264,8 @@ static int check_ftn_equal(const LargestIntegralType value,
 	assert_int_equal(ftn->ip, c_ftn->ip);
 	assert_int_equal(ftn->next_ip, c_ftn->next_ip);
 	assert_memory_equal(ftn->mac, c_ftn->mac, sizeof(ftn->mac));
-	assert_memory_equal(ftn->next_mac, c_ftn->next_mac, sizeof(ftn->next_mac));
+	assert_memory_equal(ftn->next_mac, c_ftn->next_mac,
+			    sizeof(ftn->next_mac));
 
 	return true;
 }
@@ -272,10 +273,8 @@ static int check_ftn_equal(const LargestIntegralType value,
 static int check_zeta_key_equal(const LargestIntegralType value,
 				const LargestIntegralType check_value_data)
 {
-	rpc_trn_zeta_key_t *zeta_key =
-		(rpc_trn_zeta_key_t *)value;
-	rpc_trn_zeta_key_t *c_zeta_key =
-		(rpc_trn_zeta_key_t *)check_value_data;
+	rpc_trn_zeta_key_t *zeta_key = (rpc_trn_zeta_key_t *)value;
+	rpc_trn_zeta_key_t *c_zeta_key = (rpc_trn_zeta_key_t *)check_value_data;
 
 	assert_int_equal(zeta_key->id, c_zeta_key->id);
 
@@ -334,22 +333,39 @@ static void test_trn_cli_update_chain_subcmd(void **state)
 	int update_chain_1_ret_val = 0;
 
 	/* Test cases */
-	char *argv1[] = { "update-chain", "-j",
-			  QUOTE({ "id": "3", "tail_ftn": "1" }) };
+	char *argv1[] = { "update-chain", "-i", "eth0", "-j", QUOTE({
+				  "id": "3",
+				  "tail_ftn": "1",
+				  "tail_ftn_ip": "10.0.0.1",
+				  "tail_ftn_mac": "1:2:3:4:5:6"
+			  }) };
 
-	char *argv2[] = { "update-chain", "-j",
-			  QUOTE({ "id": 3, "tail_ftn": "1" }) };
+	char *argv2[] = { "update-chain", "-i", "eth0", "-j", QUOTE({
+				  "id": 3,
+				  "tail_ftn": "1",
+				  "tail_ftn_ip": "10.0.0.1",
+				  "tail_ftn_mac": "1:2:3:4:5:6"
+			  }) };
 
-	char *argv3[] = { "update-chain", "-j",
-			  QUOTE({ "id: 3, tail_ftn": "1" }) };
+	char *argv3[] = { "update-chain", "-i", "eth0", "-j", QUOTE({
+				  "id": 3,
+				  "tail_ftn": "1",
+				  "tail_ftn_ip": "10.0.0.1",
+				  "tail_ftn_mac: 1:2:3:4:5:6"
+			  }) };
 
 	uint32_t id = 3;
 	uint32_t tail_ftn = 1;
+	uint32_t tail_ftn_ip = 0x100000a;
+	char tail_ftn_mac[6] = { 1, 2, 3, 4, 5, 6 };
 
 	rpc_trn_chain_t exp_chain = {
 		.id = id,
 		.tail_ftn = tail_ftn,
+		.tail_ftn_ip = tail_ftn_ip,
 	};
+
+	memcpy(exp_chain.tail_ftn_mac, tail_ftn_mac, sizeof(char) * 6);
 
 	/* Test call update_chain successfully */
 	TEST_CASE("update_chain succeed with well formed chain json input");
@@ -453,58 +469,50 @@ static void test_trn_cli_update_ep_subcmd(void **state)
 
 	/* Test data with all fields correct */
 	char *argv1[] = { "update-ep", "-j", QUOTE({
-				"size": 1,
-				 "eps": [
-					{
-						"vni": 3,
-						"ip": 2425262700,
-						"hip": 2425262701,
-						"mac": 17730434519136,
-						"hmac": 105897790545936
-					}
-				]
-			  	}) };
+				  "size": 1,
+				  "eps": [{
+					  "vni": 3,
+					  "ip": 2425262700,
+					  "hip": 2425262701,
+					  "mac": 17730434519136,
+					  "hmac": 105897790545936
+				  }]
+			  }) };
 
 	/* Test data with wrong field type: vni */
 	char *argv2[] = { "update-ep", "-j", QUOTE({
-				"size": 1,
-				 "eps": [
-					{
-						"vni": "3",
-						"ip": 2425262700,
-						"hip": 2425262701,
-						"mac": 17730434519136,
-						"hmac": 105897790545936
-					}
-				]
-			  	}) };
+				  "size": 1,
+				  "eps": [{
+					  "vni": "3",
+					  "ip": 2425262700,
+					  "hip": 2425262701,
+					  "mac": 17730434519136,
+					  "hmac": 105897790545936
+				  }]
+			  }) };
 
 	/* Test data with missing field: ip */
 	char *argv3[] = { "update-ep", "-j", QUOTE({
-				"size": 1,
-				 "eps": [
-					{
-						"vni": 3,
-						"hip": 2425262701,
-						"mac": 17730434519136,
-						"hmac": 105897790545936
-					}
-				]
-			  	}) };
+				  "size": 1,
+				  "eps": [{
+					  "vni": 3,
+					  "hip": 2425262701,
+					  "mac": 17730434519136,
+					  "hmac": 105897790545936
+				  }]
+			  }) };
 
 	/* Test data with malformed json */
 	char *argv4[] = { "update-ep", "-j", QUOTE({
-				"size": 1,
-				 "eps": [
-					{
-						"vni": 3,
-						"ip": "10.0.0.1",
-						"hip": 2425262701,
-						"mac": 17730434519136,
-						"hmac": 105897790545936
-					}
-				]
-			  	}) };
+				  "size": 1,
+				  "eps": [{
+					  "vni": 3,
+					  "ip": "10.0.0.1",
+					  "hip": 2425262701,
+					  "mac": 17730434519136,
+					  "hmac": 105897790545936
+				  }]
+			  }) };
 
 	char mac[6] = { 0x60, 0x50, 0x40, 0x30, 0x20, 0x10 };
 	char hmac[6] = { 0x10, 0x20, 0x30, 0x40, 0x50, 0x60 };
@@ -522,7 +530,8 @@ static void test_trn_cli_update_ep_subcmd(void **state)
 	};
 
 	/* Test call update_ep successfully */
-	TEST_CASE("update_ep should succeed with well formed endpoint json input");
+	TEST_CASE(
+		"update_ep should succeed with well formed endpoint json input");
 	update_ep_1_ret_val = 0;
 	expect_function_call(__wrap_update_ep_1);
 	will_return(__wrap_update_ep_1, &update_ep_1_ret_val);
@@ -574,23 +583,22 @@ static void test_trn_cli_load_transit_subcmd(void **state)
 
 	/* Test data for nornal requesr */
 	char *argv1[] = { "load-transit-xdp", "-j", QUOTE({
-				"itf_tenant": "eth0",
-				"itf_zgc": "eth1",
-				"ibo_port": 8888,
-				"debug_mode": 1
-			  	}) };
+				  "itf_tenant": "eth0",
+				  "itf_zgc": "eth1",
+				  "ibo_port": 8888,
+				  "debug_mode": 1
+			  }) };
 
 	/* test data with missing field */
-	char *argv2[] = { "load-transit-xdp", "-j", QUOTE({
-				"itf_zgc": "eth1"
-				 }) };
+	char *argv2[] = { "load-transit-xdp", "-j",
+			  QUOTE({ "itf_zgc": "eth1" }) };
 
 	/* test data with missing optional debug_mode field */
 	char *argv3[] = { "load-transit-xdp", "-j", QUOTE({
-				"itf_tenant": "eth0",
-				"itf_zgc": "eth1",
-				"ibo_port": 8888
-			  	}) };
+				  "itf_tenant": "eth0",
+				  "itf_zgc": "eth1",
+				  "ibo_port": 8888
+			  }) };
 
 	/* Test call load_transit_xdp_1 successfully */
 	TEST_CASE("load_transit_xdp should succeed with well formed input");
@@ -600,11 +608,13 @@ static void test_trn_cli_load_transit_subcmd(void **state)
 	rc = trn_cli_load_transit_subcmd(NULL, argc, argv1);
 	assert_int_equal(rc, 0);
 
-	TEST_CASE("load_transit_xdp should fail if itf_tenant field is missing");
+	TEST_CASE(
+		"load_transit_xdp should fail if itf_tenant field is missing");
 	rc = trn_cli_load_transit_subcmd(NULL, argc, argv2);
 	assert_int_equal(rc, -EINVAL);
 
-	TEST_CASE("load_transit_xdp should succeed if optional debug_mode is missing");
+	TEST_CASE(
+		"load_transit_xdp should succeed if optional debug_mode is missing");
 	load_transit_xdp_ret_val = 0;
 	expect_function_call(__wrap_load_transit_xdp_1);
 	will_return(__wrap_load_transit_xdp_1, &load_transit_xdp_ret_val);
@@ -635,11 +645,11 @@ static void test_trn_cli_unload_transit_subcmd(void **state)
 
 	/* Test cases */
 	char *argv1[] = { "load-transit-xdp", "-j", QUOTE({
-				"itf_tenant": "eth0",
-				"itf_zgc": "eth1",
-				"ibo_port": 8888,
-				"debug_mode": 1
-				}) };
+				  "itf_tenant": "eth0",
+				  "itf_zgc": "eth1",
+				  "ibo_port": 8888,
+				  "debug_mode": 1
+			  }) };
 
 	/* Test call unload_transit_xdp_1 successfully */
 	TEST_CASE("unload_transit_xdp should succeed with well formed input");
@@ -650,8 +660,7 @@ static void test_trn_cli_unload_transit_subcmd(void **state)
 	assert_int_equal(rc, 0);
 
 	/* Test call unload_transit_xdp return error */
-	TEST_CASE(
-		"unload_transit_xdp should fail if rpc returns error");
+	TEST_CASE("unload_transit_xdp should fail if rpc returns error");
 	unload_transit_xdp_ret_val = -EINVAL;
 	expect_function_call(__wrap_unload_transit_xdp_1);
 	will_return(__wrap_unload_transit_xdp_1, &unload_transit_xdp_ret_val);
@@ -727,10 +736,15 @@ static void test_trn_cli_get_chain_subcmd(void **state)
 
 	uint32_t id = 3;
 	uint32_t tail_ftn = 1;
+	uint32_t tail_ftn_ip = 0x100000a;
+	char tail_ftn_mac[6] = { 1, 2, 3, 4, 5, 6 };
 
 	rpc_trn_chain_t get_chain_1_ret_val = {
 		.tail_ftn = tail_ftn,
+		.tail_ftn_ip = tail_ftn_ip,
 	};
+	memcpy(get_chain_1_ret_val.tail_ftn_mac, tail_ftn_mac,
+	       sizeof(char) * 6);
 
 	/* Test cases */
 	char *argv1[] = { "get-chain", "-j", QUOTE({ "id": "3" }) };
@@ -858,11 +872,12 @@ static void test_trn_cli_get_ep_subcmd(void **state)
 	char *argv2[] = { "get-ep", "-j",
 			  QUOTE({ "vni": "3", "ip": "10.0.0.1" }) };
 
-	char *argv3[] = { "get-ep", "-j",
-			  QUOTE({ "vni": 3 }) };
+	char *argv3[] = { "get-ep", "-j", QUOTE({ "vni": 3 }) };
 
-	char *argv4[] = { "get-ep", "-j",
-			  QUOTE({ "vni": 3, "ip": "10.0.0.1", }) };
+	char *argv4[] = { "get-ep", "-j", QUOTE({
+				  "vni": 3,
+				  "ip": "10.0.0.1",
+			  }) };
 
 	rpc_endpoint_key_t exp_ep_key = {
 		.ip = 0x100000a,
@@ -915,8 +930,7 @@ static void test_trn_cli_delete_ep_subcmd(void **state)
 	char *argv2[] = { "delete-vni", "-j",
 			  QUOTE({ "vni": "3", "ip": "10.0.0.1" }) };
 
-	char *argv3[] = { "delete-ep", "-j",
-			  QUOTE({ "vni": 3 }) };
+	char *argv3[] = { "delete-ep", "-j", QUOTE({ "vni": 3 }) };
 
 	char *argv4[] = { "delete-ep", "-j",
 			  QUOTE({ "vni": 3, "ip": [10.0.0.2] }) };
@@ -928,7 +942,8 @@ static void test_trn_cli_delete_ep_subcmd(void **state)
 
 	int delete_ep_1_ret_val = 0;
 	/* Test call delete_ep_1 successfully */
-	TEST_CASE("delete_ep_1 should succeed with well formed endpoint json input");
+	TEST_CASE(
+		"delete_ep_1 should succeed with well formed endpoint json input");
 	expect_function_call(__wrap_delete_ep_1);
 	will_return(__wrap_delete_ep_1, &delete_ep_1_ret_val);
 	expect_check(__wrap_delete_ep_1, argp, check_ep_key_equal, &exp_ep_key);
@@ -941,7 +956,8 @@ static void test_trn_cli_delete_ep_subcmd(void **state)
 	rc = trn_cli_delete_ep_subcmd(NULL, argc, argv2);
 	assert_int_equal(rc, -EINVAL);
 
-	TEST_CASE("delete_ep_1 should fail if called with missing required field");
+	TEST_CASE(
+		"delete_ep_1 should fail if called with missing required field");
 	rc = trn_cli_delete_ep_subcmd(NULL, argc, argv3);
 	assert_int_equal(rc, -EINVAL);
 
