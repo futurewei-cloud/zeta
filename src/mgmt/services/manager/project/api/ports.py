@@ -18,6 +18,7 @@ from project.api.models import Port
 from project.api.models import Host
 from project.api.models import EP
 from project import db
+import time
 
 
 ports_blueprint = Blueprint('ports', __name__)
@@ -27,6 +28,9 @@ ports_blueprint = Blueprint('ports', __name__)
 def all_ports():
     if request.method == 'POST':
         portList = request.get_json()
+        amount_of_ports = len(portList)
+        print(f'Start to make {amount_of_ports} ports.',flush=True)
+        start_time = time.time()
         for post_data in portList:
             port = Port(
                 port_id = post_data.get('port_id'),
@@ -50,6 +54,8 @@ def all_ports():
             db.session.add(port)
             db.session.commit()
         response_object = portList
+        end_time = time.time()
+        print(f'Zeta took {end_time - start_time} seconds to make {amount_of_ports} ports', flush=True)
     else:
         response_object = [port.to_json() for port in Port.query.all()]
     return jsonify(response_object)
