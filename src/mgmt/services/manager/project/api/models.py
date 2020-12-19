@@ -48,8 +48,8 @@ class Zgc(db.Model):
     ip_end = db.Column(db.String(16), nullable=False)
     port_ibo = db.Column(db.Integer, default=8300)
     overlay_type = db.Column(db.String(16), default='vxlan')
-    nodes = db.relationship("Node", backref="zgc")
-    vpcs = db.relationship("Vpc", backref="zgc")
+    nodes = db.relationship("Node", backref="zgcs")
+    vpcs = db.relationship("Vpc", backref="zgcs")
 
     def to_json(self):
         return {
@@ -61,8 +61,8 @@ class Zgc(db.Model):
             'ip_end': self.ip_end,
             'port_ibo': self.port_ibo,
             'overlay_type': self.overlay_type,
-            'nodes': [],
-            'vpcs': []
+            'nodes': [node.to_json() for node in self.nodes],
+            'vpcs': [vpc.to_json() for vpc in self.vpcs]
         }
 
 
@@ -106,7 +106,7 @@ class Vpc(db.Model):
                        nullable=False)
     vpc_id = db.Column(db.String(64), unique=True, nullable=False)
     vni = db.Column(db.Integer, nullable=False)
-    ports = db.relationship("Port", backref="vpc", lazy=True)
+    ports = db.relationship("Port", backref="vpcs", lazy=True)
 
     def to_json(self):
         return {
@@ -114,7 +114,7 @@ class Vpc(db.Model):
             'zgc_id': self.zgc_id,
             'vpc_id': self.vpc_id,
             'vni': self.vni,
-            'ports': []
+            'ports': [port.to_json() for port in self.ports]
         }
 
 
@@ -126,7 +126,7 @@ class Host(db.Model):
     host_id = db.Column(db.String(64), unique=True, nullable=False)
     mac_node = db.Column(db.String(18), nullable=False)
     ip_node = db.Column(db.String(16), nullable=False)
-    ports = db.relationship("Port", backref="host", lazy=True)
+    ports = db.relationship("Port", backref="hosts", lazy=True)
 
     def to_json(self):
         return {
@@ -134,7 +134,7 @@ class Host(db.Model):
             'host_id': self.host_id,
             'mac_node': self.mac_node,
             'ip_node': self.ip_node,
-            'ports': []
+            'ports': [port.to_json() for port in self.ports]
         }
 
 
@@ -149,7 +149,7 @@ class Port(db.Model):
         'vpcs.vpc_id'), nullable=False)
     host_id = db.Column(db.String(64), db.ForeignKey(
         'hosts.host_id'), nullable=False)
-    eps = db.relationship("EP", backref="port", lazy="joined")
+    eps = db.relationship("EP", backref="ports", lazy=True)
 
     def to_json(self):
         return {
@@ -158,7 +158,7 @@ class Port(db.Model):
             'mac_port': self.mac_port,
             'vpc_id': self.vpc_id,
             'host_id': self.host_id,
-            'eps': []
+            'eps': [ep.to_json() for ep in self.eps]
         }
 
 

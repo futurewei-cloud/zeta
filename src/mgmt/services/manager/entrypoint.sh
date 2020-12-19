@@ -19,5 +19,5 @@ echo "PostgreSQL started"
 # Trigger Ready Probe
 touch /tmp/healthy
 
-gunicorn -b 0.0.0.0:5000 manage:app
+gunicorn -b 0.0.0.0:5000 manage:app --capture-output --log-level debug
 
