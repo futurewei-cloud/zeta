@@ -18,6 +18,9 @@ from project.api.models import Vpc
 from project import db
 from project.api.utils import getGWsFromIpRange
 import time
+import logging
+
+glogger = logging.getLogger('gunicorn.error')
 
 vpcs_blueprint = Blueprint('vpcs', __name__)
 
@@ -30,7 +33,7 @@ def extendVpcResp(vpc):
 @vpcs_blueprint.route('/vpcs', methods=['GET', 'POST'])
 def all_vpcs():
     if request.method == 'POST':
-        print('Start to make a VPC.', flush=True)
+        glogger.debug('Start to make a VPC.')
         start_time = time.time()
         post_data = request.get_json()
         vpc = Vpc(zgc_id = settings.activeZgc["zgc_id"], **post_data)
@@ -39,7 +42,7 @@ def all_vpcs():
 
         response_object = extendVpcResp(vpc)
         end_time = time.time()
-        print(f'Zeta took {end_time - start_time} seconds to make a VPC', flush=True)
+        glogger.debug(f'Zeta took {end_time - start_time} seconds to make a VPC')
     else:
         response_object = []
         for vpc in Vpc.query.all():

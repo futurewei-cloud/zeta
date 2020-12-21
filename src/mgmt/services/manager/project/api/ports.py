@@ -19,7 +19,9 @@ from project.api.models import Host
 from project.api.models import EP
 from project import db
 import time
+import logging
 
+glogger = logging.getLogger('gunicorn.error')
 
 ports_blueprint = Blueprint('ports', __name__)
 
@@ -29,7 +31,7 @@ def all_ports():
     if request.method == 'POST':
         portList = request.get_json()
         amount_of_ports = len(portList)
-        print(f'Start to make {amount_of_ports} ports.',flush=True)
+        glogger.debug(f'Start to make {amount_of_ports} ports.')
         start_time = time.time()
         for post_data in portList:
             port = Port(
@@ -55,7 +57,7 @@ def all_ports():
             db.session.commit()
         response_object = portList
         end_time = time.time()
-        print(f'Zeta took {end_time - start_time} seconds to make {amount_of_ports} ports', flush=True)
+        glogger.debug(f'Zeta took {end_time - start_time} seconds to make {amount_of_ports} ports')
     else:
         response_object = [port.to_json() for port in Port.query.all()]
     return jsonify(response_object)
