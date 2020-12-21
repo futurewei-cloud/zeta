@@ -19,14 +19,14 @@ from project import db
 import time
 import logging
 
-glogger = logging.getLogger('gunicorn.error')
+logger = logging.getLogger('gunicorn.error')
 zgcs_blueprint = Blueprint('zgcs', __name__)
 
 
 @zgcs_blueprint.route('/zgcs', methods=['GET', 'POST'])
 def all_zgcs():
     if request.method == 'POST':
-        glogger.debug('Start to make a ZGC',)
+        logger.debug('Start to make a ZGC',)
         start_time = time.time()
         post_data = request.get_json()
         post_data['zgc_id'] = str(uuid.uuid4())
@@ -40,7 +40,7 @@ def all_zgcs():
             settings.activeZgc["ip_end"] = post_data["ip_end"]
             settings.activeZgc["port_ibo"] = post_data["port_ibo"]
         end_time = time.time()
-        glogger.debug(f'Zeta took {end_time - start_time} seconds to make a ZGC')
+        logger.debug(f'Zeta took {end_time - start_time} seconds to make a ZGC')
     else:
         response_object = [zgc.to_json() for zgc in Zgc.query.all()]
     return jsonify(response_object)

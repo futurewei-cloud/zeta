@@ -24,8 +24,7 @@ import operator
 from project.api.settings import zgc_cidr_range
 import time
 
-logger = logging.getLogger()
-glogger = logging.getLogger('gunicorn.error')
+logger = logging.getLogger('gunicorn.error')
 
 config.load_incluster_config()
 obj_api = client.CustomObjectsApi()
@@ -89,7 +88,7 @@ def create_droplet(name, ip, mac, itf, network, zgc_id):
 @nodes_blueprint.route('/nodes', methods=['GET', 'POST'])
 def all_nodes():
     if request.method == 'POST':
-        glogger.debug('Start to make one node, and two droplets for this node.')
+        logger.debug('Start to make one node, and two droplets for this node.')
         start_time = time.time()
         post_data = request.get_json()
         post_data['node_id'] = str(uuid.uuid4())
@@ -200,7 +199,7 @@ def all_nodes():
         db.session.commit()
         response_object = post_data
         end_time = time.time()
-        glogger.debug(f'Zeta took {end_time - start_time} seconds to make a node and its two droplets.')
+        logger.debug(f'Zeta took {end_time - start_time} seconds to make a node and its two droplets.')
     else:
         response_object = [node.to_json() for node in Node.query.all()]
     return jsonify(response_object)
