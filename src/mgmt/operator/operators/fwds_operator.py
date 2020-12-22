@@ -46,31 +46,34 @@ class FwdOperator(ObjectOperator):
         return Fwd(name, self.obj_api, self.store, spec)
 
     def create_n_fwds(self, dft_obj, numfwds, task):
-        for i in range(numfwds):
-            fwd_name = dft_obj.name + '-fwd-' + str(i)
+        for _ in range(numfwds):
+            fwd_id = self.id_allocator.allocate_id(KIND.fwd)
+            fwd_name = dft_obj.name + '-fwd-' + fwd_id
             fwd_obj = Fwd(fwd_name, self.obj_api, self.store)
+            fwd_obj.id = fwd_id
             fwd_obj.dft = dft_obj.name
-            fwd_obj.id = self.id_allocator.allocate_id(fwd_obj.name)
+            logger.info("Adding FWD {}".format(fwd_obj.name))
+            dft_obj.fwds.append(fwd_obj.name)
             fwd_obj.create_obj()
 
-            dft_obj.fwds.append(fwd_obj.name)
-
     def delete_n_fwds(self, dft_obj, numfwds, task):
-        if numfwds > len(dft_obj.numfwds):
+        if numfwds > dft_obj.numfwds:
             task.raise_permanent_error(
                 "Can't delete more FWDs than available.")
         for i in range(numfwds):
             fwd_obj = self.store.get_obj(dft_obj.fwds[i], KIND.fwd)
-
+            logger.info("Deleting FWD {}".format(fwd_obj.name))
             dft_obj.fwds.remove(fwd_obj.name)
             fwd_obj.delete_obj()
 
     def process_numfwd_change(self, dft_obj, old, new, task):
+        logger.info("New {}, Old {}".format(new, old))
         diff = new - old
         if diff > 0:
             logger.info("Scaling out FWDs by {}".format(abs(diff)))
             self.create_n_fwds(
                 dft_obj, abs(diff), task)
-        if diff < 0:
+        if diff <= 0:
             logger.info("Scaling in FWDs by {}".format(abs(diff)))
             self.delete_n_fwds(dft_obj, abs(diff), task)
+        dft_obj.update_obj()

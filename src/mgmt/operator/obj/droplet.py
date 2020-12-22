@@ -41,6 +41,7 @@ class Droplet(KubeObject):
         self.ip_control = ""
         self.zgc_id = ""
         self.phy_itf = ""
+        self.network = ""
         if spec is not None:
             self.set_obj_spec(spec)
 

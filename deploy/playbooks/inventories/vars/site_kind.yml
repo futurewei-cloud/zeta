@@ -9,4 +9,4 @@
 #
 k8s_type: "kind"
 k8s_size: 2
-droplet_size: 3
+droplet_size: 9

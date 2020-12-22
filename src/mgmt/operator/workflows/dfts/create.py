@@ -21,10 +21,12 @@ def dft_create(task, dft, name, body, spec, diff):
     if len(droplets_opr.get_unallocated_droplets()) < 1:
         task.raise_temporary_error(
             "No droplets available for DFT")
-    if dft.numchains < 0:
-        task.raise_permanent_error("DFT numchains cannot be less than 0")
+    if dft.numchains < 1:
+        task.raise_permanent_error("DFT numchains cannot be less than 1")
     chains_opr.create_n_chains(
         dft, dft.numchains, OBJ_DEFAULTS.default_n_ftns, task)
+    if dft.numfwds < 1:
+        task.raise_permanent_error("DFT numchains cannot be less than 1")
     fwds_opr.create_n_fwds(
         dft, dft.numfwds, task)
     logger.info("DFT table: {}".format(dft.table))

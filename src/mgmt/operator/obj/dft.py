@@ -33,7 +33,7 @@ class Dft(KubeObject):
             "table": self.table,
             "chains": self.chains,
             "fwds": self.fwds,
-            "numfwds": self.numfwds
+            "numfwds": self.numfwds,
         }
 
         return self.obj

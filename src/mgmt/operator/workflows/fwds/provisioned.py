@@ -26,6 +26,8 @@ def fwd_provisioned(task, fwd, name, body, spec, diff):
 
     for chain in dft_obj.chains:
         chain_obj = chains_opr.store.get_obj(chain, KIND.chain)
+        if not chain_obj:
+            task.raise_temporary_error("No chains available!")
         if len(chain_obj.ftns) > 0:
             tail_ftn_obj = ftns_opr.store.get_obj(chain_obj.ftns[-1], KIND.ftn)
             tail_ftn_droplet_obj = droplets_opr.store.get_obj(

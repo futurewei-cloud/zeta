@@ -24,10 +24,10 @@ class IdAllocator:
         for i in range(1, 10000):  # id 0 reserved for DFT
             self.ids.append(str(i))
 
-    def allocate_id(self, obj_name):
-        logger.info("Allocating ID {} for {}!".format(self.ids[0], obj_name))
+    def allocate_id(self, obj_type):
+        logger.info("Allocating ID {} for {}!".format(self.ids[0], obj_type))
         return (self.ids.pop(0))
 
-    def reclaim_id(self, obj_id, obj_name):
-        logger.info("Reclaiming ID {} from {}!".format(obj_id, obj_name))
+    def reclaim_id(self, obj_id, obj_type):
+        logger.info("Reclaiming ID {} from {}!".format(obj_id, obj_type))
         self.ids.insert(0, obj_id)
