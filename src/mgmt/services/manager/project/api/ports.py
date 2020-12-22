@@ -59,7 +59,7 @@ def all_ports():
             elif (host is not None):
                 logger.debug(f'In DB, found host with host_id: [{host.host_id}]')
                 port['host_id'] = host.host_id
-            elif (ip_node_to_find in [to_add_host.host_ip for to_add_host in hosts_to_add]):
+            elif (ip_node_to_find in [to_add_host['host_ip'] for to_add_host in hosts_to_add]):
                 logger.debug(f'Host_id: [{post_data.get("ip_node")}] should be found in hosts_to_add')
                 for host_to_add in hosts_to_add:
                     if host_to_add['ip_node'] == ip_node_to_find:
