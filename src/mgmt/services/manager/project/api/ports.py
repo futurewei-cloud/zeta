@@ -33,28 +33,52 @@ def all_ports():
         amount_of_ports = len(portList)
         logger.debug(f'Start to make {amount_of_ports} ports.')
         start_time = time.time()
+        # need to add dicts, not Port/Host
+        ports_to_add = []
+        hosts_to_add = []
         for post_data in portList:
-            port = Port(
-                port_id = post_data.get('port_id'),
-                mac_port = post_data.get('mac_port'),
-                vpc_id = post_data.get('vpc_id'))
+            port = {
+                'port_id': post_data.get('port_id'),
+                'mac_port': post_data.get('mac_port'),
+                'vpc_id': post_data.get('vpc_id'),
+                'host_id': '',
+                'eps': []
+            }
 
-            host = Host.query.filter_by(ip_node=post_data.get('ip_node')).first()
-            if host is None:
-                host = Host(
-                    mac_node = post_data.get('mac_node'),
-                    ip_node = post_data.get('ip_node'))
-                host.host_id=str(uuid.uuid4())
-                db.session.add(host)
-            port.host_id = host.host_id
-
+            ip_node_to_find = post_data.get('ip_node')
+            logger.debug(f'Need to find ip_node: [{ip_node_to_find}]')
+            host = Host.query.filter_by(ip_node=ip_node_to_find).first()
+            if (host is None) and (ip_node_to_find not in [to_add_host['ip_node'] for to_add_host in hosts_to_add]):
+                logger.debug(f'Cannot find ip_node [{post_data.get("ip_node")}] in either the db or the hosts to add, create a new host to add')
+                host_to_add = {'mac_node': post_data.get('mac_node'),
+                    'ip_node' : ip_node_to_find,
+                    'host_id' : str(uuid.uuid4())}
+                port['host_id'] = host_to_add['host_id']
+                logger.debug(f'Created this host_to_add: {host_to_add}')
+                hosts_to_add.append(host_to_add)
+            elif (host is not None):
+                logger.debug(f'In DB, found host with host_id: [{host.host_id}]')
+                port['host_id'] = host.host_id
+            elif (ip_node_to_find in [to_add_host.host_ip for to_add_host in hosts_to_add]):
+                logger.debug(f'Host_id: [{post_data.get("ip_node")}] should be found in hosts_to_add')
+                for host_to_add in hosts_to_add:
+                    if host_to_add['ip_node'] == ip_node_to_find:
+                        logger.debug(f'In hosts_tp_add, found host with host_id: [{post_data.get("ip_node")}]')
+                        port['host_id'] = host_to_add['host_id']
+                        break
+                logger.debug(f'Host_id: [{post_data.get("ip_node")}] should be found in hosts_to_add, but it is not found after the while loop, need to investigate')
             for ip in post_data['ips_port']:
-                ep = EP(**ip)
-                ep.port_id = post_data['port_id']
-                port.eps.append(ep)
-
-            db.session.add(port)
-            db.session.commit()
+                ep_to_add = {
+                                'ip': ip['ip'],
+                                'vip': ip['vip'],
+                                'port_id': post_data['port_id']
+                            }
+                port['eps'].append(ep_to_add)
+                logger.debug(f'Added this ep to the port: {ep_to_add}')
+            logger.debug(f'Adding this port object to the list: \n{port}')
+            ports_to_add.append(port)
+        db.session.bulk_insert_mappings(Host, hosts_to_add)
+        db.session.bulk_insert_mappings(Port, ports_to_add)
         response_object = portList
         end_time = time.time()
         logger.debug(f'Zeta took {end_time - start_time} seconds to make {amount_of_ports} ports')
