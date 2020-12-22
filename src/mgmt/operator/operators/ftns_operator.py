@@ -48,14 +48,18 @@ class FtnOperator(ObjectOperator):
         return Ftn(name, self.obj_api, self.store, spec)
 
     def create_n_ftns(self, chain_obj, size, task):
-        if len(droplets_opr.store.get_all_network_droplets(OBJ_DEFAULTS.zgc_net)) < size:
+        avail_droplets = len(
+            droplets_opr.get_network_unallocated_droplets(OBJ_DEFAULTS.zgc_net))
+        if avail_droplets < size + 1:
             task.raise_temporary_error(
-                "Not enough droplets available for {} FTN(s)".format(size))
-        for _ in range(size):
+                "Not enough droplets available for {} FTN(s), only {} droplets available".format(size, avail_droplets))
+        for i in range(size):
             ftn_id = self.id_allocator.allocate_id(KIND.fwd)
             ftn_name = chain_obj.name + '-ftn-' + ftn_id
             ftn_obj = Ftn(ftn_name, self.obj_api, self.store)
-            droplets_opr.assign_droplet(ftn_obj, OBJ_DEFAULTS.zgc_net)
+            if not droplets_opr.assign_droplet(ftn_obj, OBJ_DEFAULTS.zgc_net):
+                task.raise_permanent_error(
+                    "Unable to assign droplet! {} of {} FTN(s) assigned. {} available droplets.".format(i, size, avail_droplets))
             ftn_obj.id = ftn_id
             ftn_obj.parent_chain = chain_obj.name
             ftn_obj.dft = chain_obj.dft
@@ -66,9 +70,10 @@ class FtnOperator(ObjectOperator):
         self.update_chain_ftns(chain_obj)
 
     def delete_n_ftns(self, chain_obj, numchainreplicas, task):
-        if numchainreplicas > chain_obj.size:
-            task.raise_permanent_error(
-                "Can't delete more FTNs than available.")
+        if numchainreplicas > len(chain_obj.ftns):
+            logger.info("Can't delete more FTNs than available.")
+            chain_obj.size = len(chain_obj.ftns)
+            return
         for i in range(numchainreplicas):
             ftn_obj = self.store.get_obj(chain_obj.ftns[i], KIND.ftn)
             logger.info("Deleting FTN {}".format(ftn_obj.name))

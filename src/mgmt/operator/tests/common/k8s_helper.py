@@ -34,10 +34,9 @@ class K8sHelper:
                 namespace="default",
                 plural=plural,
                 name=name,
-                body=body,
-                field_manager="k8s_helper"
+                body=body
             )
-            print(response)
+            return response
         except Exception as e:
             logger.info(
                 "Unable to patch custom object {}. Exception: {}".format(name, e))
@@ -51,17 +50,18 @@ class K8sHelper:
                 plural=plural,
                 name=name
             )
-            print(response)
+            return response
         except Exception as e:
             logger.info(
                 "Unable to get custom object {}. Exception: {}".format(name, e))
 
     def count_operator_permanent_errors(self):
-        cmd = "{} | grep 'failed permanently -c".format(self.operator_logs_cmd)
+        cmd = "{} | grep 'failed permanently' -c".format(
+            self.operator_logs_cmd)
         return self.run_cmd(cmd)
 
     def print_operator_errors(self):
-        logger.info("Printing errors")
+        logger.info("Printing errors if any!")
         cmd = "{} | grep -E '^[A-Z][a-z].*Error:'".format(
             self.operator_logs_cmd)
         logger.info(self.run_cmd(cmd))
@@ -69,4 +69,25 @@ class K8sHelper:
     def count_operator_errors(self):
         cmd = "{} | grep -E '^[A-Z][a-z].*Error:' -c".format(
             self.operator_logs_cmd)
+        return self.run_cmd(cmd)
+
+    def check_errors(self):
+        self.print_operator_errors()
+        return int(self.count_operator_permanent_errors()) + int(self.count_operator_errors())
+
+    def scale_zeta_object(self, name, plural, field, amount):
+        body = {
+            "spec": {
+                field: amount
+            }
+        }
+        self.patch_zeta_object(name, plural, body)
+
+    def count_custom_object(self, object_type,  object_name):
+        cmd = "kubectl get {} | grep -c {}".format(object_type, object_name)
+        return int(self.run_cmd(cmd))
+
+    def get_single_custom_object(self, object_type):
+        cmd = "kubectl get {} | grep dft | awk 'NR==1{{print $1}}'".format(
+            object_type)
         return self.run_cmd(cmd)

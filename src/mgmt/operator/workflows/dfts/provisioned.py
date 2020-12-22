@@ -19,8 +19,9 @@ def dft_provisioned(task, dft, name, body, spec, diff):
     if not dft:
         dft = dfts_opr.get_stored_obj(name, spec)
 
-    logger.info("DIFF HERE {}".format(diff))
-    logger.info("numchains {} numfwds {}".format(dft.numchains, dft.numfwds))
+    if not dft.maglev_table:
+        chains_opr.populate_maglev_table(dft)
+
     for d in diff:
         if d[0] == 'change':
             logger.info(

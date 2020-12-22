@@ -12,6 +12,7 @@ from common.object_operator import ObjectOperator
 from common.id_allocator import IdAllocator
 from store.operator_store import OprStore
 from obj.chain import Chain
+from common.maglev_table import MaglevTable
 
 logger = logging.getLogger()
 
@@ -61,8 +62,8 @@ class ChainOperator(ObjectOperator):
 
     def delete_n_chains(self, dft_obj, numchains, task):
         if numchains > dft_obj.numchains:
-            task.raise_permanent_error(
-                "Can't delete more Chains than available.")
+            logger.info("Can't delete more Chains than available.")
+            dft_obj.numchains = len(dft_obj.chains)
         for i in range(numchains):
             chain_obj = self.store.get_obj(dft_obj.chains[i], KIND.chain)
             logger.info("Deleting chain {}".format(chain_obj.name))
@@ -81,4 +82,13 @@ class ChainOperator(ObjectOperator):
         if diff <= 0:
             logger.info("Scaling in chains by {}".format(abs(diff)))
             self.delete_n_chains(dft_obj, abs(diff), task)
+        dft_obj.update_obj()
+
+    def populate_maglev_table(self, dft_obj):
+        dft_obj.maglev_table = MaglevTable(
+            OBJ_DEFAULTS.default_maglev_table_size)
+        for chain in dft_obj.chains:
+            chain_obj = self.store.get_obj(chain, KIND.chain)
+            dft_obj.maglev_table.add(chain_obj.id)
+        dft_obj.table = dft_obj.maglev_table.get_table()
         dft_obj.update_obj()

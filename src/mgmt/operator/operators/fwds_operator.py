@@ -48,14 +48,18 @@ class FwdOperator(ObjectOperator):
         return Fwd(name, self.obj_api, self.store, spec)
 
     def create_n_fwds(self, dft_obj, numfwds, task):
-        if len(droplets_opr.store.get_all_network_droplets(OBJ_DEFAULTS.tenant_net)) < numfwds:
+        avail_droplets = len(
+            droplets_opr.get_network_unallocated_droplets(OBJ_DEFAULTS.tenant_net))
+        if avail_droplets < numfwds + 1:
             task.raise_temporary_error(
-                "Not enough droplets available for {} FWD(s)".format(numfwds))
+                "Not enough droplets available for {} FWD(s), only {} available droplets.".format(numfwds, avail_droplets))
         for _ in range(numfwds):
             fwd_id = self.id_allocator.allocate_id(KIND.fwd)
             fwd_name = dft_obj.name + '-fwd-' + fwd_id
             fwd_obj = Fwd(fwd_name, self.obj_api, self.store)
-            droplets_opr.assign_droplet(fwd_obj, OBJ_DEFAULTS.tenant_net)
+            if not droplets_opr.assign_droplet(fwd_obj, OBJ_DEFAULTS.tenant_net):
+                task.raise_permanent_error(
+                    "Unable to assign droplet! {} out of {} FWD(s) assigned. {} available droplets.".format(i, numfwds, avail_droplets))
             fwd_obj.id = fwd_id
             fwd_obj.dft = dft_obj.name
             logger.info("Adding FWD {}".format(fwd_obj.name))
@@ -63,9 +67,9 @@ class FwdOperator(ObjectOperator):
             fwd_obj.create_obj()
 
     def delete_n_fwds(self, dft_obj, numfwds, task):
-        if numfwds > dft_obj.numfwds:
-            task.raise_permanent_error(
-                "Can't delete more FWDs than available.")
+        if numfwds > len(dft_obj.fwds):
+            logger.info("Can't delete more FWDs than available.")
+            dft_obj.numfwds = len(dft_obj.fwds)
         for i in range(numfwds):
             fwd_obj = self.store.get_obj(dft_obj.fwds[i], KIND.fwd)
             logger.info("Deleting FWD {}".format(fwd_obj.name))

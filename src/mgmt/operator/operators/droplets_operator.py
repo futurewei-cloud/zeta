@@ -69,8 +69,7 @@ class DropletOperator(ObjectOperator):
         return None
 
     def assign_droplet(self, obj, network):
-        droplets = set(self.store.get_all_network_droplets(
-            network)) - self.allocated_droplets
+        droplets = self.get_network_unallocated_droplets(network)
         if len(droplets) == 0:
             return False
         d = random.sample(droplets, 1)[0]
@@ -91,3 +90,7 @@ class DropletOperator(ObjectOperator):
     def get_unallocated_droplets(self):
         return set(self.store.get_all_obj_type_name(
             KIND.droplet)) - self.allocated_droplets
+
+    def get_network_unallocated_droplets(self, network):
+        return set(self.store.get_all_network_droplets(
+            network)) - self.allocated_droplets

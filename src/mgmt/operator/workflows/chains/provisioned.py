@@ -39,6 +39,8 @@ def chain_provisioned(task, chain, name, body, spec, diff):
         fwd_obj = fwds_opr.store.get_obj(fwd, KIND.fwd)
         droplet_obj = droplets_opr.store.get_obj(
             fwd_obj.droplet, KIND.droplet)
+        if not droplet_obj:
+            task.raise_temporary_error("FWD droplet not provisioned")
         tail_ftn_droplet_obj = droplets_opr.store.get_obj(
             tail_ftn_obj.droplet, KIND.droplet)
         if not tail_ftn_droplet_obj:
