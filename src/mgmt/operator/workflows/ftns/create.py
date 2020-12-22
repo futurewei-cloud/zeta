@@ -26,6 +26,4 @@ def ftn_create(task, ftn, name, body, spec, diff):
     if not chains_opr.store.contains_obj(ftn.parent_chain, KIND.chain):
         task.raise_temporary_error(
             "Parent Chain {} not yet created!".format(ftn.parent_chain))
-    if not droplets_opr.assign_droplet(ftn, OBJ_DEFAULTS.zgc_net):
-        task.raise_temporary_error("No droplets available for FTN")
     return ftn

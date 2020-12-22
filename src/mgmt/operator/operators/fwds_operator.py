@@ -12,7 +12,9 @@ from store.operator_store import OprStore
 from common.id_allocator import IdAllocator
 from obj.fwd import Fwd
 from kubernetes import client, config
+from operators.droplets_operator import *
 
+droplets_opr = DropletOperator()
 logger = logging.getLogger()
 
 
@@ -46,10 +48,14 @@ class FwdOperator(ObjectOperator):
         return Fwd(name, self.obj_api, self.store, spec)
 
     def create_n_fwds(self, dft_obj, numfwds, task):
+        if len(droplets_opr.store.get_all_network_droplets(OBJ_DEFAULTS.tenant_net)) < numfwds:
+            task.raise_temporary_error(
+                "Not enough droplets available for {} FWD(s)".format(numfwds))
         for _ in range(numfwds):
             fwd_id = self.id_allocator.allocate_id(KIND.fwd)
             fwd_name = dft_obj.name + '-fwd-' + fwd_id
             fwd_obj = Fwd(fwd_name, self.obj_api, self.store)
+            droplets_opr.assign_droplet(fwd_obj, OBJ_DEFAULTS.tenant_net)
             fwd_obj.id = fwd_id
             fwd_obj.dft = dft_obj.name
             logger.info("Adding FWD {}".format(fwd_obj.name))

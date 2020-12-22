@@ -12,7 +12,9 @@ from store.operator_store import OprStore
 from common.id_allocator import IdAllocator
 from obj.ftn import Ftn
 from kubernetes import client, config
+from operators.droplets_operator import *
 
+droplets_opr = DropletOperator()
 logger = logging.getLogger()
 
 
@@ -46,10 +48,14 @@ class FtnOperator(ObjectOperator):
         return Ftn(name, self.obj_api, self.store, spec)
 
     def create_n_ftns(self, chain_obj, size, task):
+        if len(droplets_opr.store.get_all_network_droplets(OBJ_DEFAULTS.zgc_net)) < size:
+            task.raise_temporary_error(
+                "Not enough droplets available for {} FTN(s)".format(size))
         for _ in range(size):
             ftn_id = self.id_allocator.allocate_id(KIND.fwd)
             ftn_name = chain_obj.name + '-ftn-' + ftn_id
             ftn_obj = Ftn(ftn_name, self.obj_api, self.store)
+            droplets_opr.assign_droplet(ftn_obj, OBJ_DEFAULTS.zgc_net)
             ftn_obj.id = ftn_id
             ftn_obj.parent_chain = chain_obj.name
             ftn_obj.dft = chain_obj.dft
