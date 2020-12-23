@@ -37,6 +37,7 @@ def all_ports():
         ports_to_add = []
         eps_to_add = []
         hosts_to_add = []
+        host_ip_node_lookup_set = set()
         for post_data in portList:
             port = {
                 'port_id': post_data.get('port_id'),
@@ -49,7 +50,7 @@ def all_ports():
             ip_node_to_find = post_data.get('ip_node')
             logger.debug(f'Need to find ip_node: [{ip_node_to_find}]')
             host = Host.query.filter_by(ip_node=ip_node_to_find).first()
-            if (host is None) and (ip_node_to_find not in [to_add_host['ip_node'] for to_add_host in hosts_to_add]):
+            if (host is None) and (ip_node_to_find not in host_ip_node_lookup_set):
                 logger.debug(f'Cannot find ip_node [{ip_node_to_find}] in either the db or the hosts to add, create a new host to add')
                 host_to_add = {'mac_node': post_data.get('mac_node'),
                     'ip_node' : ip_node_to_find,
@@ -57,10 +58,11 @@ def all_ports():
                 port['host_id'] = host_to_add['host_id']
                 logger.debug(f'Created this host_to_add: {host_to_add}')
                 hosts_to_add.append(host_to_add)
+                host_ip_node_lookup_set.add(ip_node_to_find)
             elif (host is not None):
                 logger.debug(f'In DB, found host with host_id: [{host.host_id}]')
                 port['host_id'] = host.host_id
-            elif (ip_node_to_find in [to_add_host['ip_node'] for to_add_host in hosts_to_add]):
+            elif (ip_node_to_find in host_ip_node_lookup_set):
                 logger.debug(f'Host_id: [{ip_node_to_find}] should be found in hosts_to_add')
                 for host_to_add in hosts_to_add:
                     if host_to_add['ip_node'] == ip_node_to_find:
