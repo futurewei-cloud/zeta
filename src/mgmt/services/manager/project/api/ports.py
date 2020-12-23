@@ -35,6 +35,7 @@ def all_ports():
         start_time = time.time()
         # need to add dicts, not Port/Host
         ports_to_add = []
+        eps_to_add = []
         hosts_to_add = []
         for post_data in portList:
             port = {
@@ -79,13 +80,16 @@ def all_ports():
                                 'vip': ip['vip'],
                                 'port_id': post_data['port_id']
                             }
-                port['eps'].append(ep_to_add)
-                logger.debug(f'Added this ep to the port: {ep_to_add}')
+                # port['eps'].append(ep_to_add)
+                eps_to_add.append(ep_to_add)
+                logger.debug(f'created this ep: {ep_to_add}')
             logger.debug(f'Adding this port object to the list: \n{port}')
             ports_to_add.append(port)
         db.session.bulk_insert_mappings(Host, hosts_to_add)
         db.session.commit()
         db.session.bulk_insert_mappings(Port, ports_to_add)
+        db.session.commit()
+        db.session.bulk_insert_mappings(EP, eps_to_add)
         db.session.commit()
         response_object = portList
         end_time = time.time()
