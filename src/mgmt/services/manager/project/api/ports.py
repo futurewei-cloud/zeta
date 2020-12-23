@@ -49,7 +49,7 @@ def all_ports():
             logger.debug(f'Need to find ip_node: [{ip_node_to_find}]')
             host = Host.query.filter_by(ip_node=ip_node_to_find).first()
             if (host is None) and (ip_node_to_find not in [to_add_host['ip_node'] for to_add_host in hosts_to_add]):
-                logger.debug(f'Cannot find ip_node [{post_data.get("ip_node")}] in either the db or the hosts to add, create a new host to add')
+                logger.debug(f'Cannot find ip_node [{ip_node_to_find}] in either the db or the hosts to add, create a new host to add')
                 host_to_add = {'mac_node': post_data.get('mac_node'),
                     'ip_node' : ip_node_to_find,
                     'host_id' : str(uuid.uuid4())}
@@ -59,14 +59,20 @@ def all_ports():
             elif (host is not None):
                 logger.debug(f'In DB, found host with host_id: [{host.host_id}]')
                 port['host_id'] = host.host_id
-            elif (ip_node_to_find in [to_add_host['host_ip'] for to_add_host in hosts_to_add]):
-                logger.debug(f'Host_id: [{post_data.get("ip_node")}] should be found in hosts_to_add')
+            elif (ip_node_to_find in [to_add_host['host_id'] for to_add_host in hosts_to_add]):
+                logger.debug(f'Host_id: [{ip_node_to_find}] should be found in hosts_to_add')
                 for host_to_add in hosts_to_add:
                     if host_to_add['ip_node'] == ip_node_to_find:
-                        logger.debug(f'In hosts_tp_add, found host with host_id: [{post_data.get("ip_node")}]')
+                        logger.debug(f'In hosts_to_add, found host with host_id: [{ip_node_to_find}]')
                         port['host_id'] = host_to_add['host_id']
                         break
-                logger.debug(f'Host_id: [{post_data.get("ip_node")}] should be found in hosts_to_add, but it is not found after the while loop, need to investigate')
+                logger.debug(f'Host_id: [{ip_node_to_find}] should be found in hosts_to_add, but it is not found after the while loop, need to investigate')
+            else:
+                logger.debug(f'Something weird happend for querying host and looking up in the hosts_to_add')
+                logger.debug(f'host in query: {host}')
+                logger.debug(f'hosts_to_add: ')
+                for host_to_add in hosts_to_add:
+                    logger.debug(f'One host_to_add: {host_to_add}')
             for ip in post_data['ips_port']:
                 ep_to_add = {
                                 'ip': ip['ip'],
@@ -78,7 +84,9 @@ def all_ports():
             logger.debug(f'Adding this port object to the list: \n{port}')
             ports_to_add.append(port)
         db.session.bulk_insert_mappings(Host, hosts_to_add)
+        db.session.commit()
         db.session.bulk_insert_mappings(Port, ports_to_add)
+        db.session.commit()
         response_object = portList
         end_time = time.time()
         logger.debug(f'Zeta took {end_time - start_time} seconds to make {amount_of_ports} ports')
