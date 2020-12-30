@@ -82,8 +82,16 @@ if [[ "$K8S_TYPE" == "kind" ]]; then
     nodes=($(docker ps | grep -o 'zeta-node-[0-9]\+'))
     for node in "${nodes[@]}"
     do
-        docker network connect $zgc_network $node
-        docker network connect $tenant_network $node
+        container_info=$(docker container inspect ${node})
+        if [[ !($container_info == *"${zgc_network}"*) ]]
+        then
+            echo "Node ${node} isn't in the zgc or tenant network, need to join"
+            docker network connect $zgc_network $node
+            docker network connect $tenant_network $node
+        else
+            echo "Node ${node} is already in the zgc or tenant network, NO need to join"
+        fi
+
         ip_control=$(docker exec $node ip addr show $inf_control | grep "inet\\b" | awk '{print $2}' | cut -d/ -f1)
         ip_tenant=$(docker exec $node ip addr show $inf_tenant | grep "inet\\b" | awk '{print $2}' | cut -d/ -f1)
         mac_tenant=$(docker exec $node ip addr show $inf_tenant | grep "link/ether\\b" | awk '{print $2}' | cut -d/ -f1)

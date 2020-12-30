@@ -27,6 +27,6 @@ CRDS_FOLDER="$DIR/deploy/etc/crds"
 
 for crd in "$CRDS_FOLDER"/*
 do
-    kubectl delete "$crd" --all 2> /tmp/kubetctl.err
+    kubectl delete -f "$crd" --all 2> /tmp/kubetctl.err
     kubectl apply -f "$crd"
 done
