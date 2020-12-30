@@ -28,6 +28,7 @@ ports_blueprint = Blueprint('ports', __name__)
 
 @ports_blueprint.route('/ports', methods=['GET', 'POST'])
 def all_ports():
+    status_code = 200
     if request.method == 'POST':
         portList = request.get_json()
         amount_of_ports = len(portList)
@@ -79,9 +80,10 @@ def all_ports():
         response_object = portList
         end_time = time.time()
         logger.debug(f'Zeta took {end_time - start_time} seconds to make {amount_of_ports} ports')
+        status_code = 201
     else:
         response_object = [port.to_json() for port in Port.query.all()]
-    return jsonify(response_object)
+    return jsonify(response_object), status_code
 
 
 @ports_blueprint.route('/ports/ping', methods=['GET'])
@@ -96,6 +98,7 @@ def ping_ports():
 @ports_blueprint.route('/ports/<port_id>', methods=['GET', 'PUT', 'DELETE'])
 def single_port(port_id):
     port = Port.query.filter_by(port_id=port_id).first()
+    status_code = 200
     if request.method == 'GET':
         response_object = port.to_json()
     elif request.method == 'PUT':
@@ -104,10 +107,15 @@ def single_port(port_id):
         db.session.commit()
         response_object = port.to_json()
     elif request.method == 'DELETE':
+        eps_list = port.eps
+        for ep in eps_list:
+            db.session.delete(ep)
+            db.session.commit()
         db.session.delete(port)
         db.session.commit()
         response_object = {}
-    return jsonify(response_object)
+        status_code = 204
+    return jsonify(response_object), status_code
 
 
 if __name__ == '__main__':
