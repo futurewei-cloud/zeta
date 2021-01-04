@@ -22,8 +22,10 @@
 #FROM python:3.7
 FROM python:3.8.1-slim
 RUN apt-get update -y && apt-get install -y \
+    rsyslog \
     net-tools \
     ethtool \
+    netcat \
     sudo
 RUN pip3 install \
     PyYAML \

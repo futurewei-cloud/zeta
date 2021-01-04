@@ -49,7 +49,7 @@
     - name: "Local KIND cluster provisioning task block"
       block:
         - name: "Setting up Kind cluster"
-          shell: "../kind/create_cluster.sh {{stage}} {{k8s_size}} {{droplet_size}} &>> {{DBG_LOG}}"
+          shell: "../kind/create_cluster.sh {{stage}} {{k8s_size}} &>> {{DBG_LOG}}"
           args: 
             executable: /bin/bash
           environment:

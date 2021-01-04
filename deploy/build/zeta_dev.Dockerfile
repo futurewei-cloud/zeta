@@ -18,11 +18,13 @@ RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y software-properties-common && \
     add-apt-repository ppa:ubuntu-toolchain-r/test && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    sudo \
     build-essential \
     cmake \
     python3 \
     python3-pip \
     python3-setuptools \
+    gdb \
     # Following are required for XDP development environment
     make \
     gcc-9 \

@@ -11,7 +11,7 @@ file(GLOB SOURCE ${CMAKE_CURRENT_LIST_DIR}/*.c)
 
 add_executable(transitd ${RPCGEN_SVC} ${SOURCE})
 add_dependencies(transitd libbpf rpcgen)
-target_link_libraries(transitd -l:libbpf.a -l:libelf.a -lz -lnsl)
+target_link_libraries(transitd -l:libbpf.a -l:libelf.a -lz -lnsl -pthread -lrt)
 set_target_properties(transitd PROPERTIES
                       RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/bin
                       RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/bin
@@ -22,6 +22,7 @@ list(REMOVE_ITEM TEST_SOURCE ${CMAKE_CURRENT_LIST_DIR}/trn_transitd.c)
 set(DMN_MOCKS "-Wl,--wrap=bpf_map_update_elem \
     -Wl,--wrap=bpf_map_lookup_elem \
     -Wl,--wrap=bpf_map_delete_elem \
+    -Wl,--wrap=bpf_map_lookup_and_delete_elem \
     -Wl,--wrap=bpf_prog_load_xattr \
     -Wl,--wrap=bpf_set_link_xdp_fd \
     -Wl,--wrap=bpf_obj_get_info_by_fd \
@@ -41,7 +42,17 @@ set(DMN_MOCKS "-Wl,--wrap=bpf_map_update_elem \
     -Wl,--wrap=bpf_object__close \
     -Wl,--wrap=if_nametoindex \
     -Wl,--wrap=if_indextoname \
-    -Wl,--wrap=setrlimit")
+    -Wl,--wrap=trn_transit_map_get_fd \
+    -Wl,--wrap=setrlimit \
+    -Wl,--wrap=close \
+    -Wl,--wrap=bpf_program__set_ifindex \
+    -Wl,--wrap=bpf_program__set_type \
+    -Wl,--wrap=bpf_object__name \
+    -Wl,--wrap=bpf_map__name \
+    -Wl,--wrap=bpf_map__set_ifindex \
+    -Wl,--wrap=bpf_obj_get \
+    -Wl,--wrap=bpf_map__reuse_fd \
+    -Wl,--wrap=bpf_object__open_xattr")
 
 add_executable(test_dmn ${RPCGEN_SVC} ${TEST_SOURCE})
 add_dependencies(test_dmn libbpf rpcgen)

@@ -32,10 +32,8 @@
 #include <stdint.h>
 #include <sys/mount.h>
 #include <signal.h>
+#include <pthread.h>
 
-#include "rpcgen/trn_rpc_protocol.h"
-#include "trn_transit_xdp_usr.h"
-#include "trn_log.h"
 #include "trn_transitd.h"
 
 #define TRANSITLOGNAME "transit"
@@ -52,29 +50,17 @@ void sighandler(int signo)
 		TRN_LOG_INFO("Exit!.");
 	};
 
-	trn_itf_table_free();
 	TRN_LOG_CLOSE();
 	exit(1);
 }
 
-int main()
+/* thread entrance for rpc server */
+void *entrance_rpc(void *arg)
 {
-	struct sigaction act;
-
-	/* Create a signal handler shutdown gracefully */
-	memset(&act, 0, sizeof(act));
-	act.sa_handler = sighandler;
-
-	sigaction(SIGINT, &act, 0);
-	sigaction(SIGTERM, &act, 0);
-
-	/* Initialize the interfaces table */
-	if (!trn_itf_table_init()) {
-		TRN_LOG_ERROR("cannot initialize interfaces table.");
-	}
+	UNUSED(arg);
 
 	/* (re)Mount the bpf fs*/
-	umount("sys/fs/bpf");
+	umount("/sys/fs/bpf");
 	if (mount("bpf", "/sys/fs/bpf", "bpf", 0, "mode=0700")) {
 		TRN_LOG_ERROR("mount -t bpf bpf /sys/fs/bpf failed: %s\n",
 			      strerror(errno));
@@ -83,8 +69,6 @@ int main()
 
 	register SVCXPRT *transp;
 	pmap_unset(RPC_TRANSIT_REMOTE_PROTOCOL, RPC_TRANSIT_ALFAZERO);
-
-	TRN_LOG_INIT(TRANSITLOGNAME);
 
 	transp = svcudp_create(RPC_ANYSOCK);
 	if (transp == NULL) {
@@ -115,10 +99,56 @@ int main()
 	TRN_LOG_INFO(
 		"Press ctrl-c, or send SIGTERM to process ID %d, to gracefully exit program.",
 		getpid());
+
+	TRN_LOG_INFO("RPC handler thread running");
 	svc_run();
 	TRN_LOG_ERROR("svc_run returned");
 
-	trn_itf_table_free();
+	pthread_exit(NULL);
+}
+
+/* thread entrance for datapath assistant */
+void *entrance_dpa(void *arg) {
+	UNUSED(arg);
+
+	TRN_LOG_INFO("DPA thread running");
+	trn_transit_dp_assistant();
+	TRN_LOG_ERROR("DPA thread ending");
+	pthread_exit(NULL);
+}
+
+int main()
+{
+	struct sigaction act;
+	pthread_t thr_rpc, thr_dpa;
+	int rc;
+
+	TRN_LOG_INIT(TRANSITLOGNAME);
+
+	/* Create a signal handler shutdown gracefully */
+	memset(&act, 0, sizeof(act));
+	act.sa_handler = sighandler;
+
+	sigaction(SIGINT, &act, 0);
+	sigaction(SIGTERM, &act, 0);
+
+	if ((rc = pthread_create(&thr_rpc, NULL, entrance_rpc, NULL))) {
+		TRN_LOG_ERROR("cannot create rpc handler thread, rc: %d", rc);
+		printf("cannot create rpc handler thread, rc: %d\n", rc);
+		exit(1);
+    }
+
+	if ((rc = pthread_create(&thr_dpa, NULL, entrance_dpa, NULL))) {
+		TRN_LOG_ERROR("cannot create datapath assistant thread, rc: %d", rc);
+		printf("cannot create datapath assistant thread, rc: %d\n", rc);
+		exit(1);
+    }
+
+	pthread_join(thr_rpc, NULL);
+	pthread_join(thr_dpa, NULL);
+
+	TRN_LOG_ERROR("All transitd threads ended");
+
 	TRN_LOG_CLOSE();
 
 	exit(1);

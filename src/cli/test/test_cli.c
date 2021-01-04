@@ -26,20 +26,13 @@
 #include <stddef.h>
 #include <setjmp.h>
 #include <cmocka.h>
-#include "cli/trn_cli.h"
-#include "trn_log.h"
 #include <stdio.h>
 #include <stdbool.h>
 #include <sys/resource.h>
 
-static int clnt_perror_called = 0;
+#include "cli/trn_cli.h"
 
-int __wrap_setrlimit(int resource, const struct rlimit *rlim)
-{
-	UNUSED(resource);
-	UNUSED(rlim);
-	return 0;
-}
+static int clnt_perror_called = 0;
 
 int *__wrap_update_dft_1(rpc_trn_dft_t *dft, CLIENT *clnt)
 {
@@ -68,9 +61,9 @@ int *__wrap_update_ftn_1(rpc_trn_ftn_t *ftn, CLIENT *clnt)
 	return retval;
 }
 
-int *__wrap_update_ep_1(rpc_trn_endpoint_t *ep, CLIENT *clnt)
+int *__wrap_update_ep_1(rpc_trn_endpoint_batch_t *epb, CLIENT *clnt)
 {
-	check_expected_ptr(ep);
+	check_expected_ptr(epb);
 	check_expected_ptr(clnt);
 	int *retval = mock_ptr_type(int *);
 	function_called();
@@ -122,7 +115,7 @@ rpc_trn_ftn_t *__wrap_get_ftn_1(rpc_trn_zeta_key_t *argp, CLIENT *clnt)
 	return retval;
 }
 
-rpc_trn_endpoint_t *__wrap_get_ep_1(rpc_trn_endpoint_key_t *argp, CLIENT *clnt)
+rpc_trn_endpoint_t *__wrap_get_ep_1(rpc_endpoint_key_t *argp, CLIENT *clnt)
 {
 	check_expected_ptr(argp);
 	check_expected_ptr(clnt);
@@ -157,7 +150,7 @@ int *__wrap_delete_ftn_1(rpc_trn_zeta_key_t *argp, CLIENT *clnt)
 	return retval;
 }
 
-int *__wrap_delete_ep_1(rpc_trn_endpoint_key_t *argp, CLIENT *clnt)
+int *__wrap_delete_ep_1(rpc_endpoint_key_t *argp, CLIENT *clnt)
 {
 	check_expected_ptr(argp);
 	check_expected_ptr(clnt);
@@ -174,59 +167,50 @@ static inline int cmpfunc(const void *a, const void *b)
 static int check_ep_equal(const LargestIntegralType value,
 			  const LargestIntegralType check_value_data)
 {
-	struct rpc_trn_endpoint_t *ep = (struct rpc_trn_endpoint_t *)value;
-	struct rpc_trn_endpoint_t *c_ep =
-		(struct rpc_trn_endpoint_t *)check_value_data;
-	int i;
+	trn_ep_t *ep = (trn_ep_t *)value;
+	trn_ep_t *c_ep = (trn_ep_t *)check_value_data;
 
-	assert_string_equal(ep->interface, c_ep->interface);
+	assert_int_equal(ep->xdp_ep.key.vni, c_ep->xdp_ep.key.vni);
 
-	assert_string_equal(ep->hosted_interface, c_ep->hosted_interface);
+	assert_int_equal(ep->xdp_ep.key.ip, c_ep->xdp_ep.key.ip);
 
-	assert_string_equal(ep->veth, c_ep->veth);
+	assert_int_equal(ep->xdp_ep.val.hip, c_ep->xdp_ep.val.hip);
 
-	assert_memory_equal(ep->mac, c_ep->mac, sizeof(char) * 6);
+	assert_memory_equal(ep->xdp_ep.val.mac, c_ep->xdp_ep.val.mac,
+		sizeof(ep->xdp_ep.val.mac));
 
-	assert_int_equal(ep->ip, c_ep->ip);
+	assert_memory_equal(ep->xdp_ep.val.hmac, c_ep->xdp_ep.val.hmac,
+		sizeof(ep->xdp_ep.val.hmac));
 
-	assert_int_equal(ep->eptype, c_ep->eptype);
+	return true;
+}
 
-	assert_int_equal(ep->tunid, c_ep->tunid);
+static int check_ep_batch_equal(const LargestIntegralType value,
+			  const LargestIntegralType check_value_data)
+{
+	rpc_trn_endpoint_batch_t *epb = (rpc_trn_endpoint_batch_t *)value;
+	rpc_trn_endpoint_batch_t *c_epb = (rpc_trn_endpoint_batch_t *)check_value_data;
 
-	assert_int_equal(ep->remote_ips.remote_ips_len,
-			 c_ep->remote_ips.remote_ips_len);
+	assert_int_equal(epb->rpc_trn_endpoint_batch_t_len, 
+		c_epb->rpc_trn_endpoint_batch_t_len);
 
-	if (ep->remote_ips.remote_ips_len == 0) {
-		return true;
+	trn_ep_t *ep = (trn_ep_t *)epb->rpc_trn_endpoint_batch_t_val;
+	trn_ep_t *c_ep = (trn_ep_t *)c_epb->rpc_trn_endpoint_batch_t_val;
+	for (unsigned int i = 0; i < epb->rpc_trn_endpoint_batch_t_len; i++) {
+		assert_true(check_ep_equal((LargestIntegralType)ep, (LargestIntegralType)c_ep));
 	}
-
-	qsort(ep->remote_ips.remote_ips_val, ep->remote_ips.remote_ips_len,
-	      sizeof(uint32_t), cmpfunc);
-
-	qsort(c_ep->remote_ips.remote_ips_val, c_ep->remote_ips.remote_ips_len,
-	      sizeof(uint32_t), cmpfunc);
-
-	for (i = 0; i < ep->remote_ips.remote_ips_len; i++) {
-		if (c_ep->remote_ips.remote_ips_val[i] !=
-		    ep->remote_ips.remote_ips_val[i]) {
-			return false;
-		}
-	}
-
 	return true;
 }
 
 static int check_ep_key_equal(const LargestIntegralType value,
 			      const LargestIntegralType check_value_data)
 {
-	struct rpc_trn_endpoint_key_t *ep_key =
-		(struct rpc_trn_endpoint_key_t *)value;
-	struct rpc_trn_endpoint_key_t *c_ep_key =
-		(struct rpc_trn_endpoint_key_t *)check_value_data;
+	rpc_endpoint_key_t *ep_key =
+		(rpc_endpoint_key_t *)value;
+	rpc_endpoint_key_t *c_ep_key =
+		(rpc_endpoint_key_t *)check_value_data;
 
-	assert_string_equal(ep_key->interface, c_ep_key->interface);
-
-	assert_int_equal(ep_key->tunid, c_ep_key->tunid);
+	assert_int_equal(ep_key->vni, c_ep_key->vni);
 
 	assert_int_equal(ep_key->ip, c_ep_key->ip);
 
@@ -236,11 +220,10 @@ static int check_ep_key_equal(const LargestIntegralType value,
 static int check_dft_equal(const LargestIntegralType value,
 			   const LargestIntegralType check_value_data)
 {
-	struct rpc_trn_dft_t *dft = (struct rpc_trn_dft_t *)value;
-	struct rpc_trn_dft_t *c_dft = (struct rpc_trn_dft_t *)check_value_data;
+	rpc_trn_dft_t *dft = (rpc_trn_dft_t *)value;
+	rpc_trn_dft_t *c_dft = (rpc_trn_dft_t *)check_value_data;
 	int i;
 
-	assert_string_equal(dft->interface, c_dft->interface);
 	assert_int_equal(dft->id, c_dft->id);
 
 	qsort(dft->table.table_val, dft->table.table_len, sizeof(uint32_t),
@@ -260,11 +243,10 @@ static int check_dft_equal(const LargestIntegralType value,
 static int check_chain_equal(const LargestIntegralType value,
 			     const LargestIntegralType check_value_data)
 {
-	struct rpc_trn_chain_t *chain = (struct rpc_trn_chain_t *)value;
-	struct rpc_trn_chain_t *c_chain =
-		(struct rpc_trn_chain_t *)check_value_data;
+	rpc_trn_chain_t *chain = (rpc_trn_chain_t *)value;
+	rpc_trn_chain_t *c_chain =
+		(rpc_trn_chain_t *)check_value_data;
 
-	assert_string_equal(chain->interface, c_chain->interface);
 	assert_int_equal(chain->id, c_chain->id);
 	assert_int_equal(chain->tail_ftn, c_chain->tail_ftn);
 
@@ -274,16 +256,15 @@ static int check_chain_equal(const LargestIntegralType value,
 static int check_ftn_equal(const LargestIntegralType value,
 			   const LargestIntegralType check_value_data)
 {
-	struct rpc_trn_ftn_t *ftn = (struct rpc_trn_ftn_t *)value;
-	struct rpc_trn_ftn_t *c_ftn = (struct rpc_trn_ftn_t *)check_value_data;
+	rpc_trn_ftn_t *ftn = (rpc_trn_ftn_t *)value;
+	rpc_trn_ftn_t *c_ftn = (rpc_trn_ftn_t *)check_value_data;
 
-	assert_string_equal(ftn->interface, c_ftn->interface);
 	assert_int_equal(ftn->id, c_ftn->id);
 	assert_int_equal(ftn->position, c_ftn->position);
 	assert_int_equal(ftn->ip, c_ftn->ip);
 	assert_int_equal(ftn->next_ip, c_ftn->next_ip);
-	assert_string_equal(ftn->mac, c_ftn->mac);
-	assert_string_equal(ftn->next_mac, c_ftn->next_mac);
+	assert_memory_equal(ftn->mac, c_ftn->mac, sizeof(ftn->mac));
+	assert_memory_equal(ftn->next_mac, c_ftn->next_mac, sizeof(ftn->next_mac));
 
 	return true;
 }
@@ -291,12 +272,11 @@ static int check_ftn_equal(const LargestIntegralType value,
 static int check_zeta_key_equal(const LargestIntegralType value,
 				const LargestIntegralType check_value_data)
 {
-	struct rpc_trn_zeta_key_t *zeta_key =
-		(struct rpc_trn_zeta_key_t *)value;
-	struct rpc_trn_zeta_key_t *c_zeta_key =
-		(struct rpc_trn_zeta_key_t *)check_value_data;
+	rpc_trn_zeta_key_t *zeta_key =
+		(rpc_trn_zeta_key_t *)value;
+	rpc_trn_zeta_key_t *c_zeta_key =
+		(rpc_trn_zeta_key_t *)check_value_data;
 
-	assert_string_equal(zeta_key->interface, c_zeta_key->interface);
 	assert_int_equal(zeta_key->id, c_zeta_key->id);
 
 	return true;
@@ -306,24 +286,22 @@ static void test_trn_cli_update_dft_subcmd(void **state)
 {
 	UNUSED(state);
 	int rc;
-	int argc = 5;
+	int argc = 3;
 	int update_dft_1_ret_val = 0;
 
 	/* Test cases */
-	char *argv1[] = { "update-dft", "-i", "eth0", "-j",
+	char *argv1[] = { "update-dft", "-j",
 			  QUOTE({ "id": "3", "table": "[0,1,2,3,4,5]" }) };
 
-	char *argv2[] = { "update-dft", "-i", "eth0", "-j",
+	char *argv2[] = { "update-dft", "-j",
 			  QUOTE({ "id": 3, "table": "[0,1,2,3,4,5]" }) };
 
-	char *argv3[] = { "update-dft", "-i", "eth0", "-j",
+	char *argv3[] = { "update-dft", "-j",
 			  QUOTE({ "id": "3", "table": [0, 1, 2, 3, 4, 5] }) };
 
-	char itf[] = "eth0";
 	uint32_t table[] = { 0, 1, 2, 3, 4, 5 };
 	uint32_t id = 3;
-	struct rpc_trn_dft_t exp_dft = {
-		.interface = itf,
+	rpc_trn_dft_t exp_dft = {
 		.id = id,
 		.table = { .table_len = 6, .table_val = table },
 	};
@@ -352,25 +330,23 @@ static void test_trn_cli_update_chain_subcmd(void **state)
 {
 	UNUSED(state);
 	int rc;
-	int argc = 5;
+	int argc = 3;
 	int update_chain_1_ret_val = 0;
 
 	/* Test cases */
-	char *argv1[] = { "update-chain", "-i", "eth0", "-j",
+	char *argv1[] = { "update-chain", "-j",
 			  QUOTE({ "id": "3", "tail_ftn": "1" }) };
 
-	char *argv2[] = { "update-chain", "-i", "eth0", "-j",
+	char *argv2[] = { "update-chain", "-j",
 			  QUOTE({ "id": 3, "tail_ftn": "1" }) };
 
-	char *argv3[] = { "update-chain", "-i", "eth0", "-j",
+	char *argv3[] = { "update-chain", "-j",
 			  QUOTE({ "id: 3, tail_ftn": "1" }) };
 
-	char itf[] = "eth0";
 	uint32_t id = 3;
 	uint32_t tail_ftn = 1;
 
-	struct rpc_trn_chain_t exp_chain = {
-		.interface = itf,
+	rpc_trn_chain_t exp_chain = {
 		.id = id,
 		.tail_ftn = tail_ftn,
 	};
@@ -400,11 +376,11 @@ static void test_trn_cli_update_ftn_subcmd(void **state)
 {
 	UNUSED(state);
 	int rc;
-	int argc = 5;
+	int argc = 3;
 	int update_ftn_1_ret_val = 0;
 
 	/* Test cases */
-	char *argv1[] = { "update-ftn", "-i", "eth0", "-j", QUOTE({
+	char *argv1[] = { "update-ftn", "-j", QUOTE({
 				  "id": "3",
 				  "position": "0",
 				  "ip": "10.0.0.1",
@@ -413,7 +389,7 @@ static void test_trn_cli_update_ftn_subcmd(void **state)
 				  "next_mac": "7:8:9:1:2:3"
 			  }) };
 
-	char *argv2[] = { "update-ftn", "-i", "eth0", "-j", QUOTE({
+	char *argv2[] = { "update-ftn", "-j", QUOTE({
 				  "id": 3,
 				  "position": "0",
 				  "ip": "10.0.0.1",
@@ -422,7 +398,7 @@ static void test_trn_cli_update_ftn_subcmd(void **state)
 				  "next_mac": "7:8:9:1:2:3"
 			  }) };
 
-	char *argv3[] = { "update-ftn", "-i", "eth0", "-j", QUOTE({
+	char *argv3[] = { "update-ftn", "-j", QUOTE({
 				  "id": "3",
 				  "position": "0",
 				  "ip": 10.0.0.1,
@@ -431,7 +407,6 @@ static void test_trn_cli_update_ftn_subcmd(void **state)
 				  "next_mac": "7:8:9:1:2:3"
 			  }) };
 
-	char itf[] = "eth0";
 	uint32_t id = 3;
 	uint8_t position = 0;
 	uint32_t ip = 0x100000a;
@@ -439,8 +414,7 @@ static void test_trn_cli_update_ftn_subcmd(void **state)
 	char mac[6] = { 1, 2, 3, 4, 5, 6 };
 	char next_mac[6] = { 7, 8, 9, 1, 2, 3 };
 
-	struct rpc_trn_ftn_t exp_ftn = {
-		.interface = itf,
+	rpc_trn_ftn_t exp_ftn = {
 		.id = id,
 		.position = position,
 		.ip = ip,
@@ -474,76 +448,91 @@ static void test_trn_cli_update_ep_subcmd(void **state)
 {
 	UNUSED(state);
 	int rc;
-	int argc = 5;
+	int argc = 3;
 	int update_ep_1_ret_val = 0;
 
-	/* Test cases */
-	char *argv1[] = { "update-ep", "-i", "eth0", "-j", QUOTE({
-				  "tunnel_id": "3",
-				  "ip": "10.0.0.1",
-				  "eptype": "1",
-				  "mac": "1:2:3:4:5:6",
-				  "veth": "veth0",
-				  "remote_ips": ["10.0.0.2"],
-				  "hosted_iface": "peer"
-			  }) };
+	/* Test data with all fields correct */
+	char *argv1[] = { "update-ep", "-j", QUOTE({
+				"size": 1,
+				 "eps": [
+					{
+						"vni": 3,
+						"ip": 2425262700,
+						"hip": 2425262701,
+						"mac": 17730434519136,
+						"hmac": 105897790545936
+					}
+				]
+			  	}) };
 
-	char *argv2[] = { "update-ep", "-i", "eth0", "-j", QUOTE({
-				  "tunnel_id": 3,
-				  "ip": "10.0.0.1",
-				  "eptype": "1",
-				  "mac": "1:2:3:4:5:6",
-				  "veth": "veth0",
-				  "remote_ips": ["10.0.0.2"],
-				  "hosted_iface": "peer"
-			  }) };
+	/* Test data with wrong field type: vni */
+	char *argv2[] = { "update-ep", "-j", QUOTE({
+				"size": 1,
+				 "eps": [
+					{
+						"vni": "3",
+						"ip": 2425262700,
+						"hip": 2425262701,
+						"mac": 17730434519136,
+						"hmac": 105897790545936
+					}
+				]
+			  	}) };
 
-	char *argv3[] = { "update-ep", "-i", "eth0", "-j", QUOTE({
-				  "tunnel_id": "3",
-				  "mac": "1:2:3:4:5:6",
-				  "veth": "veth0",
-				  "remote_ips": ["10.0.0.2"],
-				  "hosted_iface": "peer"
-			  }) };
+	/* Test data with missing field: ip */
+	char *argv3[] = { "update-ep", "-j", QUOTE({
+				"size": 1,
+				 "eps": [
+					{
+						"vni": 3,
+						"hip": 2425262701,
+						"mac": 17730434519136,
+						"hmac": 105897790545936
+					}
+				]
+			  	}) };
 
-	char *argv4[] = { "update-ep", "-i", "eth0", "-j", QUOTE({
-				  "tunnel_id": "3",
-				  "mac": "1:2:3:4:5:6",
-				  "veth": "veth0",
-				  "remote_ips": [10.0.0.2],
-				  "hosted_iface": "peer"
-			  }) };
+	/* Test data with malformed json */
+	char *argv4[] = { "update-ep", "-j", QUOTE({
+				"size": 1,
+				 "eps": [
+					{
+						"vni": 3,
+						"ip": "10.0.0.1",
+						"hip": 2425262701,
+						"mac": 17730434519136,
+						"hmac": 105897790545936
+					}
+				]
+			  	}) };
 
-	char itf[] = "eth0";
-	char vitf[] = "veth0";
-	char hosted_itf[] = "peer";
-	uint32_t remote[] = { 0x200000a };
-	char mac[6] = { 1, 2, 3, 4, 5, 6 };
+	char mac[6] = { 0x60, 0x50, 0x40, 0x30, 0x20, 0x10 };
+	char hmac[6] = { 0x10, 0x20, 0x30, 0x40, 0x50, 0x60 };
+	trn_ep_t ep = {
+		.xdp_ep.key.vni = 3,
+		.xdp_ep.key.ip = 0x908E926C,
+		.xdp_ep.val.hip = 0x908E926D,
+	};
+	memcpy(ep.xdp_ep.val.mac, mac, sizeof(mac));
+	memcpy(ep.xdp_ep.val.hmac, hmac, sizeof(hmac));
 
-	struct rpc_trn_endpoint_t exp_ep = {
-		.interface = itf,
-		.ip = 0x100000a,
-		.eptype = 1,
-		.remote_ips = { .remote_ips_len = 1, .remote_ips_val = remote },
-		.hosted_interface = hosted_itf,
-		.veth = vitf,
-		.tunid = 3,
+	rpc_trn_endpoint_batch_t exp_epb = {
+		.rpc_trn_endpoint_batch_t_len = 1,
+		.rpc_trn_endpoint_batch_t_val = &ep.rpc_ep,
 	};
 
-	memcpy(exp_ep.mac, mac, sizeof(char) * 6);
-
 	/* Test call update_ep successfully */
-	TEST_CASE("update_ep succeed with well formed endpoint json input");
+	TEST_CASE("update_ep should succeed with well formed endpoint json input");
 	update_ep_1_ret_val = 0;
 	expect_function_call(__wrap_update_ep_1);
 	will_return(__wrap_update_ep_1, &update_ep_1_ret_val);
-	expect_check(__wrap_update_ep_1, ep, check_ep_equal, &exp_ep);
+	expect_check(__wrap_update_ep_1, epb, check_ep_batch_equal, &exp_epb);
 	expect_any(__wrap_update_ep_1, clnt);
 	rc = trn_cli_update_ep_subcmd(NULL, argc, argv1);
 	assert_int_equal(rc, 0);
 
 	/* Test parse ep input error*/
-	TEST_CASE("update_ep is not called with non-string field");
+	TEST_CASE("update_ep should fail if called with wrong field type");
 	rc = trn_cli_update_ep_subcmd(NULL, argc, argv2);
 	assert_int_equal(rc, -EINVAL);
 
@@ -561,7 +550,7 @@ static void test_trn_cli_update_ep_subcmd(void **state)
 	update_ep_1_ret_val = -EINVAL;
 	expect_function_call(__wrap_update_ep_1);
 	will_return(__wrap_update_ep_1, &update_ep_1_ret_val);
-	expect_any(__wrap_update_ep_1, ep);
+	expect_any(__wrap_update_ep_1, epb);
 	expect_any(__wrap_update_ep_1, clnt);
 	rc = trn_cli_update_ep_subcmd(NULL, argc, argv1);
 	assert_int_equal(rc, -EINVAL);
@@ -570,7 +559,7 @@ static void test_trn_cli_update_ep_subcmd(void **state)
 	TEST_CASE("update-ep subcommand fails if update_ep_1 returns NULl");
 	expect_function_call(__wrap_update_ep_1);
 	will_return(__wrap_update_ep_1, NULL);
-	expect_any(__wrap_update_ep_1, ep);
+	expect_any(__wrap_update_ep_1, epb);
 	expect_any(__wrap_update_ep_1, clnt);
 	rc = trn_cli_update_ep_subcmd(NULL, argc, argv1);
 	assert_int_equal(rc, -EINVAL);
@@ -580,41 +569,49 @@ static void test_trn_cli_load_transit_subcmd(void **state)
 {
 	UNUSED(state);
 	int rc;
-	int argc = 5;
+	int argc = 3;
 	int load_transit_xdp_ret_val = 0;
 
-	/* Test cases */
-	char *argv1[] = { "load-transit-xdp", "-i", "eth0", "-j", QUOTE({
-				  "xdp_path": "/path/to/xdp/object/file",
-				  "pcapfile": "/path/to/bpf/pinned/map"
-			  }) };
+	/* Test data for nornal requesr */
+	char *argv1[] = { "load-transit-xdp", "-j", QUOTE({
+				"itf_tenant": "eth0",
+				"itf_zgc": "eth1",
+				"ibo_port": 8888,
+				"debug_mode": 1
+			  	}) };
 
-	char *argv2[] = { "load-transit-xdp", "-i", "eth0", "-j",
-			  QUOTE({ "pcapfile": "/path/to/bpf/pinned/map" }) };
+	/* test data with missing field */
+	char *argv2[] = { "load-transit-xdp", "-j", QUOTE({
+				"itf_zgc": "eth1"
+				 }) };
 
-	char *argv3[] = { "load-transit-xdp", "-i", "eth0", "-j",
-			  QUOTE({ "xdp_path": "/path/to/xdp/object/file" }) };
+	/* test data with missing optional debug_mode field */
+	char *argv3[] = { "load-transit-xdp", "-j", QUOTE({
+				"itf_tenant": "eth0",
+				"itf_zgc": "eth1",
+				"ibo_port": 8888
+			  	}) };
 
 	/* Test call load_transit_xdp_1 successfully */
-	TEST_CASE("load_transit_xdp succeed with well formed input");
+	TEST_CASE("load_transit_xdp should succeed with well formed input");
 	load_transit_xdp_ret_val = 0;
 	expect_function_call(__wrap_load_transit_xdp_1);
 	will_return(__wrap_load_transit_xdp_1, &load_transit_xdp_ret_val);
 	rc = trn_cli_load_transit_subcmd(NULL, argc, argv1);
 	assert_int_equal(rc, 0);
 
-	TEST_CASE("load_transit_xdp fails if path to object file is missing");
+	TEST_CASE("load_transit_xdp should fail if itf_tenant field is missing");
 	rc = trn_cli_load_transit_subcmd(NULL, argc, argv2);
 	assert_int_equal(rc, -EINVAL);
 
-	TEST_CASE("load_transit_xdp succeed even if pcap map is missing");
+	TEST_CASE("load_transit_xdp should succeed if optional debug_mode is missing");
 	load_transit_xdp_ret_val = 0;
 	expect_function_call(__wrap_load_transit_xdp_1);
 	will_return(__wrap_load_transit_xdp_1, &load_transit_xdp_ret_val);
 	rc = trn_cli_load_transit_subcmd(NULL, argc, argv3);
 	assert_int_equal(rc, 0);
 
-	TEST_CASE("load_transit_xdp fails if rpc returns Error");
+	TEST_CASE("load_transit_xdp should fail if rpc returns Error");
 	load_transit_xdp_ret_val = -EINVAL;
 	expect_function_call(__wrap_load_transit_xdp_1);
 	will_return(__wrap_load_transit_xdp_1, &load_transit_xdp_ret_val);
@@ -622,7 +619,7 @@ static void test_trn_cli_load_transit_subcmd(void **state)
 	assert_int_equal(rc, -EINVAL);
 
 	/* Test call load_transit_xdp return NULL*/
-	TEST_CASE("load_transit_xdp subcommand fails if rpc returns NULl");
+	TEST_CASE("load_transit_xdp should  fail if rpc returns NULl");
 	expect_function_call(__wrap_load_transit_xdp_1);
 	will_return(__wrap_load_transit_xdp_1, NULL);
 	rc = trn_cli_load_transit_subcmd(NULL, argc, argv1);
@@ -633,31 +630,36 @@ static void test_trn_cli_unload_transit_subcmd(void **state)
 {
 	UNUSED(state);
 	int rc;
-	int argc = 5;
+	int argc = 3;
 	int unload_transit_xdp_ret_val = 0;
 
 	/* Test cases */
-	char *argv1[] = { "load-transit-xdp", "-i", "eth0", "-j", QUOTE({}) };
+	char *argv1[] = { "load-transit-xdp", "-j", QUOTE({
+				"itf_tenant": "eth0",
+				"itf_zgc": "eth1",
+				"ibo_port": 8888,
+				"debug_mode": 1
+				}) };
 
 	/* Test call unload_transit_xdp_1 successfully */
-	TEST_CASE("unload_transit_xdp succeed with well formed (empty) input");
+	TEST_CASE("unload_transit_xdp should succeed with well formed input");
 	unload_transit_xdp_ret_val = 0;
 	expect_function_call(__wrap_unload_transit_xdp_1);
 	will_return(__wrap_unload_transit_xdp_1, &unload_transit_xdp_ret_val);
 	rc = trn_cli_unload_transit_subcmd(NULL, argc, argv1);
 	assert_int_equal(rc, 0);
 
-	/* Test call unload_transit_xdp return error*/
+	/* Test call unload_transit_xdp return error */
 	TEST_CASE(
-		"unload_transit_xdp subcommand fails if update_net_1 returns error");
+		"unload_transit_xdp should fail if rpc returns error");
 	unload_transit_xdp_ret_val = -EINVAL;
 	expect_function_call(__wrap_unload_transit_xdp_1);
 	will_return(__wrap_unload_transit_xdp_1, &unload_transit_xdp_ret_val);
 	rc = trn_cli_unload_transit_subcmd(NULL, argc, argv1);
 	assert_int_equal(rc, -EINVAL);
 
-	/* Test call unload_transit_xdp_! return NULL*/
-	TEST_CASE("unload_transit_xdp subcommand fails if rpc returns NULl");
+	/* Test call unload_transit_xdp_! return NULL */
+	TEST_CASE("unload_transit_xdp should fail if rpc returns NULl");
 	expect_function_call(__wrap_unload_transit_xdp_1);
 	will_return(__wrap_unload_transit_xdp_1, NULL);
 	rc = trn_cli_unload_transit_subcmd(NULL, argc, argv1);
@@ -668,26 +670,23 @@ static void test_trn_cli_get_dft_subcmd(void **state)
 {
 	UNUSED(state);
 	int rc;
-	int argc = 5;
+	int argc = 3;
 
-	char itf[] = "eth0";
 	uint32_t table[] = { 0, 1, 2, 3, 4, 5 };
 	uint32_t id = 3;
-	struct rpc_trn_dft_t get_dft_1_ret_val = {
-		.interface = itf,
+	rpc_trn_dft_t get_dft_1_ret_val = {
 		.id = id,
 		.table = { .table_len = 6, .table_val = table },
 	};
 
 	/* Test cases */
-	char *argv1[] = { "get-dft", "-i", "eth0", "-j", QUOTE({ "id": "3" }) };
+	char *argv1[] = { "get-dft", "-j", QUOTE({ "id": "3" }) };
 
-	char *argv2[] = { "get-dft", "-i", "eth0", "-j", QUOTE({ "id": 3 }) };
+	char *argv2[] = { "get-dft", "-j", QUOTE({ "id": 3 }) };
 
-	char *argv3[] = { "get-dft", "-i", "eth0", "-j", QUOTE({ "id 3" }) };
+	char *argv3[] = { "get-dft", "-j", QUOTE({ "id 3" }) };
 
-	struct rpc_trn_zeta_key_t exp_dft_key = {
-		.interface = itf,
+	rpc_trn_zeta_key_t exp_dft_key = {
 		.id = 3,
 	};
 
@@ -724,28 +723,23 @@ static void test_trn_cli_get_chain_subcmd(void **state)
 {
 	UNUSED(state);
 	int rc;
-	int argc = 5;
+	int argc = 3;
 
-	char itf[] = "eth0";
 	uint32_t id = 3;
 	uint32_t tail_ftn = 1;
 
-	struct rpc_trn_chain_t get_chain_1_ret_val = {
-		.interface = itf,
+	rpc_trn_chain_t get_chain_1_ret_val = {
 		.tail_ftn = tail_ftn,
 	};
 
 	/* Test cases */
-	char *argv1[] = { "get-chain", "-i", "eth0", "-j",
-			  QUOTE({ "id": "3" }) };
+	char *argv1[] = { "get-chain", "-j", QUOTE({ "id": "3" }) };
 
-	char *argv2[] = { "get-chain", "-i", "eth0", "-j", QUOTE({ "id": 3 }) };
+	char *argv2[] = { "get-chain", "-j", QUOTE({ "id": 3 }) };
 
-	char *argv3[] = { "get-chain", "-i", "eth0", "-j",
-			  QUOTE({ "id : 3 " }) };
+	char *argv3[] = { "get-chain", "-j", QUOTE({ "id : 3 " }) };
 
-	struct rpc_trn_zeta_key_t exp_chain_key = {
-		.interface = itf,
+	rpc_trn_zeta_key_t exp_chain_key = {
 		.id = 3,
 	};
 
@@ -782,9 +776,8 @@ static void test_trn_cli_get_ftn_subcmd(void **state)
 {
 	UNUSED(state);
 	int rc;
-	int argc = 5;
+	int argc = 3;
 
-	char itf[] = "eth0";
 	uint32_t id = 3;
 	uint8_t position = 0;
 	uint32_t ip = 0x100000a;
@@ -792,8 +785,7 @@ static void test_trn_cli_get_ftn_subcmd(void **state)
 	char mac[6] = { 1, 2, 3, 4, 5, 6 };
 	char next_mac[6] = { 7, 8, 9, 1, 2, 3 };
 
-	struct rpc_trn_ftn_t get_ftn_1_ret_val = {
-		.interface = itf,
+	rpc_trn_ftn_t get_ftn_1_ret_val = {
 		.id = id,
 		.position = position,
 		.ip = ip,
@@ -803,14 +795,13 @@ static void test_trn_cli_get_ftn_subcmd(void **state)
 	memcpy(get_ftn_1_ret_val.next_mac, next_mac, sizeof(char) * 6);
 
 	/* Test cases */
-	char *argv1[] = { "get-ftn", "-i", "eth0", "-j", QUOTE({ "id": "3" }) };
+	char *argv1[] = { "get-ftn", "-j", QUOTE({ "id": "3" }) };
 
-	char *argv2[] = { "get-ftn", "-i", "eth0", "-j", QUOTE({ "id": 3 }) };
+	char *argv2[] = { "get-ftn", "-j", QUOTE({ "id": 3 }) };
 
-	char *argv3[] = { "get-ftn", "-i", "eth0", "-j", QUOTE({ "id 3" }) };
+	char *argv3[] = { "get-ftn", "-j", QUOTE({ "id 3" }) };
 
-	struct rpc_trn_zeta_key_t exp_ftn_key = {
-		.interface = itf,
+	rpc_trn_zeta_key_t exp_ftn_key = {
 		.id = 3,
 	};
 
@@ -847,46 +838,39 @@ static void test_trn_cli_get_ep_subcmd(void **state)
 {
 	UNUSED(state);
 	int rc;
-	int argc = 5;
+	int argc = 3;
 
-	char itf[] = "eth0";
-	char vitf[] = "veth0";
-	char hosted_itf[] = "peer";
-	uint32_t remote[] = { 0x200000a };
 	char mac[6] = { 1, 2, 3, 4, 5, 6 };
+	char hmac[6] = { 6, 5, 4, 3, 2, 1 };
 
-	struct rpc_trn_endpoint_t get_ep_1_ret_val = {
-		.interface = itf,
-		.ip = 0x100000a,
-		.eptype = 1,
-		.remote_ips = { .remote_ips_len = 1, .remote_ips_val = remote },
-		.hosted_interface = hosted_itf,
-		.veth = vitf,
-		.tunid = 3,
+	trn_ep_t get_ep_1_ret_val = {
+		.xdp_ep.key.vni = 3,
+		.xdp_ep.key.ip = 0x100000a,
+		.xdp_ep.val.hip = 0x200000a,
 	};
-	memcpy(get_ep_1_ret_val.mac, mac, sizeof(char) * 6);
+	memcpy(get_ep_1_ret_val.xdp_ep.val.mac, mac, sizeof(char) * 6);
+	memcpy(get_ep_1_ret_val.xdp_ep.val.hmac, hmac, sizeof(char) * 6);
 
 	/* Test cases */
-	char *argv1[] = { "get-ep", "-i", "eth0", "-j",
-			  QUOTE({ "tunnel_id": "3", "ip": "10.0.0.1" }) };
+	char *argv1[] = { "get-ep", "-j",
+			  QUOTE({ "vni": 3, "ip": "10.0.0.1" }) };
 
-	char *argv2[] = { "get-ep", "-i", "eth0", "-j",
-			  QUOTE({ "tunnel_id": 3, "ip": "10.0.0.1" }) };
+	char *argv2[] = { "get-ep", "-j",
+			  QUOTE({ "vni": "3", "ip": "10.0.0.1" }) };
 
-	char *argv3[] = { "get-ep", "-i", "eth0", "-j",
-			  QUOTE({ "tunnel_id": "3" }) };
+	char *argv3[] = { "get-ep", "-j",
+			  QUOTE({ "vni": 3 }) };
 
-	char *argv4[] = { "get-ep", "-i", "eth0", "-j",
-			  QUOTE({ "tunnel_id": "3", "ip": [10.0.0.2] }) };
+	char *argv4[] = { "get-ep", "-j",
+			  QUOTE({ "vni": 3, "ip": "10.0.0.1", }) };
 
-	struct rpc_trn_endpoint_key_t exp_ep_key = {
-		.interface = itf,
+	rpc_endpoint_key_t exp_ep_key = {
 		.ip = 0x100000a,
-		.tunid = 3,
+		.vni = 3,
 	};
 
 	/* Test call get_ep successfully */
-	TEST_CASE("get_ep succeed with well formed endpoint json input");
+	TEST_CASE("get_ep should succeed with well formed endpoint json input");
 	expect_function_call(__wrap_get_ep_1);
 	will_return(__wrap_get_ep_1, &get_ep_1_ret_val);
 	expect_check(__wrap_get_ep_1, argp, check_ep_key_equal, &exp_ep_key);
@@ -895,28 +879,17 @@ static void test_trn_cli_get_ep_subcmd(void **state)
 	assert_int_equal(rc, 0);
 
 	/* Test parse ep input error*/
-	TEST_CASE("get_ep is not called with non-string field");
+	TEST_CASE("get_ep should fail if called wrong vni type");
 	rc = trn_cli_get_ep_subcmd(NULL, argc, argv2);
 	assert_int_equal(rc, -EINVAL);
 
-	TEST_CASE("get_ep is not called with missing required field");
+	TEST_CASE("get_ep should fail if called with missing field");
 	rc = trn_cli_get_ep_subcmd(NULL, argc, argv3);
 	assert_int_equal(rc, -EINVAL);
 
 	/* Test parse ep input error 2*/
-	TEST_CASE("get_ep is not called malformed json");
+	TEST_CASE("get_ep should fail if called with malformed json");
 	rc = trn_cli_get_ep_subcmd(NULL, argc, argv4);
-	assert_int_equal(rc, -EINVAL);
-
-	/* Test call get_ep_1 return error*/
-	TEST_CASE(
-		"get-ep subcommand fails if get_ep_1 returns empty string interface");
-	get_ep_1_ret_val.interface = "";
-	expect_function_call(__wrap_get_ep_1);
-	will_return(__wrap_get_ep_1, &get_ep_1_ret_val);
-	expect_any(__wrap_get_ep_1, argp);
-	expect_any(__wrap_get_ep_1, clnt);
-	rc = trn_cli_get_ep_subcmd(NULL, argc, argv1);
 	assert_int_equal(rc, -EINVAL);
 
 	/* Test call get_ep_1 return NULL*/
@@ -933,32 +906,29 @@ static void test_trn_cli_delete_ep_subcmd(void **state)
 {
 	UNUSED(state);
 	int rc;
-	int argc = 5;
-
-	char itf[] = "eth0";
+	int argc = 3;
 
 	/* Test cases */
-	char *argv1[] = { "delete-ep", "-i", "eth0", "-j",
-			  QUOTE({ "tunnel_id": "3", "ip": "10.0.0.1" }) };
+	char *argv1[] = { "delete-ep", "-j",
+			  QUOTE({ "vni": 3, "ip": "10.0.0.1" }) };
 
-	char *argv2[] = { "delete-ep", "-i", "eth0", "-j",
-			  QUOTE({ "tunnel_id": 3, "ip": "10.0.0.1" }) };
+	char *argv2[] = { "delete-vni", "-j",
+			  QUOTE({ "vni": "3", "ip": "10.0.0.1" }) };
 
-	char *argv3[] = { "delete-ep", "-i", "eth0", "-j",
-			  QUOTE({ "tunnel_id": "3" }) };
+	char *argv3[] = { "delete-ep", "-j",
+			  QUOTE({ "vni": 3 }) };
 
-	char *argv4[] = { "delete-ep", "-i", "eth0", "-j",
-			  QUOTE({ "tunnel_id": "3", "ip": [10.0.0.2] }) };
+	char *argv4[] = { "delete-ep", "-j",
+			  QUOTE({ "vni": 3, "ip": [10.0.0.2] }) };
 
-	struct rpc_trn_endpoint_key_t exp_ep_key = {
-		.interface = itf,
+	rpc_endpoint_key_t exp_ep_key = {
 		.ip = 0x100000a,
-		.tunid = 3,
+		.vni = 3,
 	};
 
 	int delete_ep_1_ret_val = 0;
 	/* Test call delete_ep_1 successfully */
-	TEST_CASE("delete_ep_1 succeed with well formed endpoint json input");
+	TEST_CASE("delete_ep_1 should succeed with well formed endpoint json input");
 	expect_function_call(__wrap_delete_ep_1);
 	will_return(__wrap_delete_ep_1, &delete_ep_1_ret_val);
 	expect_check(__wrap_delete_ep_1, argp, check_ep_key_equal, &exp_ep_key);
@@ -967,21 +937,21 @@ static void test_trn_cli_delete_ep_subcmd(void **state)
 	assert_int_equal(rc, 0);
 
 	/* Test parse ep input error*/
-	TEST_CASE("delete_ep_1 is not called with non-string field");
+	TEST_CASE("delete_ep_1 should fail if called with wrong vni type");
 	rc = trn_cli_delete_ep_subcmd(NULL, argc, argv2);
 	assert_int_equal(rc, -EINVAL);
 
-	TEST_CASE("delete_ep_1 is not called with missing required field");
+	TEST_CASE("delete_ep_1 should fail if called with missing required field");
 	rc = trn_cli_delete_ep_subcmd(NULL, argc, argv3);
 	assert_int_equal(rc, -EINVAL);
 
 	/* Test parse ep input error 2*/
-	TEST_CASE("delete_ep_1 is not called malformed json");
+	TEST_CASE("delete_ep_1 should fail if called with malformed json");
 	rc = trn_cli_delete_ep_subcmd(NULL, argc, argv4);
 	assert_int_equal(rc, -EINVAL);
 
 	/* Test call delete_ep_1 return error*/
-	TEST_CASE("delete-ep subcommand fails if delete_ep_1 returns error");
+	TEST_CASE("delete-ep should fail if rpc returns error");
 	delete_ep_1_ret_val = -EINVAL;
 	expect_function_call(__wrap_delete_ep_1);
 	will_return(__wrap_delete_ep_1, &delete_ep_1_ret_val);
@@ -991,7 +961,7 @@ static void test_trn_cli_delete_ep_subcmd(void **state)
 	assert_int_equal(rc, -EINVAL);
 
 	/* Test call delete_ep_1 return NULL*/
-	TEST_CASE("delete-ep subcommand fails if delete_ep_1 returns NULL");
+	TEST_CASE("delete-ep should fail if rpc returns NULL");
 	expect_function_call(__wrap_delete_ep_1);
 	will_return(__wrap_delete_ep_1, NULL);
 	expect_any(__wrap_delete_ep_1, argp);
@@ -1004,21 +974,16 @@ static void test_trn_cli_delete_dft_subcmd(void **state)
 {
 	UNUSED(state);
 	int rc;
-	int argc = 5;
-
-	char itf[] = "eth0";
+	int argc = 3;
 
 	/* Test cases */
-	char *argv1[] = { "delete-dft", "-i", "eth0", "-j",
-			  QUOTE({ "id": "3" }) };
+	char *argv1[] = { "delete-dft", "-j", QUOTE({ "id": "3" }) };
 
-	char *argv2[] = { "delete-dft", "-i", "eth0", "-j",
-			  QUOTE({ "id": 3 }) };
+	char *argv2[] = { "delete-dft", "-j", QUOTE({ "id": 3 }) };
 
-	char *argv3[] = { "delete-dft", "-i", "eth0", "-j", QUOTE({ "id 3" }) };
+	char *argv3[] = { "delete-dft", "-j", QUOTE({ "id 3" }) };
 
-	struct rpc_trn_zeta_key_t exp_dft_key = {
-		.interface = itf,
+	rpc_trn_zeta_key_t exp_dft_key = {
 		.id = 3,
 	};
 
@@ -1066,22 +1031,16 @@ static void test_trn_cli_delete_chain_subcmd(void **state)
 {
 	UNUSED(state);
 	int rc;
-	int argc = 5;
-
-	char itf[] = "eth0";
+	int argc = 3;
 
 	/* Test cases */
-	char *argv1[] = { "delete-chain", "-i", "eth0", "-j",
-			  QUOTE({ "id": "3" }) };
+	char *argv1[] = { "delete-chain", "-j", QUOTE({ "id": "3" }) };
 
-	char *argv2[] = { "delete-chain", "-i", "eth0", "-j",
-			  QUOTE({ "id": 3 }) };
+	char *argv2[] = { "delete-chain", "-j", QUOTE({ "id": 3 }) };
 
-	char *argv3[] = { "delete-chain", "-i", "eth0", "-j",
-			  QUOTE({ "id 3" }) };
+	char *argv3[] = { "delete-chain", "-j", QUOTE({ "id 3" }) };
 
-	struct rpc_trn_zeta_key_t exp_chain_key = {
-		.interface = itf,
+	rpc_trn_zeta_key_t exp_chain_key = {
 		.id = 3,
 	};
 
@@ -1131,21 +1090,16 @@ static void test_trn_cli_delete_ftn_subcmd(void **state)
 {
 	UNUSED(state);
 	int rc;
-	int argc = 5;
-
-	char itf[] = "eth0";
+	int argc = 3;
 
 	/* Test cases */
-	char *argv1[] = { "delete-ftn", "-i", "eth0", "-j",
-			  QUOTE({ "id": "3" }) };
+	char *argv1[] = { "delete-ftn", "-j", QUOTE({ "id": "3" }) };
 
-	char *argv2[] = { "delete-ftn", "-i", "eth0", "-j",
-			  QUOTE({ "id": 3 }) };
+	char *argv2[] = { "delete-ftn", "-j", QUOTE({ "id": 3 }) };
 
-	char *argv3[] = { "delete-ftn", "-i", "eth0", "-j", QUOTE({ "id 3" }) };
+	char *argv3[] = { "delete-ftn", "-j", QUOTE({ "id 3" }) };
 
-	struct rpc_trn_zeta_key_t exp_ftn_key = {
-		.interface = itf,
+	rpc_trn_zeta_key_t exp_ftn_key = {
 		.id = 3,
 	};
 

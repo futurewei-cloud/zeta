@@ -28,13 +28,16 @@ mkdir -p $ROOT/build
 git submodule update --init --recursive
 
 # Create and Start the build contrainer
-docker build -f $ROOT/deploy/build/Dockerfile -t zeta_build \
+docker build -f $ROOT/deploy/build/Dockerfile -t zeta_build:latest \
 	--build-arg USER_NAME=$(id -u -n) \
 	--build-arg USER_ID=$(id -u) \
 	--build-arg GROUP_ID=$(id -g) \
 	$ROOT
 docker rm -f zb || true
-docker create -v $ROOT:/mnt/host/code -it \
+docker create \
+	-v /usr/include/linux:/usr/include/linux \
+	-v $ROOT:/mnt/host/code \
+	-it \
 	--privileged \
 	--cap-add=NET_ADMIN \
 	--cap-add=SYS_PTRACE \

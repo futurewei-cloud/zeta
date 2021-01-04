@@ -48,124 +48,89 @@
 
 #include "extern/cJSON.h"
 
-#include "trn_datamodel.h"
+typedef struct {
+	int prog_id;          // definition in trn_xdp_prog_id_t
+	char *prog_path;      // full path of xdp program
+} trn_xdp_prog_t;
 
-struct ebpf_prog_stage_t {
-	int prog_fd;
-	struct bpf_object *obj;
+typedef struct {
+	char *name;
+	bool shared;
+	int fd;
+	struct bpf_map *map;
+} trn_xdp_map_t;
 
-	int dfts_map_ref_fd;
-	int chains_map_ref_fd;
-	int ftns_map_ref_fd;
-	int endpoints_map_ref_fd;
-	int interface_config_map_ref_fd;
-	int hosted_endpoints_iface_map_ref_fd;
-	int interfaces_map_ref_fd;
-	int xdpcap_hook_ref_fd;
-	int fwd_flow_mod_cache_ref_fd;
-	int rev_flow_mod_cache_ref_fd;
-	int ep_flow_host_cache_ref_fd;
-	int ep_host_cache_ref_fd;
-
-	struct bpf_map *dfts_map_ref;
-	struct bpf_map *chains_map_ref;
-	struct bpf_map *ftns_map_ref;
-	struct bpf_map *endpoints_map_ref;
-	struct bpf_map *hosted_endpoints_iface_map_ref;
-	struct bpf_map *interface_config_map_ref;
-	struct bpf_map *interfaces_map_ref;
-	struct bpf_map *xdpcap_hook_ref;
-	struct bpf_map *fwd_flow_mod_cache_ref;
-	struct bpf_map *rev_flow_mod_cache_ref;
-	struct bpf_map *ep_flow_host_cache_ref;
-	struct bpf_map *ep_host_cache_ref;
-};
-
-struct user_metadata_t {
-	struct tunnel_iface_t eth;
-	int ifindex;
-	__u32 xdp_flags;
+typedef struct {
 	int prog_fd;
 	__u32 prog_id;
-
-	char pcapfile[256];
-	int itf_idx[TRAN_MAX_ITF];
-
-	int jmp_table_fd;
-	int dfts_map_fd;
-	int chains_map_fd;
-	int ftns_map_fd;
-	int endpoints_map_fd;
-	int interface_config_map_fd;
-	int hosted_endpoints_iface_map_fd;
-	int interfaces_map_fd;
-	int fwd_flow_mod_cache_fd;
-	int rev_flow_mod_cache_fd;
-	int ep_flow_host_cache_fd;
-	int ep_host_cache_fd;
-
-	struct bpf_map *jmp_table_map;
-	struct bpf_map *dfts_map;
-	struct bpf_map *chains_map;
-	struct bpf_map *ftns_map;
-	struct bpf_map *endpoints_map;
-	struct bpf_map *hosted_endpoints_iface_map;
-	struct bpf_map *interface_config_map;
-	struct bpf_map *interfaces_map;
-	struct bpf_map *fwd_flow_mod_cache;
-	struct bpf_map *rev_flow_mod_cache;
-	struct bpf_map *ep_flow_host_cache;
-	struct bpf_map *ep_host_cache;
-	struct bpf_map *xdpcap_hook_map;
-
-	struct bpf_prog_info info;
 	struct bpf_object *obj;
+	char pcapfile[TRAN_MAX_PATH_SIZE];
+} trn_prog_t;
 
-	/* Array of programs at different stages. Currently supporting only one extra tail-call */
-	struct ebpf_prog_stage_t ebpf_progs[TRAN_MAX_PROG];
-};
+typedef struct {
+	__u32 ip;
+	__u32 iface_index;
+	__u16 ibo_port;
+	__u8 protocol;     // value from trn_xdp_tunnel_protocol_t
+	__u8 role;         // value from trn_xdp_role_t
+	__u8 mac[6];       // MAC of physical interface
+} trn_iface_t;
 
-int trn_user_metadata_free(struct user_metadata_t *md);
+typedef struct {
+	trn_iface_t eth;
+	trn_prog_t xdp;
+} trn_xdp_object_t;
 
-int trn_bpf_maps_init(struct user_metadata_t *md);
+typedef struct {
+	bool ready;
+	__u32 xdp_flags;
+	trn_xdp_object_t objs[TRAN_ITF_MAP_MAX];
 
-int trn_update_dft(struct user_metadata_t *md, __u32 *dft_key,
-		   struct dft_t *dft);
+	trn_xdp_prog_t *prog_tbl;
 
-int trn_update_chain(struct user_metadata_t *md, __u32 *ftn_key,
-		     struct chain_t *chain);
+	/*
+	 * Array of sidecar programs transit XDP main program can jump to
+	 * to perform additional functionality.
+	 */
+	trn_prog_t ebpf_progs[TRAN_MAX_PROG];
+} user_metadata_t;
 
-int trn_update_ftn(struct user_metadata_t *md, __u32 *ftn_key,
-		   struct ftn_t *ftn);
+trn_iface_t *trn_get_itf_context(char *interface);
 
-int trn_update_endpoint(struct user_metadata_t *md,
-			struct endpoint_key_t *epkey, struct endpoint_t *ep);
+int trn_update_itf_config(struct tunnel_iface_t *itf);
 
-int trn_get_dft(struct user_metadata_t *md, __u32 *dft_key, struct dft_t *dft);
+int trn_update_dft(__u32 *dft_key, struct dft_t *dft);
 
-int trn_get_chain(struct user_metadata_t *md, __u32 *chain_key,
-		  struct chain_t *chain);
+int trn_update_chain(__u32 *ftn_key, struct chain_t *chain);
 
-int trn_get_ftn(struct user_metadata_t *md, __u32 *ftn_key, struct ftn_t *ftn);
+int trn_update_ftn(__u32 *ftn_key, struct ftn_t *ftn);
 
-int trn_get_endpoint(struct user_metadata_t *md, struct endpoint_key_t *epkey,
-		     struct endpoint_t *ep);
+int trn_update_endpoints_get_ctx(void);
 
-int trn_delete_dft(struct user_metadata_t *md, __u32 *zeta_key);
+int trn_update_endpoint(int fd, endpoint_key_t *epkey, endpoint_t *ep);
 
-int trn_delete_chain(struct user_metadata_t *md, __u32 *zeta_key);
+int trn_get_dft(__u32 *dft_key, struct dft_t *dft);
 
-int trn_delete_ftn(struct user_metadata_t *md, __u32 *zeta_key);
+int trn_get_chain(__u32 *chain_key, struct chain_t *chain);
 
-int trn_delete_endpoint(struct user_metadata_t *md,
-			struct endpoint_key_t *epkey);
+int trn_get_ftn(__u32 *ftn_key, struct ftn_t *ftn);
 
-int trn_user_metadata_init(struct user_metadata_t *md, char *itf,
-			   char *kern_path, int xdp_flags);
+int trn_get_endpoint(endpoint_key_t *epkey, endpoint_t *ep);
 
-uint32_t trn_get_interface_ipv4(int itf_idx);
+int trn_delete_dft(__u32 *zeta_key);
 
-int trn_add_prog(struct user_metadata_t *md, unsigned int prog_idx,
-		 const char *prog_path);
+int trn_delete_chain(__u32 *zeta_key);
 
-int trn_remove_prog(struct user_metadata_t *md, unsigned int prog_idx);
+int trn_delete_ftn(__u32 *zeta_key);
+
+int trn_delete_endpoint(endpoint_key_t *epkey);
+
+int trn_transit_xdp_load(char **interfaces, unsigned short ibo_port, bool debug);
+
+int trn_transit_xdp_unload(char **interfaces);
+
+int trn_transit_ebpf_load(int prog_idx);
+
+int trn_transit_ebpf_unload(int prog_idx);
+
+int trn_transit_dp_assistant(void);

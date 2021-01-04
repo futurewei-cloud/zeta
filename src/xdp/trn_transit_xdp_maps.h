@@ -30,10 +30,6 @@
 
 #include "trn_datamodel.h"
 
-#define MAX_EP 65537
-#define MAX_FTN 512
-#define MAX_CHAIN 128
-
 struct bpf_map_def SEC("maps") jmp_table = {
 	.type = BPF_MAP_TYPE_PROG_ARRAY,
 	.key_size = sizeof(__u32),
@@ -55,7 +51,7 @@ struct bpf_map_def SEC("maps") chains_map = {
 	.type = BPF_MAP_TYPE_HASH,
 	.key_size = sizeof(__u32),
 	.value_size = sizeof(struct chain_t),
-	.max_entries = MAX_CHAIN,
+	.max_entries = TRAN_MAX_CHAIN,
 	.map_flags = 0,
 };
 BPF_ANNOTATE_KV_PAIR(chains_map, __u32, struct chain_t);
@@ -64,80 +60,89 @@ struct bpf_map_def SEC("maps") ftns_map = {
 	.type = BPF_MAP_TYPE_HASH,
 	.key_size = sizeof(__u32),
 	.value_size = sizeof(struct ftn_t),
-	.max_entries = MAX_FTN,
+	.max_entries = TRAN_MAX_FTN,
 	.map_flags = 0,
 };
 BPF_ANNOTATE_KV_PAIR(ftns_map, __u32, struct ftn_t);
 
 struct bpf_map_def SEC("maps") endpoints_map = {
 	.type = BPF_MAP_TYPE_HASH,
-	.key_size = sizeof(struct endpoint_key_t),
-	.value_size = sizeof(struct endpoint_t),
-	.max_entries = MAX_EP,
+	.key_size = sizeof(endpoint_key_t),
+	.value_size = sizeof(endpoint_t),
+	.max_entries = TRAN_MAX_NEP,
 	.map_flags = 0,
 };
-BPF_ANNOTATE_KV_PAIR(endpoints_map, struct endpoint_key_t, struct endpoint_t);
+BPF_ANNOTATE_KV_PAIR(endpoints_map, endpoint_key_t, endpoint_t);
 
-struct bpf_map_def SEC("maps") hosted_endpoints_iface_map = {
+struct bpf_map_def SEC("maps") hosted_eps_if = {
 	.type = BPF_MAP_TYPE_HASH,
-	.key_size = sizeof(struct endpoint_key_t),
+	.key_size = sizeof(endpoint_key_t),
 	.value_size = sizeof(int),
-	.max_entries = MAX_EP,
+	.max_entries = TRAN_MAX_NEP,
 	.map_flags = 0,
 };
-BPF_ANNOTATE_KV_PAIR(hosted_endpoints_iface_map, struct endpoint_key_t, int);
+BPF_ANNOTATE_KV_PAIR(hosted_eps_if, endpoint_key_t, int);
 
-struct bpf_map_def SEC("maps") interface_config_map = {
+struct bpf_map_def SEC("maps") if_config_map = {
 	.type = BPF_MAP_TYPE_ARRAY,
-	.key_size = sizeof(int),
+	.key_size = sizeof(__u32),
 	.value_size = sizeof(struct tunnel_iface_t),
-	.max_entries = 1,
+	.max_entries = TRAN_MAX_ITF,
 	.map_flags = 0,
 };
-BPF_ANNOTATE_KV_PAIR(interface_config_map, int, struct tunnel_iface_t);
+BPF_ANNOTATE_KV_PAIR(if_config_map, __u32, struct tunnel_iface_t);
 
+/* Host specific interface map used for packet redirect */
 struct bpf_map_def SEC("maps") interfaces_map = {
 	.type = BPF_MAP_TYPE_DEVMAP,
 	.key_size = sizeof(int),
 	.value_size = sizeof(int),
-	.max_entries = TRAN_MAX_ITF,
+	.max_entries = TRAN_ITF_MAP_MAX,
 };
 BPF_ANNOTATE_KV_PAIR(interface_map, int, int);
 
-struct bpf_map_def SEC("maps") fwd_flow_mod_cache = {
+struct bpf_map_def SEC("maps") oam_queue_map = {
+	.type = BPF_MAP_TYPE_QUEUE,
+	.key_size = 0,
+	.value_size = sizeof(flow_ctx_t),
+	.max_entries = 1024,
+};
+BPF_ANNOTATE_KV_PAIR_QUEUESTACK(oam_queue_map, flow_ctx_t);
+
+struct bpf_map_def SEC("maps") fwd_flow_cache = {
 	.type = BPF_MAP_TYPE_LRU_HASH,
-	.key_size = sizeof(struct ipv4_tuple_t),
+	.key_size = sizeof(ipv4_flow_t),
 	.value_size = sizeof(struct scaled_endpoint_remote_t),
 	.max_entries = TRAN_MAX_CACHE_SIZE,
 };
-BPF_ANNOTATE_KV_PAIR(fwd_flow_mod_cache, struct ipv4_tuple_t,
+BPF_ANNOTATE_KV_PAIR(fwd_flow_cache, ipv4_flow_t,
 		     struct scaled_endpoint_remote_t);
 
-struct bpf_map_def SEC("maps") rev_flow_mod_cache = {
+struct bpf_map_def SEC("maps") rev_flow_cache = {
 	.type = BPF_MAP_TYPE_LRU_HASH,
-	.key_size = sizeof(struct ipv4_tuple_t),
+	.key_size = sizeof(ipv4_flow_t),
 	.value_size = sizeof(struct scaled_endpoint_remote_t),
 	.max_entries = TRAN_MAX_CACHE_SIZE,
 };
-BPF_ANNOTATE_KV_PAIR(rev_flow_mod_cache, struct ipv4_tuple_t,
+BPF_ANNOTATE_KV_PAIR(rev_flow_cache, ipv4_flow_t,
 		     struct scaled_endpoint_remote_t);
 
-struct bpf_map_def SEC("maps") ep_flow_host_cache = {
+struct bpf_map_def SEC("maps") host_flow_cache = {
 	.type = BPF_MAP_TYPE_LRU_HASH,
-	.key_size = sizeof(struct ipv4_tuple_t),
+	.key_size = sizeof(ipv4_flow_t),
 	.value_size = sizeof(struct remote_endpoint_t),
 	.max_entries = TRAN_MAX_CACHE_SIZE,
 };
-BPF_ANNOTATE_KV_PAIR(ep_flow_host_cache, struct ipv4_tuple_t,
+BPF_ANNOTATE_KV_PAIR(host_flow_cache, ipv4_flow_t,
 		     struct remote_endpoint_t);
 
 struct bpf_map_def SEC("maps") ep_host_cache = {
 	.type = BPF_MAP_TYPE_LRU_HASH,
-	.key_size = sizeof(struct endpoint_key_t),
+	.key_size = sizeof(endpoint_key_t),
 	.value_size = sizeof(struct remote_endpoint_t),
 	.max_entries = TRAN_MAX_CACHE_SIZE,
 };
-BPF_ANNOTATE_KV_PAIR(ep_host_cache, struct endpoint_key_t,
+BPF_ANNOTATE_KV_PAIR(ep_host_cache, endpoint_key_t,
 		     struct remote_endpoint_t);
 
 struct bpf_map_def SEC("maps") xdpcap_hook = XDPCAP_HOOK();

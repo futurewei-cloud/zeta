@@ -64,23 +64,23 @@ struct bpf_map_def SEC("maps") endpoints_map_ref = {
 };
 BPF_ANNOTATE_KV_PAIR(endpoints_map_ref, int, __u32);
 
-struct bpf_map_def SEC("maps") hosted_endpoints_iface_map_ref = {
+struct bpf_map_def SEC("maps") hosted_eps_if_ref = {
 	.type = BPF_MAP_TYPE_ARRAY_OF_MAPS,
 	.key_size = sizeof(int),
 	.value_size = sizeof(__u32),
 	.max_entries = 1,
 	.map_flags = 0,
 };
-BPF_ANNOTATE_KV_PAIR(hosted_endpoints_iface_map_ref, int, __u32);
+BPF_ANNOTATE_KV_PAIR(hosted_eps_if_ref, int, __u32);
 
-struct bpf_map_def SEC("maps") interface_config_map_ref = {
+struct bpf_map_def SEC("maps") if_config_map_ref = {
 	.type = BPF_MAP_TYPE_ARRAY_OF_MAPS,
 	.key_size = sizeof(int),
 	.value_size = sizeof(__u32),
 	.max_entries = 1,
 	.map_flags = 0,
 };
-BPF_ANNOTATE_KV_PAIR(interface_config_map_ref, int, __u32);
+BPF_ANNOTATE_KV_PAIR(if_config_map_ref, int, __u32);
 
 struct bpf_map_def SEC("maps") interfaces_map_ref = {
 	.type = BPF_MAP_TYPE_ARRAY_OF_MAPS,
@@ -91,32 +91,32 @@ struct bpf_map_def SEC("maps") interfaces_map_ref = {
 };
 BPF_ANNOTATE_KV_PAIR(interface_map_ref, int, __u32);
 
-struct bpf_map_def SEC("maps") fwd_flow_mod_cache_ref = {
+struct bpf_map_def SEC("maps") fwd_flow_cache_ref = {
 	.type = BPF_MAP_TYPE_ARRAY_OF_MAPS,
 	.key_size = sizeof(int),
 	.value_size = sizeof(__u32),
 	.max_entries = 1,
 	.map_flags = 0,
 };
-BPF_ANNOTATE_KV_PAIR(fwd_flow_mod_cache_ref, int, __u32);
+BPF_ANNOTATE_KV_PAIR(fwd_flow_cache_ref, int, __u32);
 
-struct bpf_map_def SEC("maps") rev_flow_mod_cache_ref = {
+struct bpf_map_def SEC("maps") rev_flow_cache_ref = {
 	.type = BPF_MAP_TYPE_ARRAY_OF_MAPS,
 	.key_size = sizeof(int),
 	.value_size = sizeof(__u32),
 	.max_entries = 1,
 	.map_flags = 0,
 };
-BPF_ANNOTATE_KV_PAIR(rev_flow_mod_cache_ref, int, __u32);
+BPF_ANNOTATE_KV_PAIR(rev_flow_cache_ref, int, __u32);
 
-struct bpf_map_def SEC("maps") ep_flow_host_cache_ref = {
+struct bpf_map_def SEC("maps") host_flow_cache_ref = {
 	.type = BPF_MAP_TYPE_ARRAY_OF_MAPS,
 	.key_size = sizeof(int),
 	.value_size = sizeof(__u32),
 	.max_entries = 1,
 	.map_flags = 0,
 };
-BPF_ANNOTATE_KV_PAIR(ep_flow_host_cache_ref, int, __u32);
+BPF_ANNOTATE_KV_PAIR(host_flow_cache_ref, int, __u32);
 
 struct bpf_map_def SEC("maps") ep_host_cache_ref = {
 	.type = BPF_MAP_TYPE_ARRAY_OF_MAPS,

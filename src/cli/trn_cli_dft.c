@@ -66,7 +66,6 @@ int trn_cli_update_dft_subcmd(CLIENT *clnt, int argc, char *argv[])
 	rpc_trn_dft_t dft;
 	char rpc[] = "update_dft_1";
 
-	dft.interface = conf.intf;
 	uint32_t table[TRAN_MAX_MAGLEV_TABLE_SIZE];
 	dft.table.table_val = table;
 	dft.table.table_len = 0;
@@ -92,8 +91,8 @@ int trn_cli_update_dft_subcmd(CLIENT *clnt, int argc, char *argv[])
 	}
 
 	dump_dft(&dft);
-	print_msg("update_dft_1 successfully updated dft %d on interface %s.\n",
-		  dft.id, dft.interface);
+	print_msg("update_dft_1 successfully updated dft %d.\n",
+		  dft.id);
 	return 0;
 }
 
@@ -117,7 +116,6 @@ int trn_cli_get_dft_subcmd(CLIENT *clnt, int argc, char *argv[])
 	rpc_trn_zeta_key_t dft_key;
 	rpc_trn_dft_t *dft;
 	char rpc[] = "get_dft_1";
-	dft_key.interface = conf.intf;
 
 	int err = trn_cli_parse_zeta_key(json_str, &dft_key);
 	cJSON_Delete(json_str);
@@ -128,14 +126,14 @@ int trn_cli_get_dft_subcmd(CLIENT *clnt, int argc, char *argv[])
 	}
 
 	dft = get_dft_1(&dft_key, clnt);
-	if (dft == NULL || strlen(dft->interface) == 0) {
+	if (dft == NULL) {
 		print_err("RPC Error: client call failed: get_dft_1.\n");
 		return -EINVAL;
 	}
 
 	dump_dft(dft);
-	print_msg("get_dft_1 successfully queried dft %d on interface %s.\n",
-		  dft->id, dft->interface);
+	print_msg("get_dft_1 successfully queried dft %d.\n",
+		  dft->id);
 
 	return 0;
 }
@@ -160,7 +158,6 @@ int trn_cli_delete_dft_subcmd(CLIENT *clnt, int argc, char *argv[])
 	int *rc;
 	rpc_trn_zeta_key_t dft_key;
 	char rpc[] = "delete_dft_1";
-	dft_key.interface = conf.intf;
 
 	int err = trn_cli_parse_zeta_key(json_str, &dft_key);
 	cJSON_Delete(json_str);
@@ -183,8 +180,8 @@ int trn_cli_delete_dft_subcmd(CLIENT *clnt, int argc, char *argv[])
 		return -EINVAL;
 	}
 
-	print_msg("delete_dft_1 successfully deleted dft %d on interface %s.\n",
-		  dft_key.id, dft_key.interface);
+	print_msg("delete_dft_1 successfully deleted dft %d.\n",
+		  dft_key.id);
 
 	return 0;
 }
@@ -193,7 +190,6 @@ void dump_dft(struct rpc_trn_dft_t *dft)
 {
 	int i;
 
-	print_msg("Interface: %s\n", dft->interface);
 	print_msg("DFT ID: %d\n", dft->id);
 	print_msg("Table entries: [");
 	for (i = 0; i < dft->table.table_len; i++) {

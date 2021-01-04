@@ -32,6 +32,7 @@ static const struct cmd {
 } cmds[] = {
 	{ "load-transit-xdp", trn_cli_load_transit_subcmd },
 	{ "unload-transit-xdp", trn_cli_unload_transit_subcmd },
+	{ "update-droplet", trn_cli_update_droplet_subcmd },
 	{ "update-dft", trn_cli_update_dft_subcmd },
 	{ "update-chain", trn_cli_update_chain_subcmd },
 	{ "update-ftn", trn_cli_update_ftn_subcmd },
@@ -44,8 +45,8 @@ static const struct cmd {
 	{ "delete-chain", trn_cli_delete_chain_subcmd },
 	{ "delete-ftn", trn_cli_delete_ftn_subcmd },
 	{ "delete-ep", trn_cli_delete_ep_subcmd },
-	{ "load-pipeline-stage", trn_cli_load_pipeline_stage_subcmd },
-	{ "unload-pipeline-stage", trn_cli_unload_pipeline_stage_subcmd },
+	{ "load-ebpf-prog", trn_cli_load_ebpf_prog_subcmd },
+	{ "unload-ebpf-prog", trn_cli_unload_ebpf_prog_subcmd },
 	{ 0 },
 };
 
@@ -71,16 +72,14 @@ int main(int argc, char *argv[])
 	int malloc_protocol = 0;
 
 	while ((o = ketopt(&om, argc, argv, 0, "s:p:", 0)) >= 0) {
-		if (o == 's') {
+		if (!malloc_server && o == 's') {
 			server = malloc(sizeof(char) * strlen(om.arg) + 1);
 			strcpy(server, om.arg);
-			printf("main -s %s\n", server);
 			malloc_server = 1;
 		}
-		if (o == 'p') {
+		if (!malloc_protocol && o == 'p') {
 			protocol = malloc(sizeof(char) * strlen(om.arg) + 1);
 			strcpy(protocol, om.arg);
-			printf("main -s %s\n", server);
 			malloc_protocol = 1;
 		}
 	}
@@ -93,41 +92,59 @@ int main(int argc, char *argv[])
 		protocol = UDP;
 	}
 
-	printf("Connecting to %s using %s protocol.\n", server, protocol);
+	if (om.ind == argc) {
+		fprintf(stderr, "missing subcommand.\n");
+		rc = 1;
+		goto cleanup;
+	}
+
+	for (c = cmds; c->cmd; ++c) {
+		if (strcmp(argv[om.ind], c->cmd) == 0) {
+			break;
+		}
+	}
+
+	if (!c->cmd) {
+		fprintf(stderr, "invalidate subcommand %s.\n", argv[om.ind]);
+		rc = 1;
+		goto cleanup;
+	}
+
+	printf("RPC client connecting to %s using %s protocol for cmd %s.\n",
+		server, protocol, c->cmd);
 
 	clnt = clnt_create(server, RPC_TRANSIT_REMOTE_PROTOCOL,
 			   RPC_TRANSIT_ALFAZERO, protocol);
 
 	if (clnt == NULL) {
 		clnt_pcreateerror(server);
-		cleanup(malloc_server, server);
-		cleanup(malloc_protocol, protocol);
-		exit(1);
+		rc = 1;
+		goto cleanup;
 	}
 
-	if (om.ind == argc) {
-		fprintf(stderr, "missing subcommand.\n");
-		cleanup(malloc_server, server);
-		cleanup(malloc_protocol, protocol);
-		exit(1);
-	}
+#ifdef DEBUG_TIMEOUT
+	struct timeval tv;
+	tv.tv_sec = 60; /* change timeout to 1 minute */
+	tv.tv_usec = 0;
+	clnt_control(clnt, CLSET_TIMEOUT, &tv);
+#endif
 
-	for (c = cmds; c->cmd; ++c) {
-		if (strcmp(argv[om.ind], c->cmd) == 0) {
-			rc = (c->func(clnt, argc - om.ind, argv + om.ind));
-			break;
-		}
-	}
-
+	rc = (c->func(clnt, argc - om.ind, argv + om.ind));
 	if (rc) {
-		cleanup(malloc_server, server);
-		cleanup(malloc_protocol, protocol);
-		exit(1);
+		fprintf(stderr, "RPC subcommand failed, rc %d.\n", rc);
+		rc = 1;
+		goto cleanup;
 	}
 
-	clnt_destroy(clnt);
-	cleanup(malloc_server, server);
-	cleanup(malloc_protocol, protocol);
-
-	return 0;
+cleanup:
+	if (malloc_server) {
+		free(server);
+	}
+	if (malloc_protocol) {
+		free(protocol);
+	}
+	if (clnt) {
+		clnt_destroy(clnt);
+	}
+	return rc;
 }
