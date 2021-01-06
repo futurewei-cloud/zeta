@@ -95,7 +95,7 @@ set(SANITIZE "${SANITIZE.${ARCH}}-fsanitize=leak \
   -fsanitize=vptr \
   -fno-omit-frame-pointer")
 #set(C_DBG_FLAGS "-fprofile-arcs -ftest-coverage ${SANITIZE}")
-set(C_DBG_FLAGS "${SANITIZE}")
+set(C_DBG_FLAGS "${SANITIZE} -ggdb3")
 set(CMAKE_C_FLAGS_DEBUG   "${CMAKE_C_FLAGS_DEBUG} ${C_DBG_FLAGS}")
 
 # ----------------------------------------------------------------------------
@@ -105,7 +105,7 @@ set(C_FLAGS "-I. \
   -I${CMAKE_SOURCE_DIR}/src/include \
   -I${CMAKE_BINARY_DIR}/lib/usr/include \
   -std=c11 \
-  -D_POSIX_C_SOURCE \
+  -D_POSIX_C_SOURCE=199309L \
   -Wall \
   -Wextra \
   -Werror \

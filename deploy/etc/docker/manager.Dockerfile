@@ -7,23 +7,20 @@
 # Summary: Zeta-manager service Dockerfile
 #
 # base image
-FROM python:3.8.1-slim
+FROM fwnetworking/python_base:latest
+
+ENV PYTHONUNBUFFERED 1
 
 # set working directory
 WORKDIR /opt/zeta/manager
 
 # Add app
-COPY build/manager /opt/zeta/manager
-COPY build/bin /opt/zeta/bin
+COPY build/manager /opt/zeta/manager/
+COPY build/bin /opt/zeta/bin/
 
 # install netcat and manager
-RUN apt-get update && \
-    apt-get -y install netcat && \
-    apt-get clean && \
+RUN ln -snf /opt/zeta/bin /trn_bin && \
     pip3 install /opt/zeta/manager/
 
-#RUN pip install -r requirements.txt && \
-#    chmod +x /usr/src/app/entrypoint.sh
-
-# Run app
-CMD ["/opt/zeta/manager/entrypoint.sh"]
+# Run app in shell format
+CMD /etc/init.d/rsyslog restart && /opt/zeta/manager/entrypoint.sh

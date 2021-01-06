@@ -27,7 +27,7 @@
 - name: "==== Publish Zeta images to {{site}} registry {{reg}}"
   hosts: kube_master
   vars:
-    local_user: ubuntu
+    local_user: "{{ansible_user}}"
   gather_facts: false
   tasks:
     - name: Transfer images to microk8s built-in registry

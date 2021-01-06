@@ -28,34 +28,74 @@ logger = logging.getLogger()
 
 
 class TrnRpc:
-    def __init__(self, ip, mac, itf='eth0', benchmark=False):
-        self.ip = ip
-        self.mac = mac
-        self.phy_itf = itf
+    def __init__(self, ip, benchmark=False):
+        self.ip = ip            # RPC server IP
+        self.benchmark = benchmark
 
         # transitd cli commands
         self.trn_cli = f'''/trn_bin/transit -s {self.ip} '''
-        self.trn_cli_load_transit_xdp = f'''{self.trn_cli} load-transit-xdp -i {self.phy_itf} -j'''
-        self.trn_cli_unload_transit_xdp = f'''{self.trn_cli} unload-transit-xdp -i {self.phy_itf} -j'''
-        self.trn_cli_update_dft = f'''{self.trn_cli} update-dft -i {self.phy_itf} -j'''
-        self.trn_cli_update_chain = f'''{self.trn_cli} update-chain -i {self.phy_itf} -j'''
-        self.trn_cli_update_ftn = f'''{self.trn_cli} update-ftn -i {self.phy_itf} -j'''
-        self.trn_cli_update_ep = f'''{self.trn_cli} update-ep -i {self.phy_itf} -j'''
-        self.trn_cli_get_dft = f'''{self.trn_cli} get-dft -i {self.phy_itf} -j'''
-        self.trn_cli_get_chain = f'''{self.trn_cli} get-chain -i {self.phy_itf} -j'''
-        self.trn_cli_get_ftn = f'''{self.trn_cli} get-ftn -i {self.phy_itf} -j'''
-        self.trn_cli_get_ep = f'''{self.trn_cli} get-ep -i {self.phy_itf} -j'''
-        self.trn_cli_delete_dft = f'''{self.trn_cli} delete-dft -i {self.phy_itf} -j'''
-        self.trn_cli_delete_chain = f'''{self.trn_cli} delete-chain -i {self.phy_itf} -j'''
-        self.trn_cli_delete_ftn = f'''{self.trn_cli} delete-ep -i {self.phy_itf} -j'''
-        self.trn_cli_delete_ep = f'''{self.trn_cli} delete-ep -i {self.phy_itf} -j'''
-        self.trn_cli_load_pipeline_stage = f'''{self.trn_cli} load-pipeline-stage -i {self.phy_itf} -j'''
-        self.trn_cli_unload_pipeline_stage = f'''{self.trn_cli} unload-pipeline-stage -i {self.phy_itf} -j'''
+        self.trn_cli_load_transit_xdp = f'''{self.trn_cli} load-transit-xdp -j'''
+        self.trn_cli_unload_transit_xdp = f'''{self.trn_cli} unload-transit-xdp -j'''
+        self.trn_cli_update_droplet = f'''{self.trn_cli} update-droplet -j'''
+        self.trn_cli_update_dft = f'''{self.trn_cli} update-dft -j'''
+        self.trn_cli_update_chain = f'''{self.trn_cli} update-chain -j'''
+        self.trn_cli_update_ftn = f'''{self.trn_cli} update-ftn -j'''
+        self.trn_cli_update_ep = f'''{self.trn_cli} update-ep -j'''
+        self.trn_cli_get_dft = f'''{self.trn_cli} get-dft -j'''
+        self.trn_cli_get_chain = f'''{self.trn_cli} get-chain -j'''
+        self.trn_cli_get_ftn = f'''{self.trn_cli} get-ftn -j'''
+        self.trn_cli_get_ep = f'''{self.trn_cli} get-ep -j'''
+        self.trn_cli_delete_dft = f'''{self.trn_cli} delete-dft -j'''
+        self.trn_cli_delete_chain = f'''{self.trn_cli} delete-chain -j'''
+        self.trn_cli_delete_ftn = f'''{self.trn_cli} delete-ep -j'''
+        self.trn_cli_delete_ep = f'''{self.trn_cli} delete-ep -j'''
+        self.trn_cli_load_ebpf_prog = f'''{self.trn_cli} load-ebpf-prog -j'''
+        self.trn_cli_unload_ebpf_prog = f'''{self.trn_cli} unload-ebpf-prog -j'''
 
         if benchmark:
             self.xdp_path = "/trn_xdp/trn_transit_xdp_ebpf.o"
         else:
             self.xdp_path = "/trn_xdp/trn_transit_xdp_ebpf_debug.o"
+
+    def load_transit_xdp(self, itf_tenant, itf_zgc, ibo_port):
+        jsonconf = {
+            "itf_tenant": itf_tenant,
+            "itf_zgc": itf_zgc,
+            "ibo_port": ibo_port,
+        }
+        if self.benchmark:
+            jsonconf["debug_mode"] = 0
+        else:
+            jsonconf["debug_mode"] = 1
+
+        jsonconf = json.dumps(jsonconf)
+        cmd = f'''{self.trn_cli_load_transit_xdp} \'{jsonconf}\' '''
+        logger.info("load_transit_xdp: {}".format(cmd))
+        returncode, text = run_cmd(cmd)
+        logger.info("returns {} {}".format(returncode, text))
+
+    def unload_transit_xdp(self, itf_tenant, itf_zgc):
+        jsonconf = {
+            "itf_tenant": itf_tenant,
+            "itf_zgc": itf_zgc,
+            "ibo_port": 0,
+        }
+        if self.benchmark:
+            jsonconf["debug_mode"] = 0
+        else:
+            jsonconf["debug_mode"] = 1
+        jsonconf = json.dumps(jsonconf)
+        cmd = f'''{self.trn_cli_unload_transit_xdp} {jsonconf} '''
+        logger.info("unload_transit_xdp: {}".format(cmd))
+        returncode, text = run_cmd(cmd)
+        logger.info("returns {} {}".format(returncode, text))
+
+    def update_droplet(self, itf_conf):
+        jsonconf = json.dumps(itf_conf)
+        cmd = f'''{self.trn_cli_update_droplet} \'{jsonconf}\''''
+        logger.info("update_droplet: {}".format(cmd))
+        returncode, text = run_cmd(cmd)
+        logger.info("returns {} {}".format(returncode, text))
 
     def update_dft(self, dft):
         jsonconf = {
@@ -184,24 +224,8 @@ class TrnRpc:
         returncode, text = run_cmd(cmd)
         logger.info("returns {} {}".format(returncode, text))
 
-    def update_ep(self, ep):
-        peer = ""
-        droplet_ip = ep.get_droplet_ip()
-        # Only detail veth info if the droplet is also a host
-        if (droplet_ip and self.ip == droplet_ip):
-            peer = ep.get_veth_peer()
-
-        jsonconf = {
-            "tunnel_id": ep.get_tunnel_id(),
-            "ip": ep.get_ip(),
-            "eptype": ep.get_eptype(),
-            "mac": ep.get_mac(),
-            "veth": ep.get_veth_name(),
-            "remote_ips": ep.get_remote_ips(),
-            "hosted_iface": peer
-        }
-
-        jsonconf = json.dumps(jsonconf)
+    def update_ep(self, ep_conf):
+        jsonconf = json.dumps(ep_conf)
         cmd = f'''{self.trn_cli_update_ep} \'{jsonconf}\''''
         logger.info("update_ep: {}".format(cmd))
         returncode, text = run_cmd(cmd)

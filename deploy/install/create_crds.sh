@@ -25,8 +25,11 @@
 DIR=${1:-..}
 CRDS_FOLDER="$DIR/deploy/etc/crds"
 
-for crd in "$CRDS_FOLDER"/*
+cd $CRDS_FOLDER
+for crd in ./*
 do
-    kubectl delete "$crd" --all 2> /tmp/kubetctl.err
+    kubectl delete -f "$crd" --all 2> /tmp/kubetctl.err
+    echo "Deleted existing CRD from $crd"
     kubectl apply -f "$crd"
+    echo "Re-deloy CRD from $crd"
 done

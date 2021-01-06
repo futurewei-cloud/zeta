@@ -23,7 +23,77 @@
  */
 #include "trn_cli.h"
 
-int trn_cli_unload_pipeline_stage_subcmd(CLIENT *clnt, int argc, char *argv[])
+int trn_cli_parse_ebpf_prog(const cJSON *jsonobj, rpc_trn_ebpf_prog_t *prog)
+{
+	cJSON *name = cJSON_GetObjectItem(jsonobj, "name");
+
+	if (name == NULL) {
+		print_err("Missing name for ebpf program to load.\n");
+		return -EINVAL;
+	} else if (!cJSON_IsString(name)) {
+		print_err("Invalid name type, should be string\n");
+		return -EINVAL;
+	} else {
+		const char *name_str = name->valuestring;
+		if (strcmp(name_str, "xdp_tx") == 0) {
+			prog->prog_idx = TRAN_TX_PROG;
+		} else if (strcmp(name_str, "xdp_pass") == 0) {
+			prog->prog_idx = TRAN_PASS_PROG;
+		} else if (strcmp(name_str, "xdp_redirect") == 0) {
+			prog->prog_idx = TRAN_REDIRECT_PROG;
+		} else if (strcmp(name_str, "xdp_drop") == 0) {
+			prog->prog_idx = TRAN_DROP_PROG;
+		} else {
+			print_err("Unsupported eBPF program %s.\n", name_str);
+			return -EINVAL;
+		}
+	}
+
+	if (trn_cli_parse_json_number(jsonobj,
+		"debug_mode", (int *)&prog->debug_mode)) {
+		return -EINVAL;
+	}
+
+	return 0;
+}
+
+int trn_cli_parse_xdp(const cJSON *jsonobj, rpc_trn_xdp_intf_t *xdp_intf)
+{
+	int tmp;
+
+	if (trn_cli_parse_json_string(jsonobj,
+		"itf_tenant", xdp_intf->interfaces[TRAN_ITF_MAP_TENANT])) {
+		return -EINVAL;
+	}
+
+	if (trn_cli_parse_json_string(jsonobj,
+		"itf_zgc", xdp_intf->interfaces[TRAN_ITF_MAP_ZGC])) {
+		return -EINVAL;
+	}
+
+	if (trn_cli_parse_json_number(jsonobj, "ibo_port", &tmp)) {
+		return -EINVAL;
+	} else if (tmp & 0xFFFF0000) {
+		return -EINVAL;
+	} else {
+		xdp_intf->ibo_port = (uint16_t)tmp;
+	}
+
+	cJSON *debug_mode = cJSON_GetObjectItem(jsonobj, "debug_mode");
+	if (debug_mode == NULL) {
+		/* Make debug_mode optional */
+		xdp_intf->debug_mode = 1;
+	} else {
+		if (trn_cli_parse_json_number(jsonobj,
+			"debug_mode", (int *)&xdp_intf->debug_mode)) {
+			return -EINVAL;
+		}
+	}
+
+	return 0;
+}
+
+int trn_cli_unload_ebpf_prog_subcmd(CLIENT *clnt, int argc, char *argv[])
 {
 	ketopt_t om = KETOPT_INIT;
 	struct cli_conf_data_t conf;
@@ -41,22 +111,21 @@ int trn_cli_unload_pipeline_stage_subcmd(CLIENT *clnt, int argc, char *argv[])
 	}
 
 	int *rc;
-	rpc_trn_ebpf_prog_stage_t stage;
-	char rpc[] = "unload_transit_xdp_pipeline_stage_1";
-	stage.interface = conf.intf;
+	rpc_trn_ebpf_prog_t prog;
+	char rpc[] = "unload_transit_xdp_ebpf_1";
 
-	int err = trn_cli_parse_ebpf_prog_stage(json_str, &stage);
+	int err = trn_cli_parse_ebpf_prog(json_str, &prog);
 	cJSON_Delete(json_str);
 
 	if (err != 0) {
-		print_err("Error: parsing ebpf program stage.\n");
+		print_err("Error: parsing ebpf program.\n");
 		return -EINVAL;
 	}
 
-	rc = unload_transit_xdp_pipeline_stage_1(&stage, clnt);
+	rc = unload_transit_xdp_ebpf_1(&prog, clnt);
 	if (rc == (int *)NULL) {
 		print_err(
-			"Error: call failed: unload_transit_xdp_pipeline_stage_1.\n");
+			"Error: call failed: unload_transit_xdp_ebpf_1.\n");
 		return -EINVAL;
 	}
 
@@ -68,13 +137,13 @@ int trn_cli_unload_pipeline_stage_subcmd(CLIENT *clnt, int argc, char *argv[])
 	}
 
 	print_msg(
-		"unload_transit_xdp_pipeline_stage_1 successfully removed program on interface %s at stage %d.\n",
-		stage.interface, stage.stage);
+		"unload_transit_xdp_ebpf_1 successfully removed program %d.\n",
+		prog.prog_idx);
 
 	return 0;
 }
 
-int trn_cli_load_pipeline_stage_subcmd(CLIENT *clnt, int argc, char *argv[])
+int trn_cli_load_ebpf_prog_subcmd(CLIENT *clnt, int argc, char *argv[])
 {
 	ketopt_t om = KETOPT_INIT;
 	struct cli_conf_data_t conf;
@@ -92,13 +161,10 @@ int trn_cli_load_pipeline_stage_subcmd(CLIENT *clnt, int argc, char *argv[])
 	}
 
 	int *rc;
-	rpc_trn_ebpf_prog_t ebpf_prog;
-	char rpc[] = "load_transit_xdp_pipeline_stage_1";
-	char xdp_path[1024];
-	ebpf_prog.xdp_path = xdp_path;
-	ebpf_prog.interface = conf.intf;
+	rpc_trn_ebpf_prog_t prog;
+	char rpc[] = "load_transit_xdp_ebpf_1";
 
-	int err = trn_cli_parse_ebpf_prog(json_str, &ebpf_prog);
+	int err = trn_cli_parse_ebpf_prog(json_str, &prog);
 	cJSON_Delete(json_str);
 
 	if (err != 0) {
@@ -106,10 +172,10 @@ int trn_cli_load_pipeline_stage_subcmd(CLIENT *clnt, int argc, char *argv[])
 		return -EINVAL;
 	}
 
-	rc = load_transit_xdp_pipeline_stage_1(&ebpf_prog, clnt);
+	rc = load_transit_xdp_ebpf_1(&prog, clnt);
 	if (rc == (int *)NULL) {
 		print_err(
-			"Error: call failed: load_transit_xdp_pipeline_stage_1.\n");
+			"Error: call failed: load_transit_xdp_ebpf_1.\n");
 		return -EINVAL;
 	}
 
@@ -121,8 +187,8 @@ int trn_cli_load_pipeline_stage_subcmd(CLIENT *clnt, int argc, char *argv[])
 	}
 
 	print_msg(
-		"load_transit_xdp_pipeline_stage_1 successfully added program on interface %s at stage %d.\n",
-		ebpf_prog.interface, ebpf_prog.stage);
+		"load_transit_xdp_ebpf_1 successfully added program %d.\n",
+		prog.prog_idx);
 
 	return 0;
 }
@@ -145,14 +211,13 @@ int trn_cli_load_transit_subcmd(CLIENT *clnt, int argc, char *argv[])
 	}
 
 	int *rc;
-	rpc_trn_xdp_intf_t xdp_intf;
+	char itf_tenant[TRAN_MAX_ITF_SIZE];
+	char itf_zgc[TRAN_MAX_ITF_SIZE];
+	rpc_trn_xdp_intf_t xdp_intf = {
+		.interfaces[TRAN_ITF_MAP_TENANT] = itf_tenant,
+		.interfaces[TRAN_ITF_MAP_ZGC] = itf_zgc,
+	};
 	char rpc[] = "load_transit_xdp_1";
-	char xdp_path[1024];
-	char pcapfile[1024];
-	xdp_intf.xdp_path = xdp_path;
-	xdp_intf.pcapfile = pcapfile;
-
-	xdp_intf.interface = conf.intf;
 
 	int err = trn_cli_parse_xdp(json_str, &xdp_intf);
 	cJSON_Delete(json_str);
@@ -176,8 +241,7 @@ int trn_cli_load_transit_subcmd(CLIENT *clnt, int argc, char *argv[])
 	}
 
 	print_msg(
-		"load_transit_xdp_1 successfully loaded transit xdp on interface %s.\n",
-		xdp_intf.interface);
+		"load_transit_xdp_1 successfully loaded transit xdp.\n");
 
 	return 0;
 }
@@ -186,17 +250,37 @@ int trn_cli_unload_transit_subcmd(CLIENT *clnt, int argc, char *argv[])
 {
 	ketopt_t om = KETOPT_INIT;
 	struct cli_conf_data_t conf;
+	cJSON *json_str = NULL;
 
 	if (trn_cli_read_conf_str(&om, argc, argv, &conf)) {
 		return -EINVAL;
 	}
 
-	int *rc;
-	char rpc[] = "unload_transit_xdp_1";
-	rpc_intf_t intf;
-	intf.interface = conf.intf;
+	char *buf = conf.conf_str;
+	json_str = trn_cli_parse_json(buf);
 
-	rc = unload_transit_xdp_1(&intf, clnt);
+	if (json_str == NULL) {
+		return -EINVAL;
+	}
+
+	int *rc;
+	char itf_tenant[TRAN_MAX_ITF_SIZE];
+	char itf_zgc[TRAN_MAX_ITF_SIZE];
+	rpc_trn_xdp_intf_t xdp_intf = {
+		.interfaces[TRAN_ITF_MAP_TENANT] = itf_tenant,
+		.interfaces[TRAN_ITF_MAP_ZGC] = itf_zgc,
+	};
+	char rpc[] = "unload_transit_xdp_1";
+
+	int err = trn_cli_parse_xdp(json_str, &xdp_intf);
+	cJSON_Delete(json_str);
+
+	if (err != 0) {
+		print_err("Error: parsing XDP path config.\n");
+		return -EINVAL;
+	}
+
+	rc = unload_transit_xdp_1(&xdp_intf, clnt);
 	if (rc == (int *)NULL) {
 		print_err("Error: call failed: unload_transit_xdp_1.\n");
 		return -EINVAL;
@@ -207,7 +291,6 @@ int trn_cli_unload_transit_subcmd(CLIENT *clnt, int argc, char *argv[])
 		return -EINVAL;
 	}
 
-	printf("unload_transit_xdp_1 successfully unloaded transit xdp on interface %s.\n",
-	       intf.interface);
+	printf("unload_transit_xdp_1 successfully unloaded transit xdp.\n");
 	return 0;
 }

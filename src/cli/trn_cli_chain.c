@@ -55,7 +55,6 @@ int trn_cli_update_chain_subcmd(CLIENT *clnt, int argc, char *argv[])
 	rpc_trn_chain_t chain;
 	char rpc[] = "update_chain_1";
 
-	chain.interface = conf.intf;
 	int err = trn_cli_parse_chain(json_str, &chain);
 	cJSON_Delete(json_str);
 
@@ -79,8 +78,8 @@ int trn_cli_update_chain_subcmd(CLIENT *clnt, int argc, char *argv[])
 
 	dump_chain(&chain);
 	print_msg(
-		"update_chain_1 successfully updated chain %d on interface %s.\n",
-		chain.id, chain.interface);
+		"update_chain_1 successfully updated chain %d.\n",
+		chain.id);
 	return 0;
 }
 
@@ -104,7 +103,6 @@ int trn_cli_get_chain_subcmd(CLIENT *clnt, int argc, char *argv[])
 	rpc_trn_zeta_key_t chain_key;
 	rpc_trn_chain_t *chain;
 	char rpc[] = "get_chain_1";
-	chain_key.interface = conf.intf;
 
 	int err = trn_cli_parse_zeta_key(json_str, &chain_key);
 	cJSON_Delete(json_str);
@@ -115,15 +113,15 @@ int trn_cli_get_chain_subcmd(CLIENT *clnt, int argc, char *argv[])
 	}
 
 	chain = get_chain_1(&chain_key, clnt);
-	if (chain == NULL || strlen(chain->interface) == 0) {
+	if (chain == NULL) {
 		print_err("RPC Error: client call failed: get_chain_1.\n");
 		return -EINVAL;
 	}
 
 	dump_chain(chain);
 	print_msg(
-		"get_chain_1 successfully queried chain %d on interface %s.\n",
-		chain->id, chain->interface);
+		"get_chain_1 successfully queried chain %d.\n",
+		chain->id);
 
 	return 0;
 }
@@ -148,7 +146,6 @@ int trn_cli_delete_chain_subcmd(CLIENT *clnt, int argc, char *argv[])
 	int *rc;
 	rpc_trn_zeta_key_t chain_key;
 	char rpc[] = "delete_chain_1";
-	chain_key.interface = conf.intf;
 
 	int err = trn_cli_parse_zeta_key(json_str, &chain_key);
 	cJSON_Delete(json_str);
@@ -172,15 +169,14 @@ int trn_cli_delete_chain_subcmd(CLIENT *clnt, int argc, char *argv[])
 	}
 
 	print_msg(
-		"delete_chain_1 successfully deleted chain %d on interface %s.\n",
-		chain_key.id, chain_key.interface);
+		"delete_chain_1 successfully deleted chain %d.\n",
+		chain_key.id);
 
 	return 0;
 }
 
 void dump_chain(struct rpc_trn_chain_t *chain)
 {
-	print_msg("Interface: %s\n", chain->interface);
 	print_msg("Chain ID: %d\n", chain->id);
 	print_msg("Chain Tail FTN: %d\n", chain->tail_ftn);
 }

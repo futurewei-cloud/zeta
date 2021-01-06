@@ -8,6 +8,7 @@
 
 
 import os
+import logging
 
 from flask import Flask, jsonify, url_for, request, Response
 from flask_sqlalchemy import SQLAlchemy
@@ -21,6 +22,10 @@ db = SQLAlchemy()
 migrate = Migrate()
 
 def create_app(script_info=None):
+
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format='%(asctime)s-%(levelname)s:%(name)s:%(funcName)s:%(lineno)d — %(message)s')
 
     # instantiate the app
     app = Flask(__name__)

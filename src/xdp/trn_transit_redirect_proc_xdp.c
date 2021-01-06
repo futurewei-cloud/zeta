@@ -43,7 +43,7 @@
 
 #include "trn_datamodel.h"
 #include "trn_kern.h"
-#include "trn_transit_xdp_stages_maps.h"
+//#include "trn_transit_xdp_stages_maps.h"
 
 int _version SEC("version") = 1;
 
@@ -53,9 +53,10 @@ int _transit_redirect_proc(struct xdp_md *ctx)
 	/* Simple example program that gets share same maps with transit XDP
 		can be invoked on redirect */
 	bpf_debug("[Transit:%d:] redirect processing\n", __LINE__);
+#if 0
 	int map_idx = 0;
 
-	void *endpoints_map, *hosted_endpoints_iface_map, *interface_config_map,
+	void *endpoints_map, *hosted_eps_if, *if_config_map,
 		*interfaces_map;
 
 	endpoints_map = bpf_map_lookup_elem(&endpoints_map_ref, &map_idx);
@@ -66,24 +67,24 @@ int _transit_redirect_proc(struct xdp_md *ctx)
 	}
 	bpf_debug("[Transit:%d:] found endpoints_map\n", __LINE__);
 
-	hosted_endpoints_iface_map =
-		bpf_map_lookup_elem(&hosted_endpoints_iface_map_ref, &map_idx);
-	if (!hosted_endpoints_iface_map) {
+	hosted_eps_if =
+		bpf_map_lookup_elem(&hosted_eps_if_ref, &map_idx);
+	if (!hosted_eps_if) {
 		bpf_debug(
-			"[Transit:%d:] failed to find hosted_endpoints_iface_map\n",
+			"[Transit:%d:] failed to find hosted_eps_if\n",
 			__LINE__);
 		return XDP_ABORTED;
 	}
-	bpf_debug("[Transit:%d:] found hosted_endpoints_iface_map\n", __LINE__);
+	bpf_debug("[Transit:%d:] found hosted_eps_if\n", __LINE__);
 
-	interface_config_map =
-		bpf_map_lookup_elem(&interface_config_map_ref, &map_idx);
-	if (!interface_config_map) {
-		bpf_debug("[Transit:%d:] failed to find interface_config_map\n",
+	if_config_map =
+		bpf_map_lookup_elem(&if_config_map_ref, &map_idx);
+	if (!if_config_map) {
+		bpf_debug("[Transit:%d:] failed to find if_config_map\n",
 			  __LINE__);
 		return XDP_ABORTED;
 	}
-	bpf_debug("[Transit:%d:] found interface_config_map\n", __LINE__);
+	bpf_debug("[Transit:%d:] found if_config_map\n", __LINE__);
 
 	interfaces_map = bpf_map_lookup_elem(&interfaces_map_ref, &map_idx);
 	if (!interfaces_map) {
@@ -93,7 +94,7 @@ int _transit_redirect_proc(struct xdp_md *ctx)
 	}
 
 	bpf_debug("[Transit:%d:] found all inner maps!\n", __LINE__);
-
+#endif
 	return XDP_REDIRECT;
 }
 

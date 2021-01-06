@@ -69,6 +69,8 @@ class KIND:
     ftn = "Ftn"
     fwd = "Fwd"
     droplet = "Droplet"
+    ep = "Endpoint"
+    node = "Node"
 
 
 class LAMBDAS:

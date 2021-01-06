@@ -34,3 +34,36 @@ function delete_pods {
     done
     echo
 }
+
+# Checks for status for given object
+function get_status() {
+    OBJECT=$1
+    STATUS=$2
+    kubectl get $OBJECT 2> /tmp/kubetctl.err | awk '
+    NR==1 {
+        for (i=1; i<=NF; i++) {
+            f[$i] = i
+        }
+    }
+    { print $f["STATUS"] }
+    ' | grep $STATUS > /dev/null
+
+    return $?
+}
+
+# Checks for status Provisioned of array of objects
+function check_ready() {
+    sum=0
+    for i in $1
+    do
+        get_status $i ${@: -1}
+        let sum+=$((sum + $?))
+    done
+    if [[ $sum == 0 ]]; then
+        return 1
+    else
+        sleep 2
+        echo -n "."
+        return 0
+    fi
+}

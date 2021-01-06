@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /**
- * @author Sherif Abdelwahab (@zasherif)
- *         Phu Tran          (@phudtran)
+ * @file transit_rpc.h
+ * @author Bin Liang (@liangbin)
  *
- * @brief Transit daemon functions and helper macros
+ * @brief  Common RPC header for both transit CLI and transitd Daemon.
  *
- * @copyright Copyright (c) 2019 The Authors.
+ * @copyright Copyright (c) 2021 The Authors.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,10 +22,14 @@
  *
  */
 #pragma once
+#pragma GCC system_header
 
-//#include <search.h>
+#include "rpcgen/trn_rpc_protocol.h"
 
-#include "trn_datamodel.h"
-#include "trn_rpc.h"
-#include "trn_log.h"
-#include "trn_transit_xdp_usr.h"
+typedef union {
+	rpc_trn_endpoint_t rpc_ep;
+	struct {
+		endpoint_key_t key;
+		endpoint_t     val;
+	} xdp_ep;
+} trn_ep_t;

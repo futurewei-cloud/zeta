@@ -99,6 +99,12 @@ static int (*bpf_perf_prog_read_value)(void *ctx, void *buf,
 static int (*bpf_skb_vlan_push)(void *ctx, __be16 vlan_proto, __u16 vlan_tci) =
     (void *)BPF_FUNC_skb_vlan_push;
 static int (*bpf_skb_vlan_pop)(void *ctx)   = (void *)BPF_FUNC_skb_vlan_pop;
+static int (*bpf_map_push_elem)(void *map, const void *value, __u64 flags) =
+  (void *) BPF_FUNC_map_push_elem;
+static int (*bpf_map_pop_elem)(void *map, void *value) =
+  (void *) BPF_FUNC_map_pop_elem;
+static int (*bpf_map_peek_elem)(void *map, void *value) =
+  (void *) BPF_FUNC_map_peek_elem;
 
 /* llvm builtin functions that eBPF C program may use to
  * emit BPF_LD_ABS and BPF_LD_IND instructions
@@ -131,6 +137,14 @@ struct bpf_map_def {
   };                                                                       \
   struct ____btf_map_##name __attribute__((section(".maps." #name), used)) \
       ____btf_map_##name = {}
+
+// Associate map with its key/value types for QUEUE/STACK map types
+#define BPF_ANNOTATE_KV_PAIR_QUEUESTACK(name, type_val)                    \
+  struct ____btf_map_##name {                                              \
+    type_val value;                                                        \
+  };                                                                       \
+  struct ____btf_map_##name __attribute__((section(".maps." #name), used)) \
+    ____btf_map_##name = {}
 
 static int (*bpf_skb_load_bytes)(void *ctx, int off, void *to,
                                  int len) = (void *)BPF_FUNC_skb_load_bytes;
