@@ -104,6 +104,7 @@ def all_ports():
                 "hmac": mac_to_int(post_data.get('mac_node'))
             }
         eps.append(ep)
+        response_object = portList
         end_time = time.time()
         logger.debug(f'Zeta took {end_time - start_time} seconds to make {amount_of_ports} ports')
         ports_update_eps_config()
