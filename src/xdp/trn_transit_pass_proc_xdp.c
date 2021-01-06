@@ -50,7 +50,7 @@ SEC("transit_pass_proc")
 int _transit_pass_proc(struct xdp_md *ctx)
 {
 	/* A simple program for now, no shared state, and may be invoked on XDP_PASS */
-	bpf_debug("[Transit:%d:] pass PROC\n", __LINE__);
+	bpf_debug("[Transit_pass:%d] pass PROC\n", ctx->ingress_ifindex);
 	return XDP_PASS;
 }
 

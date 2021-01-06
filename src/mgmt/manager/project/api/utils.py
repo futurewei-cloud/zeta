@@ -32,3 +32,6 @@ def get_mac_from_ip(ip_string):
 
 def ip_to_int(ip_string):
     return reduce(lambda a,b: a<<8 | b, map(int, ip_string.split(".")))
+
+def mac_to_int(mac_string):
+    return reduce(lambda a,b: a<<8 | b, map(int, mac_string.split(":"), [16,16,16,16,16,16]))

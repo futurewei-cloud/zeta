@@ -38,24 +38,104 @@ cJSON *trn_cli_parse_json(const char *buf)
 	return conf_json;
 }
 
-int trn_cli_parse_xdp(const cJSON *jsonobj, rpc_trn_xdp_intf_t *xdp_intf)
+int trn_cli_parse_json_string(const cJSON *jsonobj, const char *const key, char *buf)
 {
-	cJSON *xdp_path = cJSON_GetObjectItem(jsonobj, "xdp_path");
-	cJSON *pcapfile = cJSON_GetObjectItem(jsonobj, "pcapfile");
+	cJSON *item = cJSON_GetObjectItem(jsonobj, key);
 
-	if (xdp_path == NULL) {
-		print_err("Missing path for xdp program to load.\n");
+	if (item == NULL) {
+		print_err("Missing %s\n", key);
 		return -EINVAL;
-	} else if (cJSON_IsString(xdp_path)) {
-		strcpy(xdp_intf->xdp_path, xdp_path->valuestring);
+	} else if (!cJSON_IsString(item)) {
+		print_err("Invalid %s type, should be string\n", key);
+		return -EINVAL;
 	}
+	strcpy(buf, item->valuestring);
+	return 0;
+}
 
-	if (pcapfile == NULL) {
-		xdp_intf->pcapfile = NULL;
-		print_err(
-			"Warning: Missing pcapfile. Packet capture will not be available for the interface.\n");
-	} else if (cJSON_IsString(pcapfile)) {
-		strcpy(xdp_intf->pcapfile, pcapfile->valuestring);
+int trn_cli_parse_json_number_ip(const cJSON *jsonobj, const char *const key,
+	unsigned int *buf)
+{
+	cJSON *item = cJSON_GetObjectItem(jsonobj, key);
+
+	if (item == NULL) {
+		print_err("Missing %s\n", key);
+		return -EINVAL;
+	} else if (!cJSON_IsNumber(item)) {
+		print_err("Invalid %s type, should be number\n", key);
+		return -EINVAL;
+	}
+	*buf = (unsigned int)item->valuedouble;
+	return 0;
+}
+
+int trn_cli_parse_json_number_mac(const cJSON *jsonobj, const char *const key,
+	unsigned char *buf)
+{
+	cJSON *item = cJSON_GetObjectItem(jsonobj, key);
+
+	if (item == NULL) {
+		print_err("Missing %s\n", key);
+		return -EINVAL;
+	} else if (!cJSON_IsNumber(item)) {
+		print_err("Invalid %s type, should be number\n", key);
+		return -EINVAL;
+	}
+	uint64_t vd = ((uint64_t)item->valuedouble & 0xFFFFFFFFFFFF);
+	for (int i = 0; i < 6; i++) {
+		buf[i] = (unsigned char)vd;
+		vd >>= 8;
+	}
+	return 0;
+}
+
+int trn_cli_parse_json_number(const cJSON *jsonobj, const char *const key, int *buf)
+{
+	cJSON *item = cJSON_GetObjectItem(jsonobj, key);
+
+	if (item == NULL) {
+		print_err("Missing %s\n", key);
+		return -EINVAL;
+	} else if (!cJSON_IsNumber(item)) {
+		print_err("Invalid %s type, should be number\n", key);
+		return -EINVAL;
+	}
+	*buf = (int)item->valuedouble;
+	return 0;
+}
+
+int trn_cli_parse_json_ip(const cJSON *jsonobj, const char *const key, unsigned int *buf)
+{
+	cJSON *item = cJSON_GetObjectItem(jsonobj, key);
+
+	if (item == NULL) {
+		print_err("Missing %s\n", key);
+		return -EINVAL;
+	} else if (!cJSON_IsString(item)) {
+		print_err("Invalid ip type, should be string\n");
+		return -EINVAL;
+	} else if (inet_pton(AF_INET, item->valuestring, buf) <= 0) {
+		print_err("Failed to convert ip %s", item->valuestring);
+		return -EINVAL;
+	}
+	return 0;
+}
+
+int trn_cli_parse_json_mac(const cJSON *jsonobj, const char *const key, unsigned char *buf)
+{
+	cJSON *item = cJSON_GetObjectItem(jsonobj, key);
+
+	if (item == NULL) {
+		print_err("Missing %s\n", key);
+		return -EINVAL;
+	} else if (!cJSON_IsString(item)) {
+		print_err("Invalid mac type, should be string\n");
+		return -EINVAL;
+	} else if (6 != sscanf(item->valuestring,
+				"%hhx:%hhx:%hhx:%hhx:%hhx:%hhx%*c",
+				buf, buf+1, buf+2, buf+3, buf+4, buf+5)) {
+		print_err("Invalid mac %s", item->valuestring);
+		return -EINVAL;
 	}
 	return 0;
 }
@@ -78,72 +158,36 @@ int trn_cli_parse_zeta_key(const cJSON *jsonobj,
 	return 0;
 }
 
-int trn_cli_parse_tun_intf(const cJSON *jsonobj, rpc_trn_tun_intf_t *itf)
-{
-	cJSON *ip = cJSON_GetObjectItem(jsonobj, "ip");
-	cJSON *mac = cJSON_GetObjectItem(jsonobj, "mac");
-	cJSON *iface = cJSON_GetObjectItem(jsonobj, "iface");
-
-	if (iface == NULL) {
-		itf->interface = NULL;
-		print_err("Error: Missing hosted interface, using default.\n");
-		return -EINVAL;
-	} else if (cJSON_IsString(iface)) {
-		strcpy(itf->interface, iface->valuestring);
-	}
-
-	if (mac != NULL && cJSON_IsString(mac)) {
-		if (6 == sscanf(mac->valuestring,
-				"%hhx:%hhx:%hhx:%hhx:%hhx:%hhx%*c",
-				&itf->mac[0], &itf->mac[1], &itf->mac[2],
-				&itf->mac[3], &itf->mac[4], &itf->mac[5])) {
-		} else {
-			/* invalid mac */
-			print_err("Error: Invalid MAC\n");
-			return -EINVAL;
-		}
-	} else {
-		print_err("Error: MAC is missing or non-string\n");
-		return -EINVAL;
-	}
-
-	if (ip != NULL && cJSON_IsString(ip)) {
-		struct sockaddr_in sa;
-		inet_pton(AF_INET, ip->valuestring, &(sa.sin_addr));
-		itf->ip = sa.sin_addr.s_addr;
-	} else {
-		print_err("Error: IP is missing or non-string\n");
-		return -EINVAL;
-	}
-	return 0;
-}
-
 int trn_cli_read_conf_str(ketopt_t *om, int argc, char *argv[],
 			  struct cli_conf_data_t *conf)
 {
 	int i, c;
+	char conf_file[TRAN_MAX_PATH_SIZE];
 	if (conf == NULL) {
 		return -EINVAL;
 	}
 
-	char conf_file[4096] = "";
+	conf->conf_str = NULL;
+	conf->intf[0] = 0;
+	conf_file[0] = 0;
 
-	while ((c = ketopt(om, argc, argv, 0, "f:j:i:", 0)) >= 0) {
+	while ((c = ketopt(om, argc, argv, 0, "f:j:", 0)) >= 0) {
 		if (c == 'j') {
-			strcpy(conf->conf_str, om->arg);
+			if (strlen(om->arg) >= TRAN_MAX_CLI_JSON_STR) {
+				print_msg("Mega Json string %lu\n", strlen(om->arg));
+			}
+			conf->conf_str = om->arg;
 		} else if (c == 'f') {
+			if (strlen(om->arg) >= TRAN_MAX_PATH_SIZE) {
+				print_err("file name over limit %lu/%d\n",
+					strlen(om->arg), TRAN_MAX_PATH_SIZE);
+				return -EINVAL;
+			}
 			strcpy(conf_file, om->arg);
-		} else if (c == 'i') {
-			strcpy(conf->intf, om->arg);
 		}
 	}
 
-	if (conf->intf[0] == 0) {
-		fprintf(stderr, "Missing interface.\n");
-		return -EINVAL;
-	}
-
-	if (conf->conf_str[0] == 0 && conf_file[0] == 0) {
+	if (!conf->conf_str && conf_file[0] == 0) {
 		fprintf(stderr,
 			"Missing configuration string or configuration file.\n");
 		return -EINVAL;
@@ -164,7 +208,7 @@ int trn_cli_read_conf_str(ketopt_t *om, int argc, char *argv[],
 		size_t size = fsize + 1;
 		fseek(f, 0, SEEK_SET);
 
-		if (fsize > 4096 ||
+		if (fsize >= TRAN_MAX_CLI_JSON_STR ||
 		    fread(conf->conf_str, 1, fsize, f) < fsize) {
 			fprintf(stderr,
 				"Configuration file partially loaded.\n");
@@ -173,73 +217,6 @@ int trn_cli_read_conf_str(ketopt_t *om, int argc, char *argv[],
 		fclose(f);
 
 		conf->conf_str[fsize] = 0;
-	}
-	return 0;
-}
-
-int trn_cli_parse_ebpf_prog(const cJSON *jsonobj, rpc_trn_ebpf_prog_t *prog)
-{
-	cJSON *xdp_path = cJSON_GetObjectItem(jsonobj, "xdp_path");
-	cJSON *stage = cJSON_GetObjectItem(jsonobj, "stage");
-
-	if (xdp_path == NULL) {
-		print_err("Missing path for xdp program to load.\n");
-		return -EINVAL;
-	} else if (cJSON_IsString(xdp_path)) {
-		strcpy(prog->xdp_path, xdp_path->valuestring);
-	}
-
-	if (stage == NULL) {
-		print_err("Error missing pipeline stage.\n");
-		return -EINVAL;
-	} else if (cJSON_IsString(stage)) {
-		const char *stage_str = stage->valuestring;
-
-		if (strcmp(stage_str, "ON_XDP_TX") == 0) {
-			prog->stage = ON_XDP_TX;
-		} else if (strcmp(stage_str, "ON_XDP_PASS") == 0) {
-			prog->stage = ON_XDP_PASS;
-		} else if (strcmp(stage_str, "ON_XDP_REDIRECT") == 0) {
-			prog->stage = ON_XDP_REDIRECT;
-		} else if (strcmp(stage_str, "ON_XDP_DROP") == 0) {
-			prog->stage = ON_XDP_DROP;
-		} else if (strcmp(stage_str, "ON_XDP_SCALED_EP") == 0) {
-			prog->stage = ON_XDP_SCALED_EP;
-		} else {
-			print_err("Unsupported pipeline stage %s.\n",
-				  stage_str);
-			return -EINVAL;
-		}
-	}
-	return 0;
-}
-
-int trn_cli_parse_ebpf_prog_stage(const cJSON *jsonobj,
-				  rpc_trn_ebpf_prog_stage_t *prog_stage)
-{
-	cJSON *stage = cJSON_GetObjectItem(jsonobj, "stage");
-
-	if (stage == NULL) {
-		print_err("Error missing pipeline stage.\n");
-		return -EINVAL;
-	} else if (cJSON_IsString(stage)) {
-		const char *stage_str = stage->valuestring;
-
-		if (strcmp(stage_str, "ON_XDP_TX") == 0) {
-			prog_stage->stage = ON_XDP_TX;
-		} else if (strcmp(stage_str, "ON_XDP_PASS") == 0) {
-			prog_stage->stage = ON_XDP_PASS;
-		} else if (strcmp(stage_str, "ON_XDP_REDIRECT") == 0) {
-			prog_stage->stage = ON_XDP_REDIRECT;
-		} else if (strcmp(stage_str, "ON_XDP_DROP") == 0) {
-			prog_stage->stage = ON_XDP_DROP;
-		} else if (strcmp(stage_str, "ON_XDP_SCALED_EP") == 0) {
-			prog_stage->stage = ON_XDP_SCALED_EP;
-		} else {
-			print_err("Unsupported pipeline stage %s.\n",
-				  stage_str);
-			return -EINVAL;
-		}
 	}
 	return 0;
 }

@@ -46,7 +46,7 @@ class Zgc(db.Model):
     description = db.Column(db.String(255), nullable=True)
     ip_start = db.Column(db.String(16), nullable=False)
     ip_end = db.Column(db.String(16), nullable=False)
-    port_ibo = db.Column(db.Integer, default=8300)
+    port_ibo = db.Column(db.String, default='8300')
     overlay_type = db.Column(db.String(16), default='vxlan')
     nodes = db.relationship("Node", backref="zgcs")
     vpcs = db.relationship("Vpc", backref="zgcs")

@@ -32,8 +32,7 @@ set(CLI_MOCKS "-Wl,--wrap=load_transit_xdp_1 \
     -Wl,--wrap=delete_dft_1 \
     -Wl,--wrap=delete_chain_1 \
     -Wl,--wrap=delete_ftn_1 \
-    -Wl,--wrap=delete_ep_1 \
-    -Wl,--wrap=setrlimit")
+    -Wl,--wrap=delete_ep_1")
 
 add_executable(test_cli ${RPCGEN_CLNT} ${TEST_SOURCE})
 # Add test coverage compiler flags

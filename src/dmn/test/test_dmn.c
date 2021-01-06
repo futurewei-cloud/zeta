@@ -29,9 +29,88 @@
 #include <string.h>
 #include <sys/resource.h>
 
-#include "trn_log.h"
 #include "dmn/trn_transitd.h"
-#include "rpcgen/trn_rpc_protocol.h"
+
+struct test_bpf_map_t {
+	char *name;
+};
+
+static struct test_bpf_map_t maps[] = {
+	{.name="jmp_table"},
+	{.name="dfts_map"},
+	{.name="chains_map"},
+	{.name="ftns_map"},
+	{.name="endpoints_map"},
+	{.name="hosted_eps_if"},
+	{.name="if_config_map"},
+	{.name="interfaces_map"},
+	{.name="oam_queue_map"},
+	{.name="fwd_flow_cache"},
+	{.name="rev_flow_cache"},
+	{.name="host_flow_cache"},
+	{.name="ep_host_cache"},
+	{.name="xdpcap_hook"},
+};
+
+int __wrap_trn_transit_map_get_fd(char *map)
+{
+	UNUSED(map);
+	return 1;
+}
+
+struct bpf_object *__wrap_bpf_object__open_xattr(struct bpf_object_open_attr *attr)
+{
+	UNUSED(attr);
+	return (struct bpf_object *)1;
+}
+
+int __wrap_bpf_map__reuse_fd(struct bpf_map *map, int fd)
+{
+	UNUSED(map);
+	UNUSED(fd);
+	return 0;
+}
+
+int __wrap_bpf_obj_get(const char *pathname)
+{
+	UNUSED(pathname);
+	return -1;
+}
+
+void __wrap_bpf_map__set_ifindex(struct bpf_map *map, __u32 ifindex)
+{
+	UNUSED(map);
+	UNUSED(ifindex);
+}
+
+const char *__wrap_bpf_map__name(const struct bpf_map *map)
+{
+	return ((struct test_bpf_map_t *)map)->name;
+}
+
+const char *__wrap_bpf_object__name(const struct bpf_object *obj)
+{
+	UNUSED(obj);
+	return "obj";
+}
+
+void __wrap_bpf_program__set_type(struct bpf_program *prog, enum bpf_prog_type type)
+{
+	UNUSED(prog);
+	UNUSED(type);
+}
+
+void __wrap_bpf_program__set_ifindex(struct bpf_program *prog, __u32 ifindex)
+{
+	UNUSED(prog);
+	UNUSED(ifindex);
+}
+
+int __wrap_close(int _fd)
+{
+	UNUSED(_fd);
+	return 0;
+}
 
 int __wrap_setrlimit(int resource, const struct rlimit *rlim)
 {
@@ -55,7 +134,7 @@ int __wrap_bpf_map_lookup_elem(void *map, void *key, void *value)
 {
 	UNUSED(map);
 	UNUSED(key);
-	struct endpoint_t *endpoint = mock_ptr_type(struct endpoint_t *);
+	endpoint_t *endpoint = mock_ptr_type(endpoint_t *);
 	struct ftn_t *ftn = mock_ptr_type(struct ftn_t *);
 	struct chain_t *chain = mock_ptr_type(struct chain_t *);
 	struct dft_t *dft = mock_ptr_type(struct dft_t *);
@@ -84,6 +163,14 @@ int __wrap_bpf_map_delete_elem(void *map, void *key)
 	if (valid)
 		return 0;
 	return 1;
+}
+
+int __wrap_bpf_map_lookup_and_delete_elem(void *map, const void *key, void *value)
+{
+	UNUSED(map);
+	UNUSED(key);
+	UNUSED(value);
+	return 0;
 }
 
 int __wrap_bpf_prog_load_xattr(const struct bpf_prog_load_attr *attr,
@@ -115,9 +202,18 @@ int __wrap_bpf_obj_get_info_by_fd(int prog_fd, void *info, __u32 *info_len)
 struct bpf_map *__wrap_bpf_map__next(struct bpf_map *map,
 				     struct bpf_object *obj)
 {
-	UNUSED(map);
+	int num_maps = sizeof(maps) / sizeof(maps[0]);
+	struct test_bpf_map_t *testmap = (struct test_bpf_map_t *)map;
+
 	UNUSED(obj);
-	return (struct bpf_map *)1;
+	if (testmap == NULL) {
+		return (struct bpf_map *)maps;
+	}
+	testmap++;
+	if (testmap >= &maps[num_maps]) {
+		return NULL;
+	}
+	return (struct bpf_map *)testmap;
 }
 
 int __wrap_bpf_map__fd(struct bpf_map *map)
@@ -233,65 +329,28 @@ static inline int cmpfunc(const void *a, const void *b)
 	return (*(int *)a - *(int *)b);
 }
 
-static int check_ep_equal(rpc_trn_endpoint_t *ep, rpc_trn_endpoint_t *c_ep)
+static int check_ep_equal(rpc_trn_endpoint_t *s, rpc_trn_endpoint_t *d)
 {
-	u_int i;
+	trn_ep_t *ep = (trn_ep_t *)s;
+	trn_ep_t *c_ep = (trn_ep_t *)d;
 
-	if (strcmp(ep->interface, c_ep->interface) != 0) {
-		return false;
-	}
+	assert_int_equal(ep->xdp_ep.key.vni, c_ep->xdp_ep.key.vni);
 
-	if (strcmp(ep->hosted_interface, c_ep->hosted_interface) != 0) {
-		return false;
-	}
+	assert_int_equal(ep->xdp_ep.key.ip, c_ep->xdp_ep.key.ip);
 
-	if (strcmp(ep->veth, c_ep->veth) != 0) {
-		return false;
-	}
+	assert_int_equal(ep->xdp_ep.val.hip, c_ep->xdp_ep.val.hip);
 
-	if (memcmp(ep->mac, c_ep->mac, sizeof(char) * 6) != 0) {
-		return false;
-	}
+	assert_memory_equal(ep->xdp_ep.val.mac, c_ep->xdp_ep.val.mac,
+		sizeof(char) * 6);
 
-	if (ep->ip != c_ep->ip) {
-		return false;
-	}
-
-	if (ep->eptype != c_ep->eptype) {
-		return false;
-	}
-
-	if (ep->tunid != c_ep->tunid) {
-		return false;
-	}
-
-	if (ep->remote_ips.remote_ips_len != c_ep->remote_ips.remote_ips_len) {
-		return false;
-	}
-
-	if (ep->remote_ips.remote_ips_len == 0) {
-		return true;
-	}
-
-	qsort(ep->remote_ips.remote_ips_val, ep->remote_ips.remote_ips_len,
-	      sizeof(uint32_t), cmpfunc);
-
-	qsort(c_ep->remote_ips.remote_ips_val, c_ep->remote_ips.remote_ips_len,
-	      sizeof(uint32_t), cmpfunc);
-
-	for (i = 0; i < ep->remote_ips.remote_ips_len; i++) {
-		if (c_ep->remote_ips.remote_ips_val[i] !=
-		    ep->remote_ips.remote_ips_val[i]) {
-			return false;
-		}
-	}
+	assert_memory_equal(ep->xdp_ep.val.hmac, c_ep->xdp_ep.val.hmac,
+		sizeof(char) * 6);
 
 	return true;
 }
 
 static int check_dft_equal(rpc_trn_dft_t *dft, rpc_trn_dft_t *c_dft)
 {
-	assert_string_equal(dft->interface, c_dft->interface);
 	assert_int_equal(dft->id, c_dft->id);
 
 	qsort(dft->table.table_val, dft->table.table_len, sizeof(uint32_t),
@@ -310,7 +369,6 @@ static int check_dft_equal(rpc_trn_dft_t *dft, rpc_trn_dft_t *c_dft)
 
 static int check_chain_equal(rpc_trn_chain_t *chain, rpc_trn_chain_t *c_chain)
 {
-	assert_string_equal(chain->interface, c_chain->interface);
 	assert_int_equal(chain->id, c_chain->id);
 	assert_int_equal(chain->tail_ftn, c_chain->tail_ftn);
 
@@ -319,7 +377,6 @@ static int check_chain_equal(rpc_trn_chain_t *chain, rpc_trn_chain_t *c_chain)
 
 static int check_ftn_equal(rpc_trn_ftn_t *ftn, rpc_trn_ftn_t *c_ftn)
 {
-	assert_string_equal(ftn->interface, c_ftn->interface);
 	assert_int_equal(ftn->id, c_ftn->id);
 	assert_int_equal(ftn->position, c_ftn->position);
 	assert_int_equal(ftn->ip, c_ftn->ip);
@@ -333,38 +390,35 @@ static int check_ftn_equal(rpc_trn_ftn_t *ftn, rpc_trn_ftn_t *c_ftn)
 static void do_lo_xdp_load(void)
 {
 	rpc_trn_xdp_intf_t xdp_intf;
-	char itf[] = "lo";
-	char xdp_path[] = "/path/to/xdp/object/file";
-	char pcapfile[] = "/path/to/bpf/pinned/map";
-	xdp_intf.interface = itf;
-	xdp_intf.xdp_path = xdp_path;
-	xdp_intf.pcapfile = pcapfile;
+	xdp_intf.interfaces[0] = "lo";
+	xdp_intf.interfaces[1] = "lo";
+	xdp_intf.debug_mode = 1;
 
 	int *rc;
-	expect_function_call(__wrap_bpf_map_update_elem);
-	expect_function_call(__wrap_bpf_map_update_elem);
+	/* Expect map update for jmp_table + interfaces_map */
+	expect_function_calls(__wrap_bpf_map_update_elem, TRAN_MAX_PROG + 1);
 	rc = load_transit_xdp_1_svc(&xdp_intf, NULL);
 	assert_int_equal(*rc, 0);
 }
 
 static void do_lo_xdp_unload(void)
 {
+	rpc_trn_xdp_intf_t xdp_intf;
+	xdp_intf.interfaces[0] = "lo";
+	xdp_intf.interfaces[1] = "lo";
+	xdp_intf.debug_mode = 1;
+
 	int *rc;
-	rpc_intf_t test_itf;
-	char itf_str[] = "lo";
-	test_itf.interface = itf_str;
-	rc = unload_transit_xdp_1_svc(&test_itf, NULL);
+	rc = unload_transit_xdp_1_svc(&xdp_intf, NULL);
 	assert_int_equal(*rc, 0);
 }
 
 static void test_update_dft_1_svc(void **state)
 {
 	UNUSED(state);
-	char itf[] = "lo";
 	uint32_t table[] = { 0, 1, 2, 3, 4, 5 };
 	uint32_t id = 3;
 	struct rpc_trn_dft_t dft = {
-		.interface = itf,
 		.id = id,
 		.table = { .table_len = 6, .table_val = table },
 	};
@@ -378,12 +432,10 @@ static void test_update_dft_1_svc(void **state)
 static void test_update_chain_1_svc(void **state)
 {
 	UNUSED(state);
-	char itf[] = "lo";
 	uint32_t id = 3;
 	uint32_t tail_ftn = 1;
 
 	struct rpc_trn_chain_t chain = {
-		.interface = itf,
 		.id = id,
 		.tail_ftn = tail_ftn,
 	};
@@ -397,7 +449,6 @@ static void test_update_chain_1_svc(void **state)
 static void test_update_ftn_1_svc(void **state)
 {
 	UNUSED(state);
-	char itf[] = "lo";
 	uint32_t id = 3;
 	uint8_t position = 0;
 	uint32_t ip = 0x100000a;
@@ -406,7 +457,6 @@ static void test_update_ftn_1_svc(void **state)
 	char next_mac[6] = { 7, 8, 9, 1, 2, 3 };
 
 	struct rpc_trn_ftn_t ftn = {
-		.interface = itf,
 		.id = id,
 		.position = position,
 		.ip = ip,
@@ -425,27 +475,25 @@ static void test_update_ep_1_svc(void **state)
 {
 	UNUSED(state);
 
-	char itf[] = "lo";
-	char vitf[] = "veth0";
-	char hosted_itf[] = "veth";
-	uint32_t remote[] = { 0x200000a };
 	char mac[6] = { 1, 2, 3, 4, 5, 6 };
+	char hmac[6] = { 6, 5, 4, 3, 2, 1 };
 
-	struct rpc_trn_endpoint_t ep1 = {
-		.interface = itf,
-		.ip = 0x100000a,
-		.eptype = 1,
-		.remote_ips = { .remote_ips_len = 1, .remote_ips_val = remote },
-		.hosted_interface = hosted_itf,
-		.veth = vitf,
-		.tunid = 3,
+	trn_ep_t ep1 = {
+		.xdp_ep.key.vni = 123,
+		.xdp_ep.key.ip = 0x100000a,
+		.xdp_ep.val.hip = 0x200000a,
+	};
+	memcpy(ep1.xdp_ep.val.mac, mac, sizeof(char) * 6);
+	memcpy(ep1.xdp_ep.val.hmac, hmac, sizeof(char) * 6);
+
+	rpc_trn_endpoint_batch_t epb = {
+		.rpc_trn_endpoint_batch_t_len = 1,
+		.rpc_trn_endpoint_batch_t_val = &ep1.rpc_ep,
 	};
 
-	memcpy(ep1.mac, mac, sizeof(char) * 6);
-
 	int *rc;
-	expect_function_calls(__wrap_bpf_map_update_elem, 2);
-	rc = update_ep_1_svc(&ep1, NULL);
+	expect_function_calls(__wrap_bpf_map_update_elem, 1);
+	rc = update_ep_1_svc(&epb, NULL);
 	assert_int_equal(*rc, 0);
 }
 
@@ -453,17 +501,14 @@ static void test_get_dft_1_svc(void **state)
 {
 	UNUSED(state);
 
-	char itf[] = "lo";
 	uint32_t table[] = { 0, 1, 2, 3, 4, 5 };
 	uint32_t id = 3;
 	struct rpc_trn_dft_t dft1 = {
-		.interface = itf,
 		.id = id,
 		.table = { .table_len = 6, .table_val = table },
 	};
 
 	struct rpc_trn_zeta_key_t dft_key1 = {
-		.interface = itf,
 		.id = id,
 	};
 
@@ -491,25 +536,22 @@ static void test_get_dft_1_svc(void **state)
 	will_return(__wrap_bpf_map_lookup_elem, NULL);
 	expect_function_call(__wrap_bpf_map_lookup_elem);
 	retval = get_dft_1_svc(&dft_key1, NULL);
-	assert_true(strlen(retval->interface) == 0);
+	assert_null(retval);
 }
 
 static void test_get_chain_1_svc(void **state)
 {
 	UNUSED(state);
 
-	char itf[] = "lo";
 	uint32_t id = 3;
 	uint32_t tail_ftn = 1;
 
 	struct rpc_trn_chain_t chain1 = {
-		.interface = itf,
 		.id = id,
 		.tail_ftn = tail_ftn,
 	};
 
 	struct rpc_trn_zeta_key_t chain_key1 = {
-		.interface = itf,
 		.id = id,
 	};
 
@@ -533,14 +575,13 @@ static void test_get_chain_1_svc(void **state)
 	will_return(__wrap_bpf_map_lookup_elem, NULL);
 	expect_function_call(__wrap_bpf_map_lookup_elem);
 	retval = get_chain_1_svc(&chain_key1, NULL);
-	assert_true(strlen(retval->interface) == 0);
+	assert_null(retval);
 }
 
 static void test_get_ftn_1_svc(void **state)
 {
 	UNUSED(state);
 
-	char itf[] = "lo";
 	uint32_t id = 3;
 	uint8_t position = 0;
 	uint32_t ip = 0x100000a;
@@ -549,7 +590,6 @@ static void test_get_ftn_1_svc(void **state)
 	char next_mac[6] = { 7, 8, 9, 1, 2, 3 };
 
 	struct rpc_trn_ftn_t ftn1 = {
-		.interface = itf,
 		.id = id,
 		.position = position,
 		.ip = ip,
@@ -560,7 +600,6 @@ static void test_get_ftn_1_svc(void **state)
 	memcpy(ftn1.next_mac, next_mac, sizeof(char) * 6);
 
 	struct rpc_trn_zeta_key_t ftn_key1 = {
-		.interface = itf,
 		.id = id,
 	};
 
@@ -588,64 +627,38 @@ static void test_get_ftn_1_svc(void **state)
 	will_return(__wrap_bpf_map_lookup_elem, NULL);
 	expect_function_call(__wrap_bpf_map_lookup_elem);
 	retval = get_ftn_1_svc(&ftn_key1, NULL);
-	assert_true(strlen(retval->interface) == 0);
+	assert_null(retval);
 }
 
 static void test_get_ep_1_svc(void **state)
 {
 	UNUSED(state);
 
-	char itf[] = "lo";
-	char vitf[] = "";
-	char hosted_itf[] = "lo";
-	uint32_t remote[] = { 0x200000a };
 	char mac[6] = { 1, 2, 3, 4, 5, 6 };
+	char hmac[6] = { 6, 5, 4, 3, 2, 1 };
 
-	struct rpc_trn_endpoint_t ep1 = {
-		.interface = itf,
-		.ip = 0x100000a,
-		.eptype = 1,
-		.remote_ips = { .remote_ips_len = 1, .remote_ips_val = remote },
-		.hosted_interface = hosted_itf,
-		.veth = vitf,
-		.tunid = 3,
+	trn_ep_t ep1 = {
+		.xdp_ep.key.vni = 123,
+		.xdp_ep.key.ip = 0x100000a,
+		.xdp_ep.val.hip = 0x200000a,
+	};
+	memcpy(ep1.xdp_ep.val.mac, mac, sizeof(char) * 6);
+	memcpy(ep1.xdp_ep.val.hmac, hmac, sizeof(char) * 6);
+
+	rpc_trn_endpoint_batch_t epb = {
+		.rpc_trn_endpoint_batch_t_len = 1,
+		.rpc_trn_endpoint_batch_t_val = &ep1.rpc_ep,
 	};
 
-	struct rpc_trn_endpoint_key_t ep_key1 = {
-		.interface = itf,
+	rpc_endpoint_key_t ep_key1 = {
+		.vni = 123,
 		.ip = 0x100000a,
-		.tunid = 3,
 	};
 
-	struct endpoint_t ep_val;
-	ep_val.eptype = 1;
-	ep_val.nremote_ips = 1;
-	ep_val.remote_ips[0] = remote[0];
-	ep_val.hosted_iface = 1;
-	memcpy(ep_val.mac, ep1.mac, sizeof(ep1.mac));
-
-	struct rpc_trn_endpoint_t ep2 = {
-		.interface = itf,
-		.ip = 0x100000a,
-		.eptype = 0,
-		.remote_ips = { .remote_ips_len = 1, .remote_ips_val = remote },
-		.hosted_interface = "",
-		.veth = vitf,
-		.tunid = 0,
-	};
-
-	struct rpc_trn_endpoint_key_t ep_key2 = {
-		.interface = itf,
-		.ip = 0x100000a,
-		.tunid = 0,
-	};
-
-	struct endpoint_t ep_val2;
-	ep_val2.eptype = 0;
-	ep_val2.nremote_ips = 1;
-	ep_val2.remote_ips[0] = remote[0];
-	ep_val2.hosted_iface = -1;
-	memcpy(ep_val2.mac, ep2.mac, sizeof(ep2.mac));
+	endpoint_t ep_val;
+	ep_val.hip = 0x200000a;
+	memcpy(ep_val.mac, ep1.xdp_ep.val.mac, sizeof(ep1.xdp_ep.val.mac));
+	memcpy(ep_val.hmac, ep1.xdp_ep.val.hmac, sizeof(ep1.xdp_ep.val.hmac));
 
 	/* Test get_ep with valid ep_key */
 	struct rpc_trn_endpoint_t *retval;
@@ -655,16 +668,7 @@ static void test_get_ep_1_svc(void **state)
 	will_return(__wrap_bpf_map_lookup_elem, NULL);
 	expect_function_call(__wrap_bpf_map_lookup_elem);
 	retval = get_ep_1_svc(&ep_key1, NULL);
-	assert_true(check_ep_equal(retval, &ep1));
-
-	/* Test get_ep substrate with valid ep_key */
-	will_return(__wrap_bpf_map_lookup_elem, &ep_val2);
-	will_return(__wrap_bpf_map_lookup_elem, NULL);
-	will_return(__wrap_bpf_map_lookup_elem, NULL);
-	will_return(__wrap_bpf_map_lookup_elem, NULL);
-	expect_function_call(__wrap_bpf_map_lookup_elem);
-	retval = get_ep_1_svc(&ep_key2, NULL);
-	assert_true(check_ep_equal(retval, &ep2));
+	assert_true(check_ep_equal(retval, &ep1.rpc_ep));
 
 	/* Test get_ep with bad return code from bpf_lookup */
 	will_return(__wrap_bpf_map_lookup_elem, NULL);
@@ -673,33 +677,16 @@ static void test_get_ep_1_svc(void **state)
 	will_return(__wrap_bpf_map_lookup_elem, NULL);
 	expect_function_call(__wrap_bpf_map_lookup_elem);
 	retval = get_ep_1_svc(&ep_key1, NULL);
-	assert_false(check_ep_equal(retval, &ep1));
-
-	/* Test get_ep with invalid interface index*/
-	ep_val.hosted_iface = 2;
-	will_return(__wrap_bpf_map_lookup_elem, &ep_val);
-	will_return(__wrap_bpf_map_lookup_elem, NULL);
-	will_return(__wrap_bpf_map_lookup_elem, NULL);
-	will_return(__wrap_bpf_map_lookup_elem, NULL);
-	expect_function_call(__wrap_bpf_map_lookup_elem);
-	retval = get_ep_1_svc(&ep_key1, NULL);
-	assert_false(check_ep_equal(retval, &ep1));
-
-	/* Test get_ep with invalid interface*/
-	ep_key1.interface = "";
-	retval = get_ep_1_svc(&ep_key1, NULL);
-	assert_true(strlen(retval->interface) == 0);
+	assert_null(retval);
 }
 
 static void test_delete_dft_1_svc(void **state)
 {
 	UNUSED(state);
 	int *rc;
-	char itf[] = "lo";
 	uint32_t id = 3;
 	uint32_t table[] = { 0, 1, 2, 3, 4, 5 };
 	struct rpc_trn_zeta_key_t dft_key = {
-		.interface = itf,
 		.id = id,
 	};
 
@@ -714,22 +701,15 @@ static void test_delete_dft_1_svc(void **state)
 	expect_function_call(__wrap_bpf_map_delete_elem);
 	rc = delete_dft_1_svc(&dft_key, NULL);
 	assert_int_equal(*rc, RPC_TRN_ERROR);
-
-	/* Test delete_dft_1 with invalid interface*/
-	dft_key.interface = "";
-	rc = delete_dft_1_svc(&dft_key, NULL);
-	assert_int_equal(*rc, RPC_TRN_ERROR);
 }
 
 static void test_delete_chain_1_svc(void **state)
 {
 	UNUSED(state);
 	int *rc;
-	char itf[] = "lo";
 	uint32_t id = 3;
 
 	struct rpc_trn_zeta_key_t chain_key = {
-		.interface = itf,
 		.id = id,
 	};
 
@@ -744,22 +724,15 @@ static void test_delete_chain_1_svc(void **state)
 	expect_function_call(__wrap_bpf_map_delete_elem);
 	rc = delete_chain_1_svc(&chain_key, NULL);
 	assert_int_equal(*rc, RPC_TRN_ERROR);
-
-	/* Test delete_chain_1 with invalid interface*/
-	chain_key.interface = "";
-	rc = delete_chain_1_svc(&chain_key, NULL);
-	assert_int_equal(*rc, RPC_TRN_ERROR);
 }
 
 static void test_delete_ftn_1_svc(void **state)
 {
 	UNUSED(state);
 	int *rc;
-	char itf[] = "lo";
 	uint32_t id = 3;
 
 	struct rpc_trn_zeta_key_t ftn_key = {
-		.interface = itf,
 		.id = id,
 	};
 
@@ -774,33 +747,26 @@ static void test_delete_ftn_1_svc(void **state)
 	expect_function_call(__wrap_bpf_map_delete_elem);
 	rc = delete_ftn_1_svc(&ftn_key, NULL);
 	assert_int_equal(*rc, RPC_TRN_ERROR);
-
-	/* Test delete_ftn_1 with invalid interface*/
-	ftn_key.interface = "";
-	rc = delete_ftn_1_svc(&ftn_key, NULL);
-	assert_int_equal(*rc, RPC_TRN_ERROR);
 }
 
 static void test_delete_ep_1_svc(void **state)
 {
 	UNUSED(state);
-	char itf[] = "lo";
-	struct rpc_trn_endpoint_key_t ep_key = {
-		.interface = itf,
-		.ip = 0x100000a,
-		.tunid = 3,
-	};
-	int *rc;
 
-	uint32_t remote[] = { 0x200000a };
 	char mac[6] = { 1, 2, 3, 4, 5, 6 };
+	char hmac[6] = { 6, 5, 4, 3, 2, 1 };
 
-	struct endpoint_t ep_val;
-	ep_val.eptype = 1;
-	ep_val.nremote_ips = 1;
-	ep_val.remote_ips[0] = remote[0];
-	ep_val.hosted_iface = 1;
+	rpc_endpoint_key_t ep_key = {
+		.vni = 123,
+		.ip = 0x100000a,
+	};
+
+	endpoint_t ep_val;
+	ep_val.hip = 0x200000a;
+	memcpy(ep_val.hmac, hmac, sizeof(hmac));
 	memcpy(ep_val.mac, mac, sizeof(mac));
+
+	int *rc;
 
 	/* Test delete_ep_1 with valid ep_key */
 	will_return(__wrap_bpf_map_lookup_elem, &ep_val);
@@ -823,11 +789,6 @@ static void test_delete_ep_1_svc(void **state)
 	expect_function_call(__wrap_bpf_map_delete_elem);
 	rc = delete_ep_1_svc(&ep_key, NULL);
 	assert_int_equal(*rc, RPC_TRN_ERROR);
-
-	/* Test delete_ep_1 with invalid interface*/
-	ep_key.interface = "";
-	rc = delete_ep_1_svc(&ep_key, NULL);
-	assert_int_equal(*rc, RPC_TRN_ERROR);
 }
 
 /**
@@ -837,7 +798,6 @@ static int groupSetup(void **state)
 {
 	UNUSED(state);
 	TRN_LOG_INIT("transitd_unit");
-	trn_itf_table_init();
 	do_lo_xdp_load();
 	return 0;
 }
@@ -849,7 +809,6 @@ static int groupTeardown(void **state)
 {
 	UNUSED(state);
 	do_lo_xdp_unload();
-	trn_itf_table_free();
 	TRN_LOG_CLOSE();
 	return 0;
 }

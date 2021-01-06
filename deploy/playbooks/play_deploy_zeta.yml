@@ -34,7 +34,7 @@
       register: "output"
     - debug: var=output.stdout_lines
 
-    - name: "Check Zeta deployment completion"
+    - name: "Check Zeta Control Plabe deployment completion"
       shell: "../install/deploy_wellcheck.sh"
       args: 
         executable: /bin/bash
@@ -51,3 +51,18 @@
   tasks:
     - include: tasks/zgc-node.yml
       when: site != "kind"
+
+    - name: "KIND ZGC deployment"
+      shell: "../kind/create_zgc.sh {{stage}} {{droplet_size}} &>> {{DBG_LOG}}"
+      args: 
+        executable: /bin/bash
+      environment:
+        STAGE: "{{stage}}"
+        REG: "{{reg}}"
+      register: "output"
+      when: site == "kind"
+    - debug: var=output.stdout_lines
+      when: site == "kind"
+
+
+    

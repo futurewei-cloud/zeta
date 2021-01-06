@@ -104,7 +104,6 @@ int trn_cli_update_ftn_subcmd(CLIENT *clnt, int argc, char *argv[])
 	rpc_trn_ftn_t ftn;
 	char rpc[] = "update_ftn_1";
 
-	ftn.interface = conf.intf;
 	int err = trn_cli_parse_ftn(json_str, &ftn);
 	cJSON_Delete(json_str);
 
@@ -127,8 +126,8 @@ int trn_cli_update_ftn_subcmd(CLIENT *clnt, int argc, char *argv[])
 	}
 
 	dump_ftn(&ftn);
-	print_msg("update_ftn_1 successfully updated ftn %d on interface %s.\n",
-		  ftn.id, ftn.interface);
+	print_msg("update_ftn_1 successfully updated ftn %d.\n",
+		  ftn.id);
 	return 0;
 }
 
@@ -152,7 +151,6 @@ int trn_cli_get_ftn_subcmd(CLIENT *clnt, int argc, char *argv[])
 	rpc_trn_zeta_key_t ftn_key;
 	rpc_trn_ftn_t *ftn;
 	char rpc[] = "get_ftn_1";
-	ftn_key.interface = conf.intf;
 
 	int err = trn_cli_parse_zeta_key(json_str, &ftn_key);
 	cJSON_Delete(json_str);
@@ -163,14 +161,14 @@ int trn_cli_get_ftn_subcmd(CLIENT *clnt, int argc, char *argv[])
 	}
 
 	ftn = get_ftn_1(&ftn_key, clnt);
-	if (ftn == NULL || strlen(ftn->interface) == 0) {
+	if (ftn == NULL) {
 		print_err("RPC Error: client call failed: get_ftn_1.\n");
 		return -EINVAL;
 	}
 
 	dump_ftn(ftn);
-	print_msg("get_ftn_1 successfully queried ftn %d on interface %s.\n",
-		  ftn->id, ftn->interface);
+	print_msg("get_ftn_1 successfully queried ftn %d.\n",
+		  ftn->id);
 
 	return 0;
 }
@@ -195,7 +193,6 @@ int trn_cli_delete_ftn_subcmd(CLIENT *clnt, int argc, char *argv[])
 	int *rc;
 	rpc_trn_zeta_key_t ftn_key;
 	char rpc[] = "delete_ftn_1";
-	ftn_key.interface = conf.intf;
 
 	int err = trn_cli_parse_zeta_key(json_str, &ftn_key);
 	cJSON_Delete(json_str);
@@ -218,15 +215,14 @@ int trn_cli_delete_ftn_subcmd(CLIENT *clnt, int argc, char *argv[])
 		return -EINVAL;
 	}
 
-	print_msg("delete_ftn_1 successfully deleted ftn %d on interface %s.\n",
-		  ftn_key.id, ftn_key.interface);
+	print_msg("delete_ftn_1 successfully deleted ftn %d.\n",
+		  ftn_key.id);
 
 	return 0;
 }
 
 void dump_ftn(struct rpc_trn_ftn_t *ftn)
 {
-	print_msg("Interface: %s\n", ftn->interface);
 	print_msg("Ftn ID: %d\n", ftn->id);
 	print_msg("Ftn Position: %d\n", ftn->position);
 	print_msg("IP: 0x%x\n", ftn->ip);

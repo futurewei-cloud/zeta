@@ -42,7 +42,6 @@ KINDHOME="${HOME}/.kube/config"
 
 STAGE=${1:-dev}
 KUBE_NODES=${2:-1}
-DROPLET_NODES=${3:-12}
 reg_name='local-kind-registry'
 reg_port='5000'
 
@@ -113,26 +112,7 @@ if [[ ! -z "$STAGE" && "$STAGE" != "user" ]]; then
   echo "Rebuild and publish zeta_node image to $REG..."
   docker image build -t $REG/zeta_node:latest -f $ROOT/deploy/kind/Dockerfile $ROOT >/dev/null
   docker image push $REG/zeta_node:latest >/dev/null
-
-  echo "Rebuild and publish zeta_droplet image to $REG..."
-  docker image build -t $REG/zeta_droplet:latest -f ${ROOT}/deploy/kind/droplet.Dockerfile $ROOT >/dev/null
-  docker image push $REG/zeta_droplet:latest >/dev/null
 fi
-
-# Bring up droplets
-for ((i=1; i<=$DROPLET_NODES; i++));
-do
-    echo -e "Creating zeta-node-$i"
-    docker run -d \
-        --privileged \
-        --cap-add=NET_ADMIN \
-        --cap-add=SYS_PTRACE \
-        --security-opt seccomp=unconfined \
-        --pid=host \
-        --network=$kind_network \
-        --name zeta-node-$i \
-        $REG/zeta_droplet:latest
-done
 
 NODE_TEMPLATE="  - role: worker
     image: ${REG}/zeta_node:latest

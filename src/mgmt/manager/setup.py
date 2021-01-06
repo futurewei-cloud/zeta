@@ -5,7 +5,7 @@ setup(
     version='0.1.0',
     description='Zeta manager package',
     author='Bin Liang',
-    packages=find_packages(include=['project', 'project.*']),
+    packages=find_packages(),
     install_requires=[
         'PyYAML',
         'Flask>=1.1.1',

@@ -1,6 +1,6 @@
 import unittest
 import logging
-from src.mgmt.operator.common.maglev_table import MaglevTable
+from src.mgmt.common.maglev_table import MaglevTable
 from test.helper import *
 
 logging.basicConfig()

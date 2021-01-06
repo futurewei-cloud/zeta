@@ -7,4 +7,6 @@
 #
 # Summary: Site specific playbook variables for site named "lab"
 #
+ansible_port: 22
+ansible_user: "ubuntu"
 k8s_type: "microk8s"

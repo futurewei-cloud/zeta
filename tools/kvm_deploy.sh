@@ -95,6 +95,7 @@ disable_root: false
 chpasswd: { expire: False }
 packages:
   - qemu-guest-agent
+  - rpcbind
 EOF
 
     let "ip = 190 + $i"

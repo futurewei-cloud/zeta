@@ -25,14 +25,9 @@
 %// SPDX-License-Identifier: GPL-2.0-or-later
 %#pragma GCC diagnostic ignored "-Wunused-variable"
 %#include <stdint.h>
+%#include "trn_datamodel.h"
 
 /*----- Data types. ----- */
-
-/* At most 10 chains, size has to be prime and 100x number of chains */
-const TRAN_MAX_MAGLEV_TABLE_SIZE = 10000;
-
-/* Upper limit on maximum number of enpoint hosts */
-const RPC_TRN_MAX_REMOTE_IPS = 256;
 
 /* Defines generic codes, 0 is always a success need not to mention! */
 const RPC_TRN_WARN = 1;
@@ -40,14 +35,14 @@ const RPC_TRN_ERROR = 2;
 const RPC_TRN_FATAL = 3;
 const RPC_TRN_NOT_IMPLEMENTED = 4;
 
+typedef string rpc_intf_name<TRAN_MAX_ITF_SIZE>; 
+
 struct rpc_trn_dft_t {
-       string interface<20>;
        uint32_t id;
        uint32_t table<TRAN_MAX_MAGLEV_TABLE_SIZE>;
 };
 
 struct rpc_trn_ftn_t {
-       string interface<20>;
        uint8_t position;
        uint32_t id;
        uint32_t ip;
@@ -57,102 +52,86 @@ struct rpc_trn_ftn_t {
 };
 
 struct rpc_trn_chain_t {
-       string interface<20>;
        uint32_t id;
        uint32_t tail_ftn;
 };
 
-/* Defines an endpoint (all types) */
-struct rpc_trn_endpoint_t {
-       string interface<20>;
-       uint32_t ip;
-       uint32_t eptype;
-       uint32_t remote_ips<RPC_TRN_MAX_REMOTE_IPS>;
-       unsigned char mac[6];
-       string hosted_interface<20>;
-       string veth<20>;
-       uint64_t tunid;
-};
-
 struct rpc_trn_zeta_key_t {
-       string interface<20>;
        uint32_t id;
 };
 
-/* Defines a unique key to get/delete an RP (in DP) */
-struct rpc_trn_endpoint_key_t {
-       string interface<20>;
-       uint64_t tunid;
-       uint32_t ip;
+struct rpc_addr_t {
+	uint32_t ip;
+	uint8_t mac[6];
 };
 
-/* Defines an interface and a path for xdp prog to load on the interface */
+/* Defines an endpoint */
+struct rpc_endpoint_key_t {
+       uint32_t vni;
+	uint32_t ip;
+};
+
+/*
+struct rpc_endpoint_t {
+	uint32_t hip;
+	uint8_t mac[6];
+	uint8_t hmac[6];
+};
+*/
+struct rpc_trn_endpoint_t {
+       uint64_t buf64[3];
+};
+
+/* endpoints batch, watch for 8k buffer limit over UDP */
+typedef struct rpc_trn_endpoint_t rpc_trn_endpoint_batch_t<TRAN_MAX_EP_BATCH_SIZE>;
+
+/* Defines a droplet (physical interface) */
+struct rpc_trn_droplet_t {
+       rpc_intf_name interface;
+       uint32_t num_entrances;
+       rpc_addr_t entrances[TRAN_MAX_ZGC_ENTRANCES];
+};
+
+/* Defines interfaces for xdp prog to attach/detatch */
 struct rpc_trn_xdp_intf_t {
-       string interface<20>;
-       string xdp_path<256>;
-       string pcapfile<256>;
+       rpc_intf_name interfaces[TRAN_ITF_MAP_MAX];
+       uint16_t ibo_port;
+       uint32_t debug_mode;
 };
 
-/* Defines an interface */
-struct rpc_intf_t {
-       string interface<20>;
-};
-
-/* Defines a tunneling interface (physical) */
-struct rpc_trn_tun_intf_t {
-       string interface<20>;
-       uint32_t ip;
-       unsigned char mac[6];
-};
-
-
-enum rpc_trn_pipeline_stage {
-       ON_XDP_TX       = 0,
-       ON_XDP_PASS     = 1,
-       ON_XDP_REDIRECT = 2,
-       ON_XDP_DROP     = 3,
-       ON_XDP_SCALED_EP = 4
-       /* add stages */
-};
-
-/* Defines an XDP program at xdp_path to be loaded at index prog_index */
+/* Defines an ebpf program at path to be loaded */
 struct rpc_trn_ebpf_prog_t {
-       string interface<20>;
-       rpc_trn_pipeline_stage stage;
-       string xdp_path<256>;
-};
-
-/* Defines an XDP program at stage */
-struct rpc_trn_ebpf_prog_stage_t {
-       string interface<20>;
-       rpc_trn_pipeline_stage stage;
+       uint32_t prog_idx;
+       uint32_t debug_mode;
 };
 
 /*----- Protocol. -----*/
 
 program RPC_TRANSIT_REMOTE_PROTOCOL {
         version RPC_TRANSIT_ALFAZERO {
-                int UPDATE_DFT(rpc_trn_dft_t) = 1;
-                int DELETE_DFT(rpc_trn_zeta_key_t) = 2;
-                rpc_trn_dft_t GET_DFT(rpc_trn_zeta_key_t) = 3;
+                int LOAD_TRANSIT_XDP(rpc_trn_xdp_intf_t) = 1;
+                int UNLOAD_TRANSIT_XDP(rpc_trn_xdp_intf_t) = 2;
 
-                int UPDATE_FTN(rpc_trn_ftn_t) = 4;
-                int DELETE_FTN(rpc_trn_zeta_key_t) = 5;
-                rpc_trn_ftn_t GET_FTN(rpc_trn_zeta_key_t) = 6;
+                int LOAD_TRANSIT_XDP_EBPF(rpc_trn_ebpf_prog_t) = 3;
+                int UNLOAD_TRANSIT_XDP_EBPF(rpc_trn_ebpf_prog_t) = 4;
 
-                int UPDATE_EP(rpc_trn_endpoint_t) = 7;
-                int DELETE_EP(rpc_trn_endpoint_key_t) = 8;
-                rpc_trn_endpoint_t GET_EP(rpc_trn_endpoint_key_t) = 9;
+                int UPDATE_EP(rpc_trn_endpoint_batch_t) = 5;
+                int DELETE_EP(rpc_endpoint_key_t) = 6;
+                rpc_trn_endpoint_t GET_EP(rpc_endpoint_key_t) = 7;
 
-                int LOAD_TRANSIT_XDP(rpc_trn_xdp_intf_t) = 10;
-                int UNLOAD_TRANSIT_XDP(rpc_intf_t) = 11;
+                int UPDATE_DFT(rpc_trn_dft_t) = 8;
+                int DELETE_DFT(rpc_trn_zeta_key_t) = 9;
+                rpc_trn_dft_t GET_DFT(rpc_trn_zeta_key_t) = 10;
 
-                int LOAD_TRANSIT_XDP_PIPELINE_STAGE(rpc_trn_ebpf_prog_t) = 12;
-                int UNLOAD_TRANSIT_XDP_PIPELINE_STAGE(rpc_trn_ebpf_prog_stage_t) = 13;
+                int UPDATE_FTN(rpc_trn_ftn_t) = 11;
+                int DELETE_FTN(rpc_trn_zeta_key_t) = 12;
+                rpc_trn_ftn_t GET_FTN(rpc_trn_zeta_key_t) = 13;
 
                 int UPDATE_CHAIN(rpc_trn_chain_t) = 14;
                 int DELETE_CHAIN(rpc_trn_zeta_key_t) = 15;
                 rpc_trn_chain_t GET_CHAIN(rpc_trn_zeta_key_t) = 16;
+
+                int UPDATE_DROPLET(rpc_trn_droplet_t) = 17;
           } = 1;
 
 } =  0x20009051;

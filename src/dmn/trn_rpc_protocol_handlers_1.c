@@ -36,70 +36,20 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#include "rpcgen/trn_rpc_protocol.h"
-#include "trn_transit_xdp_usr.h"
-#include "trn_log.h"
 #include "trn_transitd.h"
-
-#define TRANSITLOGNAME "transit"
-#define TRN_MAX_ITF 265
-#define TRN_MAX_VETH 2048
 
 void rpc_transit_remote_protocol_1(struct svc_req *rqstp,
 				   register SVCXPRT *transp);
-
-int trn_itf_table_init()
-{
-	int rc;
-	rc = hcreate((TRN_MAX_VETH + TRN_MAX_ITF) * 1.3);
-	return rc;
-}
-
-void trn_itf_table_free()
-{
-	/* TODO: At the moment, this is only called before exit, so there
-     *  is no actual need to free table elements one by one. If this
-     *  is being called while the dameon remains running, we will need
-     *  to maintain the keys in a separate data-structure and free
-     *  them one-by-one. */
-
-	hdestroy();
-}
-
-int trn_itf_table_insert(char *itf, struct user_metadata_t *md)
-{
-	INTF_INSERT();
-}
-
-struct user_metadata_t *trn_itf_table_find(char *itf)
-{
-	INTF_FIND();
-}
-
-void trn_itf_table_delete(char *itf)
-{
-	INTF_DELETE();
-}
 
 int *update_dft_1_svc(rpc_trn_dft_t *dft, struct svc_req *rqstp)
 {
 	UNUSED(rqstp);
 	static int result;
-	result = 0;
 	int rc;
-	char *itf = dft->interface;
 	__u32 dft_key;
 	struct dft_t dft_val;
 
 	TRN_LOG_DEBUG("update_dft_1 dft id: %d", dft->id);
-
-	struct user_metadata_t *md = trn_itf_table_find(itf);
-
-	if (!md) {
-		TRN_LOG_ERROR("Cannot find interface metadata for %s", itf);
-		result = RPC_TRN_ERROR;
-		goto error;
-	}
 
 	dft_key = dft->id;
 	dft_val.table_len = dft->table.table_len;
@@ -115,17 +65,16 @@ int *update_dft_1_svc(rpc_trn_dft_t *dft, struct svc_req *rqstp)
 		memcpy(dft_val.table, dft->table.table_val,
 		       dft_val.table_len * sizeof(dft_val.table[0]));
 	}
-	rc = trn_update_dft(md, &dft_key, &dft_val);
+	rc = trn_update_dft(&dft_key, &dft_val);
 
 	if (rc != 0) {
 		TRN_LOG_ERROR(
-			"Cannot update transit XDP with dft %d on interface %s",
-			dft_key, itf);
+			"Cannot update transit XDP with dft %d",dft_key);
 		result = RPC_TRN_ERROR;
 		goto error;
 	}
 
-	return &result;
+	result = 0;
 
 error:
 	return &result;
@@ -135,37 +84,26 @@ int *update_chain_1_svc(rpc_trn_chain_t *chain, struct svc_req *rqstp)
 {
 	UNUSED(rqstp);
 	static int result;
-	result = 0;
 	int rc;
-	char *itf = chain->interface;
 	__u32 chain_key;
 	struct chain_t chain_val;
 
 	TRN_LOG_DEBUG("update_chain_1 chain id: %d", chain->id);
 
-	struct user_metadata_t *md = trn_itf_table_find(itf);
-
-	if (!md) {
-		TRN_LOG_ERROR("Cannot find interface metadata for %s", itf);
-		result = RPC_TRN_ERROR;
-		goto error;
-	}
-
 	chain_key = chain->id;
 
 	chain_val.tail_ftn = chain->tail_ftn;
 
-	rc = trn_update_chain(md, &chain_key, &chain_val);
+	rc = trn_update_chain(&chain_key, &chain_val);
 
 	if (rc != 0) {
 		TRN_LOG_ERROR(
-			"Cannot update transit XDP with chain %d on interface %s",
-			chain->id, itf);
+			"Cannot update transit XDP with chain %d", chain->id);
 		result = RPC_TRN_ERROR;
 		goto error;
 	}
 
-	return &result;
+	result = 0;
 
 error:
 	return &result;
@@ -175,21 +113,11 @@ int *update_ftn_1_svc(rpc_trn_ftn_t *ftn, struct svc_req *rqstp)
 {
 	UNUSED(rqstp);
 	static int result;
-	result = 0;
 	int rc;
-	char *itf = ftn->interface;
 	__u32 ftn_key;
 	struct ftn_t ftn_val;
 
 	TRN_LOG_DEBUG("update_ftn_1 ftn id: %d", ftn->id);
-
-	struct user_metadata_t *md = trn_itf_table_find(itf);
-
-	if (!md) {
-		TRN_LOG_ERROR("Cannot find interface metadata for %s", itf);
-		result = RPC_TRN_ERROR;
-		goto error;
-	}
 
 	ftn_key = ftn->id;
 
@@ -200,92 +128,48 @@ int *update_ftn_1_svc(rpc_trn_ftn_t *ftn, struct svc_req *rqstp)
 	memcpy(ftn_val.next_mac, ftn->next_mac,
 	       6 * sizeof(ftn_val.next_mac[0]));
 
-	rc = trn_update_ftn(md, &ftn_key, &ftn_val);
+	rc = trn_update_ftn(&ftn_key, &ftn_val);
 
 	if (rc != 0) {
 		TRN_LOG_ERROR(
-			"Cannot update transit XDP with ftn %d on interface %s",
-			ftn->id, itf);
+			"Cannot update transit XDP with ftn %d", ftn->id);
 		result = RPC_TRN_ERROR;
 		goto error;
 	}
 
-	return &result;
+	result = 0;
 
 error:
 	return &result;
 }
 
-int *update_ep_1_svc(rpc_trn_endpoint_t *ep, struct svc_req *rqstp)
+int *update_ep_1_svc(rpc_trn_endpoint_batch_t *batch, struct svc_req *rqstp)
 {
 	UNUSED(rqstp);
 	static int result;
+	int rc, ctx;
+
+	trn_ep_t *ep = (trn_ep_t *)batch->rpc_trn_endpoint_batch_t_val;
+
+	TRN_LOG_DEBUG("update_ep_1 batch size: %d", batch->rpc_trn_endpoint_batch_t_len);
+
+	ctx = trn_update_endpoints_get_ctx();
+	if (ctx < 0) {
+		TRN_LOG_ERROR("Failed to get update endpoints context");
+		result = RPC_TRN_ERROR;
+		goto error;
+	}
+
+	for (__u32 i = 0; i < batch->rpc_trn_endpoint_batch_t_len; i++, ep++) {
+		rc = trn_update_endpoint(ctx, &ep->xdp_ep.key, &ep->xdp_ep.val);
+		if (rc) {
+			TRN_LOG_ERROR("Failed to update endpoint %d %08x",
+				ep->xdp_ep.key.vni, ep->xdp_ep.key.ip);
+			result = RPC_TRN_ERROR;
+			goto error;
+		}
+	}
 	result = 0;
-	int rc;
-	char *itf = ep->interface;
-	struct endpoint_key_t epkey;
-	struct endpoint_t epval;
-
-	TRN_LOG_DEBUG("update_ep_1 ep tunid: %ld, ip: 0x%x,"
-		      " type: %d, veth: %s, hosted_interface:%s",
-		      ep->tunid, ep->ip, ep->eptype, ep->veth,
-		      ep->hosted_interface);
-
-	struct user_metadata_t *md = trn_itf_table_find(itf);
-
-	if (!md) {
-		TRN_LOG_ERROR("Cannot find interface metadata for %s", itf);
-		result = RPC_TRN_ERROR;
-		goto error;
-	}
-
-	memcpy(epkey.tunip, &ep->tunid, sizeof(ep->tunid));
-	epkey.tunip[2] = ep->ip;
-	epval.eptype = ep->eptype;
-
-	epval.nremote_ips = ep->remote_ips.remote_ips_len;
-	if (epval.nremote_ips > TRAN_MAX_REMOTES) {
-		TRN_LOG_WARN("Number of maximum remote IPs exceeded,"
-			     " configuring only the first %d remote IPs.",
-			     TRAN_MAX_REMOTES);
-		result = RPC_TRN_WARN;
-		goto error;
-	}
-
-	if (epval.nremote_ips > 0) {
-		memcpy(epval.remote_ips, ep->remote_ips.remote_ips_val,
-		       epval.nremote_ips * sizeof(epval.remote_ips[0]));
-	}
-	memcpy(epval.mac, ep->mac, 6 * sizeof(epval.mac[0]));
-
-	if (strcmp(ep->hosted_interface, "") != 0) {
-		epval.hosted_iface = if_nametoindex(ep->hosted_interface);
-	} else {
-		epval.hosted_iface = -1;
-	}
-
-	/* in case if_nameindex fails!! */
-	if (!epval.hosted_iface) {
-		TRN_LOG_WARN(
-			"**Failed to map interface name [%s] to an index,"
-			" for the given hosted_interface name traffic may"
-			" not be routed correctly to ep [0x%x] hosted on this host.",
-			ep->hosted_interface, ep->ip);
-		result = RPC_TRN_WARN;
-		epval.hosted_iface = -1;
-	}
-
-	rc = trn_update_endpoint(md, &epkey, &epval);
-
-	if (rc != 0) {
-		TRN_LOG_ERROR(
-			"Cannot update transit XDP with ep %d on interface %s",
-			epkey.tunip[2], itf);
-		result = RPC_TRN_ERROR;
-		goto error;
-	}
-
-	return &result;
 
 error:
 	return &result;
@@ -295,33 +179,21 @@ int *delete_dft_1_svc(rpc_trn_zeta_key_t *argp, struct svc_req *rqstp)
 {
 	UNUSED(rqstp);
 	static int result;
-	result = 0;
 	int rc;
 	__u32 dft_key;
 
-	TRN_LOG_DEBUG("delete_dft_1 dft id: %d on interface: %s", argp->id,
-		      argp->interface);
-
-	struct user_metadata_t *md = trn_itf_table_find(argp->interface);
-
-	if (!md) {
-		TRN_LOG_ERROR("Cannot find interface metadata for %s",
-			      argp->interface);
-		result = RPC_TRN_ERROR;
-		goto error;
-	}
+	TRN_LOG_DEBUG("delete_dft_1 dft id: %d", argp->id);
 
 	dft_key = argp->id;
-	rc = trn_delete_dft(md, &dft_key);
+	rc = trn_delete_dft(&dft_key);
 
 	if (rc != 0) {
-		TRN_LOG_ERROR("Failure deleting dft %d on interface %s",
-			      argp->id, argp->interface);
+		TRN_LOG_ERROR("Failure deleting dft %d", argp->id);
 		result = RPC_TRN_ERROR;
 		goto error;
 	}
 
-	return &result;
+	result = 0;
 error:
 	return &result;
 }
@@ -330,33 +202,21 @@ int *delete_chain_1_svc(rpc_trn_zeta_key_t *argp, struct svc_req *rqstp)
 {
 	UNUSED(rqstp);
 	static int result;
-	result = 0;
 	int rc;
 	__u32 chain_key;
 
-	TRN_LOG_DEBUG("delete_chain_1 chain id: %d on interface: %s", argp->id,
-		      argp->interface);
-
-	struct user_metadata_t *md = trn_itf_table_find(argp->interface);
-
-	if (!md) {
-		TRN_LOG_ERROR("Cannot find interface metadata for %s",
-			      argp->interface);
-		result = RPC_TRN_ERROR;
-		goto error;
-	}
+	TRN_LOG_DEBUG("delete_chain_1 chain id: %d", argp->id);
 
 	chain_key = argp->id;
-	rc = trn_delete_chain(md, &chain_key);
+	rc = trn_delete_chain(&chain_key);
 
 	if (rc != 0) {
-		TRN_LOG_ERROR("Failure deleting chain %d on interface %s",
-			      argp->id, argp->interface);
+		TRN_LOG_ERROR("Failure deleting chain %d", argp->id);
 		result = RPC_TRN_ERROR;
 		goto error;
 	}
 
-	return &result;
+	result = 0;
 error:
 	return &result;
 }
@@ -365,74 +225,43 @@ int *delete_ftn_1_svc(rpc_trn_zeta_key_t *argp, struct svc_req *rqstp)
 {
 	UNUSED(rqstp);
 	static int result;
-	result = 0;
 	int rc;
 	__u32 ftn_key;
 
-	TRN_LOG_DEBUG("delete_ftn_1 ftn id: %d on interface: %s", argp->id,
-		      argp->interface);
-
-	struct user_metadata_t *md = trn_itf_table_find(argp->interface);
-
-	if (!md) {
-		TRN_LOG_ERROR("Cannot find interface metadata for %s",
-			      argp->interface);
-		result = RPC_TRN_ERROR;
-		goto error;
-	}
+	TRN_LOG_DEBUG("delete_ftn_1 ftn id: %d", argp->id);
 
 	ftn_key = argp->id;
-	rc = trn_delete_ftn(md, &ftn_key);
+	rc = trn_delete_ftn(&ftn_key);
 
 	if (rc != 0) {
-		TRN_LOG_ERROR("Failure deleting ftn %d on interface %s",
-			      argp->id, argp->interface);
+		TRN_LOG_ERROR("Failure deleting ftn %d", argp->id);
 		result = RPC_TRN_ERROR;
 		goto error;
 	}
 
-	return &result;
+	result = 0;
 error:
 	return &result;
 }
 
-int *delete_ep_1_svc(rpc_trn_endpoint_key_t *argp, struct svc_req *rqstp)
+int *delete_ep_1_svc(rpc_endpoint_key_t *argp, struct svc_req *rqstp)
 {
 	UNUSED(rqstp);
 	static int result;
-	result = 0;
 	int rc;
-	struct endpoint_key_t epkey;
-	char buffer[INET_ADDRSTRLEN];
-	const char *parsed_ip =
-		inet_ntop(AF_INET, &argp->ip, buffer, sizeof(buffer));
 
-	TRN_LOG_DEBUG("delete_ep_1 ep tunid: %ld, ip: 0x%x,"
-		      " on interface: %s",
-		      argp->tunid, parsed_ip, argp->interface);
+	TRN_LOG_DEBUG("delete_ep_1 ep vni: %ld, ip: 0x%x",
+		      argp->vni, argp->ip);
 
-	struct user_metadata_t *md = trn_itf_table_find(argp->interface);
-
-	if (!md) {
-		TRN_LOG_ERROR("Cannot find interface metadata for %s",
-			      argp->interface);
-		result = RPC_TRN_ERROR;
-		goto error;
-	}
-
-	memcpy(epkey.tunip, &argp->tunid, sizeof(argp->tunid));
-	epkey.tunip[2] = argp->ip;
-
-	rc = trn_delete_endpoint(md, &epkey);
+	rc = trn_delete_endpoint((endpoint_key_t *)argp);
 
 	if (rc != 0) {
-		TRN_LOG_ERROR("Failure deleting ep %d on interface %s",
-			      epkey.tunip[2], argp->interface);
+		TRN_LOG_ERROR("Failure deleting ep %d - %d", argp->vni, argp->ip);
 		result = RPC_TRN_ERROR;
 		goto error;
 	}
 
-	return &result;
+	result = 0;
 error:
 	return &result;
 }
@@ -446,34 +275,22 @@ rpc_trn_dft_t *get_dft_1_svc(rpc_trn_zeta_key_t *argp, struct svc_req *rqstp)
 	__u32 dft_key;
 	static struct dft_t dft_val;
 
-	TRN_LOG_DEBUG("get_dft_1 dft id: %d on interface: %s", argp->id,
-		      argp->interface);
-
-	struct user_metadata_t *md = trn_itf_table_find(argp->interface);
-
-	if (!md) {
-		TRN_LOG_ERROR("Cannot find interface metadata for %s",
-			      argp->interface);
-		goto error;
-	}
+	TRN_LOG_DEBUG("get_dft_1 dft id: %d", argp->id);
 
 	dft_key = argp->id;
-	rc = trn_get_dft(md, &dft_key, &dft_val);
+	rc = trn_get_dft(&dft_key, &dft_val);
 
 	if (rc != 0) {
-		TRN_LOG_ERROR("Cannot get dft %d on interface %s", argp->id,
-			      argp->interface);
+		TRN_LOG_ERROR("Cannot get dft %d", argp->id);
 		goto error;
 	}
-	result.interface = argp->interface;
 	result.id = argp->id;
 	result.table.table_len = dft_val.table_len;
 	result.table.table_val = dft_val.table;
 	return &result;
 
 error:
-	result.interface = "";
-	return &result;
+	return NULL;
 }
 
 rpc_trn_chain_t *get_chain_1_svc(rpc_trn_zeta_key_t *argp,
@@ -485,34 +302,22 @@ rpc_trn_chain_t *get_chain_1_svc(rpc_trn_zeta_key_t *argp,
 	__u32 chain_key;
 	static struct chain_t chain_val;
 
-	TRN_LOG_DEBUG("get_chain_1 chain id: %d on interface: %s", argp->id,
-		      argp->interface);
-
-	struct user_metadata_t *md = trn_itf_table_find(argp->interface);
-
-	if (!md) {
-		TRN_LOG_ERROR("Cannot find interface metadata for %s",
-			      argp->interface);
-		goto error;
-	}
+	TRN_LOG_DEBUG("get_chain_1 chain id: %d", argp->id);
 
 	chain_key = argp->id;
-	rc = trn_get_chain(md, &chain_key, &chain_val);
+	rc = trn_get_chain(&chain_key, &chain_val);
 
 	if (rc != 0) {
-		TRN_LOG_ERROR("Cannot get chain %d on interface %s", argp->id,
-			      argp->interface);
+		TRN_LOG_ERROR("Cannot get chain %d", argp->id);
 		goto error;
 	}
-	result.interface = argp->interface;
 	result.id = argp->id;
 	result.tail_ftn = chain_val.tail_ftn;
 
 	return &result;
 
 error:
-	result.interface = "";
-	return &result;
+	return NULL;
 }
 
 rpc_trn_ftn_t *get_ftn_1_svc(rpc_trn_zeta_key_t *argp, struct svc_req *rqstp)
@@ -525,26 +330,15 @@ rpc_trn_ftn_t *get_ftn_1_svc(rpc_trn_zeta_key_t *argp, struct svc_req *rqstp)
 	__u32 ftn_key;
 	static struct ftn_t ftn_val;
 
-	TRN_LOG_DEBUG("get_ftn_1 ftn id: %d on interface: %s", argp->id,
-		      argp->interface);
-
-	struct user_metadata_t *md = trn_itf_table_find(argp->interface);
-
-	if (!md) {
-		TRN_LOG_ERROR("Cannot find interface metadata for %s",
-			      argp->interface);
-		goto error;
-	}
+	TRN_LOG_DEBUG("get_ftn_1 ftn id: %d", argp->id);
 
 	ftn_key = argp->id;
-	rc = trn_get_ftn(md, &ftn_key, &ftn_val);
+	rc = trn_get_ftn(&ftn_key, &ftn_val);
 
 	if (rc != 0) {
-		TRN_LOG_ERROR("Cannot get ftn %d on interface %s", argp->id,
-			      argp->interface);
+		TRN_LOG_ERROR("Cannot get ftn %d", argp->id);
 		goto error;
 	}
-	result.interface = argp->interface;
 	result.id = argp->id;
 	result.position = ftn_val.position;
 	result.ip = ftn_val.ip;
@@ -554,271 +348,144 @@ rpc_trn_ftn_t *get_ftn_1_svc(rpc_trn_zeta_key_t *argp, struct svc_req *rqstp)
 	return &result;
 
 error:
-	result.interface = "";
-	return &result;
+	return NULL;
 }
 
-rpc_trn_endpoint_t *get_ep_1_svc(rpc_trn_endpoint_key_t *argp,
+rpc_trn_endpoint_t *get_ep_1_svc(rpc_endpoint_key_t *argp,
 				 struct svc_req *rqstp)
 {
 	UNUSED(rqstp);
-	static rpc_trn_endpoint_t result;
-	result.remote_ips.remote_ips_len = 0;
-	result.hosted_interface = "";
-	memset(result.mac, 0, sizeof(result.mac));
+	static trn_ep_t result;
 	int rc;
-	struct endpoint_key_t epkey;
-	static struct endpoint_t epval;
+	
+	TRN_LOG_DEBUG("get_ep_1 ep vni: %ld, ip: 0x%x",
+		      argp->vni, argp->ip);
 
-	TRN_LOG_DEBUG("get_ep_1 ep tunid: %ld, ip: 0x%x,"
-		      " on interface: %s",
-		      argp->tunid, argp->ip, argp->interface);
-
-	struct user_metadata_t *md = trn_itf_table_find(argp->interface);
-
-	if (!md) {
-		TRN_LOG_ERROR("Cannot find interface metadata for %s",
-			      argp->interface);
-		goto error;
-	}
-
-	memcpy(epkey.tunip, &argp->tunid, sizeof(argp->tunid));
-	epkey.tunip[2] = argp->ip;
-
-	rc = trn_get_endpoint(md, &epkey, &epval);
+	rc = trn_get_endpoint((endpoint_key_t *)argp, &result.xdp_ep.val);
 
 	if (rc != 0) {
 		TRN_LOG_ERROR(
-			"Cannot update transit XDP with ep %d on interface %s",
-			epkey.tunip[2], argp->interface);
+			"Cannot find ep %d - %d from XDP map",
+			argp->vni, argp->ip);
 		goto error;
 	}
 
-	result.interface = argp->interface;
-	char buf[IF_NAMESIZE];
-	result.tunid = argp->tunid;
-	result.ip = argp->ip;
-	if (epval.hosted_iface != -1) {
-		result.hosted_interface =
-			if_indextoname(epval.hosted_iface, buf);
-		if (result.hosted_interface == NULL) {
-			TRN_LOG_ERROR(
-				"The interface at index %d does not exist.",
-				epval.hosted_iface);
-			goto error;
-		}
-	} else {
-		result.hosted_interface = "";
-	}
-	result.eptype = epval.eptype;
-	memcpy(result.mac, epval.mac, sizeof(epval.mac));
-	result.remote_ips.remote_ips_len = epval.nremote_ips;
-	result.remote_ips.remote_ips_val = epval.remote_ips;
-	result.veth = ""; // field to be removed
-	return &result;
+	result.xdp_ep.key.vni = argp->vni;
+	result.xdp_ep.key.ip = argp->ip;
+
+	return &result.rpc_ep;
 
 error:
-	result.interface = "";
+	return NULL;
+}
+
+int *update_droplet_1_svc(rpc_trn_droplet_t *droplet, struct svc_req *rqstp)
+{
+	UNUSED(rqstp);
+	static int result;
+	int rc;
+	struct tunnel_iface_t itf;
+	trn_iface_t *eth;
+
+	eth = trn_get_itf_context(droplet->interface);
+	if (!eth) {
+		TRN_LOG_ERROR("Failed to get droplet interface context %s",
+			droplet->interface);
+		result = RPC_TRN_ERROR;
+		goto error;
+	}
+
+	for (unsigned int i = 0; i < droplet->num_entrances; i++) {
+		itf.entrances[i].ip = droplet->entrances[i].ip;
+		memcpy(itf.entrances[i].mac, droplet->entrances[i].mac,
+			sizeof(droplet->entrances[i].mac));
+		itf.entrances[i].announced = 0;
+	}
+	itf.num_entrances = droplet->num_entrances;
+	itf.iface_index = eth->iface_index;
+	itf.ibo_port = eth->ibo_port;
+	itf.role = eth->role;
+	itf.protocol = eth->protocol;
+
+	rc = trn_update_itf_config(&itf);
+	if (rc) {
+		TRN_LOG_ERROR("Failed to update droplet %s", droplet->interface);
+		result = RPC_TRN_ERROR;
+		goto error;
+	}
+	result = 0;
+
+error:
 	return &result;
 }
 
+/* RPC backend to load transit XDP and attach to interfaces */
 int *load_transit_xdp_1_svc(rpc_trn_xdp_intf_t *xdp_intf, struct svc_req *rqstp)
 {
 	UNUSED(rqstp);
 	static int result;
+	bool debug = xdp_intf->debug_mode == 0? false:true;
 
-	int rc;
-	bool unload_error = false;
-	char *itf = xdp_intf->interface;
-	char *kern_path = xdp_intf->xdp_path;
-	struct user_metadata_t empty_md;
-	struct user_metadata_t *md = trn_itf_table_find(itf);
-
-	if (md) {
-		TRN_LOG_INFO("meatadata for interface %s already exist.", itf);
+	if (trn_transit_xdp_load(xdp_intf->interfaces, xdp_intf->ibo_port, debug)) {
+		TRN_LOG_ERROR("Failed to load transit XDP");
+		result = RPC_TRN_FATAL;
 	} else {
-		TRN_LOG_INFO("creating meatadata for interface %s.", itf);
-		md = malloc(sizeof(struct user_metadata_t));
+		result = 0;
 	}
 
-	if (!md) {
-		TRN_LOG_ERROR("Failure allocating memory for user_metadata_t");
-		result = RPC_TRN_FATAL;
-		goto error;
-	}
-
-	memset(md, 0, sizeof(struct user_metadata_t));
-
-	// Set all interface index slots to unused
-	int i;
-	for (i = 0; i < TRAN_MAX_ITF; i++) {
-		md->itf_idx[i] = TRAN_UNUSED_ITF_IDX;
-	}
-
-	strcpy(md->pcapfile, xdp_intf->pcapfile);
-	md->pcapfile[255] = '\0';
-	md->xdp_flags = XDP_FLAGS_SKB_MODE;
-
-	TRN_LOG_DEBUG("load_transit_xdp_1 path: %s, pcap: %s",
-		      xdp_intf->xdp_path, xdp_intf->pcapfile);
-
-	rc = trn_user_metadata_init(md, itf, kern_path, md->xdp_flags);
-
-	if (rc != 0) {
-		TRN_LOG_ERROR(
-			"Failure initializing or loading transit XDP program for interface %s",
-			itf);
-		result = RPC_TRN_FATAL;
-		goto error;
-	}
-
-	rc = trn_itf_table_insert(itf, md);
-	if (rc != 0) {
-		TRN_LOG_ERROR(
-			"Failure populating interface table when loading XDP program on %s",
-			itf);
-		result = RPC_TRN_ERROR;
-		unload_error = true;
-		goto error;
-	}
-
-	TRN_LOG_INFO("Successfully loaded transit XDP on interface %s", itf);
-
-	result = 0;
-	return &result;
-
-error:
-	if (unload_error) {
-		trn_user_metadata_free(md);
-	}
-	free(md);
 	return &result;
 }
 
-int *unload_transit_xdp_1_svc(rpc_intf_t *argp, struct svc_req *rqstp)
+/* RPC backend to unload transit XDP from interfaces */
+int *unload_transit_xdp_1_svc(rpc_trn_xdp_intf_t *xdp_intf, struct svc_req *rqstp)
 {
 	UNUSED(rqstp);
 	static int result;
-	int rc;
-	char *itf = argp->interface;
 
-	TRN_LOG_DEBUG("unload_transit_xdp_1 interface: %s", itf);
-
-	struct user_metadata_t *md = trn_itf_table_find(itf);
-
-	if (!md) {
-		TRN_LOG_ERROR("Cannot find interface metadata for %s", itf);
-		result = RPC_TRN_ERROR;
-		goto error;
+	if (trn_transit_xdp_unload(xdp_intf->interfaces)) {
+		TRN_LOG_ERROR("Failed to unload transit XDP");
+		result = RPC_TRN_FATAL;
+	} else {
+		result = 0;
 	}
 
-	rc = trn_user_metadata_free(md);
-
-	if (rc != 0) {
-		TRN_LOG_ERROR(
-			"Cannot free XDP metadata, transit program may still be running");
-		result = RPC_TRN_ERROR;
-		goto error;
-	}
-	trn_itf_table_delete(itf);
-
-	result = 0;
-	return &result;
-
-error:
 	return &result;
 }
 
-int *load_transit_xdp_pipeline_stage_1_svc(rpc_trn_ebpf_prog_t *argp,
-					   struct svc_req *rqstp)
+int *load_transit_xdp_ebpf_1_svc(rpc_trn_ebpf_prog_t *argp, struct svc_req *rqstp)
 {
 	UNUSED(rqstp);
 
 	static int result;
 	int rc;
-	struct user_metadata_t *md;
-	char *prog_path = argp->xdp_path;
-	unsigned int prog_idx = argp->stage;
 
-	switch (prog_idx) {
-	case ON_XDP_TX:
-	case ON_XDP_PASS:
-	case ON_XDP_REDIRECT:
-	case ON_XDP_DROP:
-	case ON_XDP_SCALED_EP:
-		break;
-	default:
-		TRN_LOG_ERROR("Unsupported program stage %s", argp->interface);
-		result = RPC_TRN_ERROR;
-		goto error;
-	}
-
-	md = trn_itf_table_find(argp->interface);
-
-	if (!md) {
-		TRN_LOG_ERROR("Cannot find interface metadata for %s",
-			      argp->interface);
-		goto error;
-	}
-
-	rc = trn_add_prog(md, prog_idx, prog_path);
+	rc = trn_transit_ebpf_load(argp->prog_idx);
 
 	if (rc != 0) {
-		TRN_LOG_ERROR("Failed to insert XDP stage %d for interface %s",
-			      prog_idx, argp->interface);
+		TRN_LOG_ERROR("Failed to insert XDP stage %d", argp->prog_idx);
 		result = RPC_TRN_ERROR;
-		goto error;
+	} else {
+		result = 0;
 	}
 
-	result = 0;
-	return &result;
-
-error:
 	return &result;
 }
 
-int *unload_transit_xdp_pipeline_stage_1_svc(rpc_trn_ebpf_prog_stage_t *argp,
+int *unload_transit_xdp_ebpf_1_svc(rpc_trn_ebpf_prog_t *argp,
 					     struct svc_req *rqstp)
 {
 	UNUSED(rqstp);
 	static int result;
 	int rc;
-	struct user_metadata_t *md;
-	unsigned int prog_idx = argp->stage;
 
-	switch (prog_idx) {
-	case ON_XDP_TX:
-	case ON_XDP_PASS:
-	case ON_XDP_REDIRECT:
-	case ON_XDP_DROP:
-	case ON_XDP_SCALED_EP:
-		break;
-	default:
-		TRN_LOG_ERROR("Unsupported program stage %s", argp->interface);
-		result = RPC_TRN_ERROR;
-		goto error;
-	}
-
-	md = trn_itf_table_find(argp->interface);
-
-	if (!md) {
-		TRN_LOG_ERROR("Cannot find interface metadata for %s",
-			      argp->interface);
-		goto error;
-	}
-
-	rc = trn_remove_prog(md, prog_idx);
+	rc = trn_transit_ebpf_unload(argp->prog_idx);
 
 	if (rc != 0) {
-		TRN_LOG_ERROR("Failed to remove XDP stage %d for interface %s",
-			      prog_idx, argp->interface);
+		TRN_LOG_ERROR("Failed to remove XDP stage %d", argp->prog_idx);
 		result = RPC_TRN_ERROR;
-		goto error;
+	} else {
+		result = 0;
 	}
 
-	result = 0;
-	return &result;
-
-error:
 	return &result;
 }

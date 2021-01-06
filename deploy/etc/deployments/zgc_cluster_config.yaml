@@ -12,5 +12,5 @@ metadata:
   labels:
     name: zgc-cluster-config
 data:
-  cidr: 10.0.0.0/24
+  cidr: 192.168.100.0/24
   MAC_PRIVATE: "0x828300000000"

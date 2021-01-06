@@ -10,25 +10,25 @@
 import os
 import uuid
 import logging
+import json
+import operator
+import time
 from flask import (
     Blueprint, jsonify, request
 )
 from kubernetes.client.rest import ApiException
 from kubernetes import client, config
-from project.api.models import Node
 from project import db
+from project.api.models import Node
 from project.api.models import Zgc
 from project.api.utils import getGWsFromIpRange, get_mac_from_ip
-import json
-import operator
-from project.api.settings import zgc_cidr_range
-import time
+from project.api.settings import activeZgc, zgc_cidr_range, node_ips
+from common.rpc import TrnRpc
 
 logger = logging.getLogger('gunicorn.error')
 
 config.load_incluster_config()
 obj_api = client.CustomObjectsApi()
-
 nodes_blueprint = Blueprint('nodes', __name__)
 
 
@@ -41,6 +41,7 @@ def update_droplet(droplet):
                                                                    name=droplet['metadata']['name'],
                                                                    body=droplet)
         logger.info('Response for update droplet: {}'.format(update_response))
+        droplet_update_itf_config(droplet['metadata']['labels']['node_ip'], droplet)
     except ApiException as e:
         logger.error('Exception when updating existing droplet: {}'.format(e))
 
@@ -57,12 +58,13 @@ def delete_droplet(name):
     except ApiException as e:
         logger.error('Exception when deleting droplet: {}\n{}'.format(name, e))
 
-def create_droplet(name, ip, mac, itf, network, zgc_id):
+def create_droplet(name, ip, mac, itf, node_ip, network, zgc_id):
     droplet_body = dict()
     meta_data = dict()
     meta_data['name'] = name
     meta_data['labels'] = dict()
     meta_data['labels']['zgc_id'] = zgc_id
+    meta_data['labels']['node_ip'] = node_ip
     meta_data['labels']['network'] = network
     spec = dict()
     spec['ip'] = ip
@@ -82,9 +84,41 @@ def create_droplet(name, ip, mac, itf, network, zgc_id):
                                                                   plural='droplets', 
                                                                   body=droplet_body)
         logger.info('Response for create droplet: {}'.format(create_response))
+        droplet_update_itf_config(node_ip, droplet_body)
     except ApiException as e:
         logger.error('Exception when Creating droplets: {}'.format(e))
 
+def droplet_update_itf_config(node_ip, droplet):
+    entrances = []
+    ips = droplet.get('spec', {}).get('ip')
+    macs = droplet.get('spec', {}).get('mac')
+
+    for idx, ip in enumerate(ips):
+        entrance = {'ip': ip, 'mac': macs[idx]}
+        entrances.append(entrance)
+    itf_conf = {
+        'interface': droplet['spec']['itf'],
+        'num_entrances': len(ips),
+        'entrances': entrances
+    }
+    logger.info('Sending RPC: {}-{}'.format(node_ip, itf_conf))
+    rpc = TrnRpc(node_ip)
+    rpc.update_droplet(itf_conf)
+    del rpc
+
+def node_load_transit_xdp(ip, inf_tenant, inf_zgc):
+    node_ips[ip] = ip
+    logger.info('Sending RPC: {}-{} {}'.format(ip, inf_tenant, inf_zgc))
+    rpc = TrnRpc(ip)
+    rpc.load_transit_xdp(inf_tenant, inf_zgc, int(activeZgc["port_ibo"]))
+    del rpc
+
+def node_unload_transit_xdp(ip, itf_tenant, itf_zgc):
+    node_ips.pop(ip, None)
+    rpc = TrnRpc(ip)
+    rpc.unload_transit_xdp(ip, itf_tenant, itf_zgc)
+    del rpc
+    
 @nodes_blueprint.route('/nodes', methods=['GET', 'POST'])
 def all_nodes():
     status_code = 200
@@ -93,6 +127,8 @@ def all_nodes():
         start_time = time.time()
         post_data = request.get_json()
         post_data['node_id'] = str(uuid.uuid4())
+
+        node_load_transit_xdp(post_data['ip_control'], post_data['inf_tenant'], post_data['inf_zgc'])
 
         # Try to get the existing droplets        
         all_droplets_in_zgc = obj_api.list_cluster_custom_object(group='zeta.com',
@@ -162,6 +198,7 @@ def all_nodes():
                                ip=ip_for_new_droplet, 
                                mac=macs_for_new_droplet,
                                itf=post_data['inf_tenant'], 
+                               node_ip= post_data['ip_control'],
                                network='tenant', 
                                zgc_id=post_data['zgc_id'])
 
@@ -169,6 +206,7 @@ def all_nodes():
                                ip=[zgc_ip], 
                                mac=[zgc_mac],
                                itf=post_data['inf_zgc'], 
+                               node_ip= post_data['ip_control'],
                                network='zgc', 
                                zgc_id=post_data['zgc_id'])
 
@@ -180,16 +218,18 @@ def all_nodes():
             zgc = Zgc.query.filter_by(zgc_id=post_data['zgc_id']).first()
             if zgc is not None:
                 gws = getGWsFromIpRange(zgc.ip_start, zgc.ip_end)
-                create_droplet(name='droplet-' +'tenant-' + post_data['name'].replace('_', "-").lower(), 
+                create_droplet(name='droplet-tenant-' + post_data['name'].replace('_', "-").lower(), 
                                ip=[gw['ip'] for gw in gws], 
                                mac=[gw['mac'] for gw in gws],
-                               itf=post_data['inf_tenant'], 
+                               itf=post_data['inf_tenant'],
+                               node_ip= post_data['ip_control'],
                                network='tenant', 
                                zgc_id=post_data['zgc_id'])
                 create_droplet(name='droplet-' +'zgc-' + post_data['name'].replace('_', "-").lower(), 
                                ip=[zgc_ip], 
                                mac=[zgc_mac],
                                itf=post_data['inf_zgc'], 
+                               node_ip= post_data['ip_control'],
                                network='zgc', 
                                zgc_id=post_data['zgc_id'])
             else:
@@ -198,6 +238,7 @@ def all_nodes():
         # commit change to data at last
         db.session.add(Node(**post_data))
         db.session.commit()
+
         response_object = post_data
         end_time = time.time()
         logger.debug(f'Zeta took {end_time - start_time} seconds to make a node and its two droplets.')
@@ -281,6 +322,8 @@ def single_node(node_id):
 
             for droplet_name in modified_droplets:
                 update_droplet(modified_droplets[droplet_name])
+
+        node_unload_transit_xdp(node.ip_control, node.inf_tenant, node.zgc_id)
 
         db.session.delete(node)
         db.session.commit()

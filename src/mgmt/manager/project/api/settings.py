@@ -15,6 +15,10 @@ core_api = client.CoreV1Api()
 def init():
     global activeZgc
     activeZgc = {}
+    global node_ips
+    node_ips = {}
+    global vnis
+    vnis = {}
     global zgc_cidr_range
     # Give it a default value.
     zgc_cidr_range = '10.0.0.0/16'

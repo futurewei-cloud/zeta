@@ -40,6 +40,7 @@ def all_vpcs():
         vpc = Vpc(zgc_id = settings.activeZgc["zgc_id"], **post_data)
         db.session.add(vpc)
         db.session.commit()
+        settings.vnis[post_data.get('vpc_id')] = post_data.get('vni')
 
         response_object = extendVpcResp(vpc)
         end_time = time.time()

@@ -20,8 +20,11 @@
 # THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 FROM fwnetworking/python_base:latest
-COPY build/operator /opt/zeta/operator
-COPY build/bin /opt/zeta/bin
+
+ENV PYTHONUNBUFFERED 1
+
+COPY build/operator /opt/zeta/operator/
+COPY build/bin /opt/zeta/bin/
 COPY deploy/etc/luigi.cfg /etc/luigi/luigi.cfg
 RUN ln -snf /opt/zeta/bin /trn_bin && \
     pip3 install /opt/zeta/operator
