@@ -60,6 +60,9 @@
 #define TRAN_SCALED_EP 2
 #define TRAN_GATEWAY_EP 3
 
+/* Size for OAM message queue bpfmap */
+#define TRAN_OAM_QUEUE_LEN 1024
+
 /* XDP interface_map keys for packet redirect */
 enum trn_itf_ma_key_t {
 TRAN_ITF_MAP_TENANT = 0,     // id map to ifindex connected to tenant network

@@ -105,7 +105,7 @@ struct bpf_map_def SEC("maps") oam_queue_map = {
 	.type = BPF_MAP_TYPE_QUEUE,
 	.key_size = 0,
 	.value_size = sizeof(flow_ctx_t),
-	.max_entries = 1024,
+	.max_entries = TRAN_OAM_QUEUE_LEN,
 };
 BPF_ANNOTATE_KV_PAIR_QUEUESTACK(oam_queue_map, flow_ctx_t);
 

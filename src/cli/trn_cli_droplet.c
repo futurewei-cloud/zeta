@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /**
- * @file trn_cli_ep.c
+ * @file trn_cli_droplet.c
  * @author Bin Liang (@liangbin)
  *
  * @brief CLI subcommands related to droplets

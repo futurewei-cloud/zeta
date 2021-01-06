@@ -175,7 +175,7 @@ static __inline int trn_process_inner_ip(struct transit_packet *pkt)
 		flow->dport = pkt->inner_udp->dest;
 	}
 
-	/* Modify inner EitherHdr */
+	/* Modify inner EtherHdr */
 	trn_set_dst_mac(pkt->inner_eth, ep->mac);
 
 	/* Keep overlay header, update outer header destinations */
@@ -194,11 +194,11 @@ static __inline int trn_process_inner_ip(struct transit_packet *pkt)
 	pkt->fctx.udp.len = sizeof(struct udphdr) + sizeof(pkt->fctx.opcode) +
 		sizeof(pkt->fctx.flow) + sizeof(dp_encap_opdata_t);
 
-	pkt->fctx.ip.version = 4;
-	pkt->fctx.ip.ihl = 5;
+	pkt->fctx.ip.version = IPVERSION;
+	pkt->fctx.ip.ihl = sizeof(struct iphdr) >> 2;
 	pkt->fctx.ip.tot_len = sizeof(struct iphdr) + pkt->fctx.udp.len;
 	pkt->fctx.ip.id = bpf_htons(54321);
-	pkt->fctx.ip.ttl = 255;
+	pkt->fctx.ip.ttl = IPDEFTTL;
 	pkt->fctx.ip.protocol = IPPROTO_UDP;
 	trn_set_src_dst_ip_csum(&pkt->fctx.ip, pkt->ip->daddr, pkt->ip->saddr, pkt->data_end);
 
