@@ -249,7 +249,8 @@ static int check_chain_equal(const LargestIntegralType value,
 	assert_int_equal(chain->id, c_chain->id);
 	assert_int_equal(chain->tail_ftn, c_chain->tail_ftn);
 	assert_int_equal(chain->tail_ftn_ip, c_chain->tail_ftn_ip);
-	assert_string_equal(chain->tail_ftn_mac, c_chain->tail_ftn_mac);
+	assert_memory_equal(chain->tail_ftn_mac, c_chain->tail_ftn_mac,
+			    sizeof(chain->tail_ftn_mac));
 	return true;
 }
 
@@ -333,21 +334,21 @@ static void test_trn_cli_update_chain_subcmd(void **state)
 	int update_chain_1_ret_val = 0;
 
 	/* Test cases */
-	char *argv1[] = { "update-chain", "-i", "eth0", "-j", QUOTE({
+	char *argv1[] = { "update-chain", "-j", QUOTE({
 				  "id": "3",
 				  "tail_ftn": "1",
 				  "tail_ftn_ip": "10.0.0.1",
 				  "tail_ftn_mac": "1:2:3:4:5:6"
 			  }) };
 
-	char *argv2[] = { "update-chain", "-i", "eth0", "-j", QUOTE({
+	char *argv2[] = { "update-chain", "-j", QUOTE({
 				  "id": 3,
 				  "tail_ftn": "1",
 				  "tail_ftn_ip": "10.0.0.1",
 				  "tail_ftn_mac": "1:2:3:4:5:6"
 			  }) };
 
-	char *argv3[] = { "update-chain", "-i", "eth0", "-j", QUOTE({
+	char *argv3[] = { "update-chain", "-j", QUOTE({
 				  "id": 3,
 				  "tail_ftn": "1",
 				  "tail_ftn_ip": "10.0.0.1",

@@ -66,8 +66,8 @@ async def on_startup(logger, **kwargs):
 
     configmap = read_config_map()
     if configmap:
-        OBJ_DEFAULTS.default_dft = configmap.data["defualt_dft"]
-        OBJ_DEFAULTS.defualt_dft_id = configmap.data["defualt_dft_id"]
+        OBJ_DEFAULTS.default_dft = configmap.data["default_dft"]
+        OBJ_DEFAULTS.default_dft_id = configmap.data["default_dft_id"]
         OBJ_DEFAULTS.default_n_fwds = int(configmap.data["default_n_fwds"])
         OBJ_DEFAULTS.default_n_ftns = int(configmap.data["default_n_ftns"])
         OBJ_DEFAULTS.default_n_chains = int(configmap.data["default_n_chains"])

@@ -29,12 +29,4 @@ def droplet_create(task, droplet, name, body, spec, diff):
     logger.info("Creating droplet {}!".format(name))
     if not droplet:
         droplet = droplets_opr.get_stored_obj(name, spec)
-
-    if droplet.network == OBJ_DEFAULTS.zgc_net:
-        droplet.rpc.load_transit_xdp()
-    elif droplet.network == OBJ_DEFAULTS.tenant_net:
-        droplet.rpc.load_transit_xdp()  # Change this
-    else:
-        task.raise_permanent_error(
-            "Droplet {} not assigned a valid network".format(name))
     return droplet

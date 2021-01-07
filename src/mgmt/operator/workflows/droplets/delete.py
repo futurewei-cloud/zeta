@@ -29,5 +29,4 @@ def droplet_delete(task, droplet, name, body, spec, diff):
     logger.info("Deleting droplet {}!".format(name))
     if not droplet:
         droplet = droplets_opr.get_stored_obj(name, spec)
-    droplet.rpc.unload_transit_xdp()
     return droplet
