@@ -28,11 +28,11 @@ int trn_cli_parse_ep_key(const cJSON *jsonobj,
 			 rpc_endpoint_key_t *epk)
 {
 
-	if (trn_cli_parse_json_number(jsonobj, "vni", (int *)&epk->vni)) {
+	if (trn_cli_parse_json_number_u32(jsonobj, "vni", &epk->vni)) {
 		return -EINVAL;
 	}
 
-	if (trn_cli_parse_json_ip(jsonobj, "ip", &epk->ip)) {
+	if (trn_cli_parse_json_str_ip(jsonobj, "ip", &epk->ip)) {
 		return -EINVAL;
 	}
 
@@ -43,8 +43,8 @@ int trn_cli_parse_ep(const cJSON *jsonobj, rpc_trn_endpoint_batch_t *batch)
 {
 	cJSON *eps = cJSON_GetObjectItem(jsonobj, "eps");
 
-	if (trn_cli_parse_json_number(jsonobj, "size",
-		(int *)&batch->rpc_trn_endpoint_batch_t_len)) {
+	if (trn_cli_parse_json_number_u32(jsonobj, "size",
+		&batch->rpc_trn_endpoint_batch_t_len)) {
 		return -EINVAL;
 	} else if (batch->rpc_trn_endpoint_batch_t_len > TRAN_MAX_EP_BATCH_SIZE) {
 		print_err("Number of elements in batch over limit %d\n",
@@ -74,15 +74,15 @@ int trn_cli_parse_ep(const cJSON *jsonobj, rpc_trn_endpoint_batch_t *batch)
 	trn_ep_t *item = items;
 	cJSON *ep;
 	cJSON_ArrayForEach(ep, eps) {
-		if (trn_cli_parse_json_number(ep, "vni", (int *)&item->xdp_ep.key.vni)) {
+		if (trn_cli_parse_json_number_u32(ep, "vni", &item->xdp_ep.key.vni)) {
 			goto cleanup;
 		}
 
-		if (trn_cli_parse_json_number_ip(ep, "ip", &item->xdp_ep.key.ip)) {
+		if (trn_cli_parse_json_number_u32n(ep, "ip", &item->xdp_ep.key.ip)) {
 			goto cleanup;
 		}
 
-		if (trn_cli_parse_json_number_ip(ep, "hip", &item->xdp_ep.val.hip)) {
+		if (trn_cli_parse_json_number_u32n(ep, "hip", &item->xdp_ep.val.hip)) {
 			goto cleanup;
 		}
 
