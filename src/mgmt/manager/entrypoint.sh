@@ -19,12 +19,4 @@ echo "PostgreSQL started"
 # Trigger Ready Probe
 touch /tmp/healthy
 
-mkdir -p /var/log/gunicorn/
-
-touch /var/log/gunicorn/error.log
-
-touch /var/log/gunicorn/access.log
-
-
-gunicorn -b 0.0.0.0:5000 manage:app --error-logfile /var/log/gunicorn/error.log --access-logfile /var/log/gunicorn/access.log --capture-output --log-level debug
-
+gunicorn -b 0.0.0.0:5000 manage:app --error-logfile - --access-logfile - --log-level info

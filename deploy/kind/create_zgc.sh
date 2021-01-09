@@ -42,7 +42,6 @@ for ((i = 1; i <= $DROPLET_NODES; i++)); do
         --cap-add=NET_ADMIN \
         --cap-add=SYS_PTRACE \
         --security-opt seccomp=unconfined \
-        --pid=host \
         --network=$kind_network \
         --name zeta-node-$i \
         $REG/zeta_droplet:latest

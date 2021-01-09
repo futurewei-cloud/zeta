@@ -19,6 +19,7 @@ from flask import (
 from project.api.models import Port, Host, EP
 from project.api.settings import node_ips, vnis
 from project.api.utils import ip_to_int, mac_to_int
+from project import db
 from common.rpc import TrnRpc
 
 # Make sure matching TRAN_MAX_EP_BATCH_SIZE in trn_datamodel.h
@@ -30,8 +31,10 @@ ports_blueprint = Blueprint('ports', __name__)
 
 eps = []
 
+
 def ports_update_eps_config():
-    eps_list = [eps[i:i + EP_BATCH_MAX] for i in range(0, len(eps), EP_BATCH_MAX)]
+    eps_list = [eps[i:i + EP_BATCH_MAX]
+                for i in range(0, len(eps), EP_BATCH_MAX)]
     for eps_chunk in eps_list:
         eps_conf = {
             'size': len(eps_chunk),
@@ -44,6 +47,7 @@ def ports_update_eps_config():
             del rpc
     eps.clear()
 
+
 @ports_blueprint.route('/ports', methods=['GET', 'POST'])
 def all_ports():
     if request.method == 'POST':
@@ -53,16 +57,17 @@ def all_ports():
         start_time = time.time()
         for post_data in portList:
             port = Port(
-                port_id = post_data.get('port_id'),
-                mac_port = post_data.get('mac_port'),
-                vpc_id = post_data.get('vpc_id'))
+                port_id=post_data.get('port_id'),
+                mac_port=post_data.get('mac_port'),
+                vpc_id=post_data.get('vpc_id'))
 
-            host = Host.query.filter_by(ip_node=post_data.get('ip_node')).first()
+            host = Host.query.filter_by(
+                ip_node=post_data.get('ip_node')).first()
             if host is None:
                 host = Host(
-                    mac_node = post_data.get('mac_node'),
-                    ip_node = post_data.get('ip_node'))
-                host.host_id=str(uuid.uuid4())
+                    mac_node=post_data.get('mac_node'),
+                    ip_node=post_data.get('ip_node'))
+                host.host_id = str(uuid.uuid4())
                 db.session.add(host)
             port.host_id = host.host_id
 
@@ -83,7 +88,8 @@ def all_ports():
             eps.append(ep)
         response_object = portList
         end_time = time.time()
-        logger.debug(f'Zeta took {end_time - start_time} seconds to make {amount_of_ports} ports')
+        logger.debug(
+            f'Zeta took {end_time - start_time} seconds to make {amount_of_ports} ports')
         ports_update_eps_config()
     else:
         response_object = [port.to_json() for port in Port.query.all()]

@@ -22,9 +22,10 @@ from project.api.models import Node
 from project.api.models import Zgc
 from project.api.utils import getGWsFromIpRange, get_mac_from_ip
 from project.api.settings import activeZgc, zgc_cidr_range, node_ips
+from project import db
 from common.rpc import TrnRpc
 
-logger = logging.getLogger('gunicorn.error')
+logger = logging.getLogger()
 
 config.load_incluster_config()
 obj_api = client.CustomObjectsApi()
@@ -75,6 +76,7 @@ def create_droplet(name, ip, mac, itf, node_ip, network, zgc_id):
     spec['itf'] = itf
     spec['network'] = network
     spec['zgc_id'] = zgc_id
+    spec['ip_control'] = node_ip
     droplet_body['metadata'] = meta_data
     droplet_body['spec'] = spec
     droplet_body['apiVersion'] = 'zeta.com/v1'

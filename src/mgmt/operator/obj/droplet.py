@@ -47,7 +47,7 @@ class Droplet(KubeObject):
 
     @property
     def rpc(self):
-        return TrnRpc(self.ip)
+        return TrnRpc(self.ip_control)
 
     def get_obj_spec(self):
         self.obj = {
