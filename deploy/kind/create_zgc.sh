@@ -11,7 +11,7 @@ zgc_network="zgc_network"
 tenant_network="tenant_network"
 
 # Get full path of current ROOT no matter where it's placed and invoked
-ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." >/dev/null 2>&1 && pwd )"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." >/dev/null 2>&1 && pwd)"
 
 . $ROOT/deploy/install/common.sh
 
@@ -23,20 +23,19 @@ reg_port='5000'
 # Remove existing zeta-nodes containers
 DROPLETS=$(docker ps -a --format "{{.Names}}" | grep zeta-node)
 echo "Deleting existing zeta-node containers"
-docker stop $DROPLETS > /dev/null 2>&1
-docker rm -f $DROPLETS > /dev/null 2>&1
-docker container prune -f > /dev/null 2>&1
+docker stop $DROPLETS >/dev/null 2>&1
+docker rm -f $DROPLETS >/dev/null 2>&1
+docker container prune -f >/dev/null 2>&1
 
 if [[ ! -z "$STAGE" && "$STAGE" != "user" ]]; then
-  echo "Rebuild and publish zeta_droplet image to $REG..."
-  docker image build -t $REG/zeta_droplet:latest -f ${ROOT}/deploy/kind/droplet.Dockerfile $ROOT >/dev/null
-  docker image push $REG/zeta_droplet:latest >/dev/null
+    echo "Rebuild and publish zeta_droplet image to $REG..."
+    docker image build -t $REG/zeta_droplet:latest -f ${ROOT}/deploy/kind/droplet.Dockerfile $ROOT >/dev/null
+    docker image push $REG/zeta_droplet:latest >/dev/null
 fi
 
 # Bring up droplets
 echo "Creating $DROPLET_NODES containers as ZGC nodes"
-for ((i=1; i<=$DROPLET_NODES; i++));
-do
+for ((i = 1; i <= $DROPLET_NODES; i++)); do
     echo -e "Creating zeta-node-$i"
     docker run -d \
         --privileged \
@@ -54,10 +53,11 @@ manager_ip=$(kubectl get node $(kubectl get pods -o wide | grep zeta-manager | a
 
 response=$(curl -H 'Content-Type: application/json' -X POST \
     -d '{"name":"zgc0",
-        "description":"zgc0",
-        "ip_start":"20.0.0.1",
-        "ip_end":"20.0.0.16",
-        "port_ibo":"8300"}' \
+            "description":"zgc0",
+            "ip_start":"20.0.0.239",
+            "ip_end":"20.0.0.254",
+            "port_ibo":"8300",
+            "overlay_type": "vxlan"}' \
     $manager_ip:80/zgcs)
 
 zgc_id=$(echo $response | sed 's/\\[tn]//g' | cut -d':' -f 7 | tr -d '"}' | xargs)
@@ -68,8 +68,7 @@ inf_control="eth0"
 inf_zgc="eth1"
 inf_tenant="eth2"
 nodes=($(docker ps | grep -o 'zeta-node-[0-9]\+'))
-for node in "${nodes[@]}"
-do
+for node in "${nodes[@]}"; do
     docker network connect $zgc_network $node
     docker network connect $tenant_network $node
     ip_control=$(docker exec $node ip addr show $inf_control | grep "inet\\b" | awk '{print $2}' | cut -d/ -f1)

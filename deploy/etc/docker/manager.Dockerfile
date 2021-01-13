@@ -20,6 +20,7 @@ COPY build/bin /opt/zeta/bin/
 
 # install netcat and manager
 RUN ln -snf /opt/zeta/bin /trn_bin && \
+    apt-get install -y rsyslog && \
     pip3 install /opt/zeta/manager/
 
 # Run app in shell format
