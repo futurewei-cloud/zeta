@@ -9,8 +9,10 @@ from kubernetes import client, config
 from common.constants import *
 from common.common import *
 from common.object_operator import ObjectOperator
+from common.id_allocator import IdAllocator
 from store.operator_store import OprStore
 from obj.chain import Chain
+from common.maglev_table import MaglevTable
 
 logger = logging.getLogger()
 
@@ -27,6 +29,7 @@ class ChainOperator(ObjectOperator):
     def __init__(self, **kwargs):
         logger.info(kwargs)
         self.store = OprStore()
+        self.id_allocator = IdAllocator()
         config.load_incluster_config()
         self.obj_api = client.CustomObjectsApi()
 
@@ -43,12 +46,49 @@ class ChainOperator(ObjectOperator):
     def get_stored_obj(self, name, spec):
         return Chain(name, self.obj_api, self.store, spec)
 
-    def create_n_chains(self, dft):
-        for i in range(dft.numchains):
-            chain_name = dft.name + '-chain-' + str(i)
-            chain = Chain(chain_name, self.obj_api, self.store)
-            chain.dft = dft.name
-            chain.size = dft.numchainreplicas
-            chain.create_obj()
-            dft.maglev_table.add(chain.name)
-        dft.table = dft.maglev_table.table
+    def create_n_chains(self, dft_obj, numchains, numchainreplicas, task):
+        for _ in range(numchains):
+            chain_id = self.id_allocator.allocate_id(KIND.chain)
+            chain_name = dft_obj.name + '-chain-' + chain_id
+            chain_obj = Chain(chain_name, self.obj_api, self.store)
+            chain_obj.id = chain_id
+            chain_obj.dft = dft_obj.name
+            chain_obj.size = numchainreplicas
+            logger.info("Adding chain {}".format(chain_obj.name))
+            dft_obj.chains.append(chain_obj.name)
+            dft_obj.maglev_table.add(chain_obj.id)
+            chain_obj.create_obj()
+        dft_obj.table = dft_obj.maglev_table.get_table()
+
+    def delete_n_chains(self, dft_obj, numchains, task):
+        if numchains > dft_obj.numchains:
+            logger.info("Can't delete more Chains than available.")
+            dft_obj.numchains = len(dft_obj.chains)
+        for i in range(numchains):
+            chain_obj = self.store.get_obj(dft_obj.chains[i], KIND.chain)
+            logger.info("Deleting chain {}".format(chain_obj.name))
+            dft_obj.chains.remove(chain_obj.name)
+            dft_obj.maglev_table.remove(chain_obj.id)
+            chain_obj.delete_obj()
+        dft_obj.table = dft_obj.maglev_table.get_table()
+
+    def process_numchain_change(self, dft_obj, old, new, task):
+        logger.info("New {}, Old {}".format(new, old))
+        diff = new - old
+        if diff > 0:
+            logger.info("Scaling out chain by {}".format(abs(diff)))
+            self.create_n_chains(
+                dft_obj, abs(diff), OBJ_DEFAULTS.default_n_ftns, task)
+        if diff <= 0:
+            logger.info("Scaling in chains by {}".format(abs(diff)))
+            self.delete_n_chains(dft_obj, abs(diff), task)
+        dft_obj.update_obj()
+
+    def populate_maglev_table(self, dft_obj):
+        dft_obj.maglev_table = MaglevTable(
+            OBJ_DEFAULTS.default_maglev_table_size)
+        for chain in dft_obj.chains:
+            chain_obj = self.store.get_obj(chain, KIND.chain)
+            dft_obj.maglev_table.add(chain_obj.id)
+        dft_obj.table = dft_obj.maglev_table.get_table()
+        dft_obj.update_obj()

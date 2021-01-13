@@ -68,8 +68,7 @@ int *update_dft_1_svc(rpc_trn_dft_t *dft, struct svc_req *rqstp)
 	rc = trn_update_dft(&dft_key, &dft_val);
 
 	if (rc != 0) {
-		TRN_LOG_ERROR(
-			"Cannot update transit XDP with dft %d",dft_key);
+		TRN_LOG_ERROR("Cannot update transit XDP with dft %d", dft_key);
 		result = RPC_TRN_ERROR;
 		goto error;
 	}
@@ -93,12 +92,14 @@ int *update_chain_1_svc(rpc_trn_chain_t *chain, struct svc_req *rqstp)
 	chain_key = chain->id;
 
 	chain_val.tail_ftn = chain->tail_ftn;
-
+	chain_val.tail_ftn_ip = chain->tail_ftn_ip;
+	memcpy(chain_val.tail_ftn_mac, chain->tail_ftn_mac,
+	       6 * sizeof(chain_val.tail_ftn_mac[0]));
 	rc = trn_update_chain(&chain_key, &chain_val);
 
 	if (rc != 0) {
-		TRN_LOG_ERROR(
-			"Cannot update transit XDP with chain %d", chain->id);
+		TRN_LOG_ERROR("Cannot update transit XDP with chain %d",
+			      chain->id);
 		result = RPC_TRN_ERROR;
 		goto error;
 	}
@@ -131,8 +132,7 @@ int *update_ftn_1_svc(rpc_trn_ftn_t *ftn, struct svc_req *rqstp)
 	rc = trn_update_ftn(&ftn_key, &ftn_val);
 
 	if (rc != 0) {
-		TRN_LOG_ERROR(
-			"Cannot update transit XDP with ftn %d", ftn->id);
+		TRN_LOG_ERROR("Cannot update transit XDP with ftn %d", ftn->id);
 		result = RPC_TRN_ERROR;
 		goto error;
 	}
@@ -151,7 +151,8 @@ int *update_ep_1_svc(rpc_trn_endpoint_batch_t *batch, struct svc_req *rqstp)
 
 	trn_ep_t *ep = (trn_ep_t *)batch->rpc_trn_endpoint_batch_t_val;
 
-	TRN_LOG_DEBUG("update_ep_1 batch size: %d", batch->rpc_trn_endpoint_batch_t_len);
+	TRN_LOG_DEBUG("update_ep_1 batch size: %d",
+		      batch->rpc_trn_endpoint_batch_t_len);
 
 	ctx = trn_update_endpoints_get_ctx();
 	if (ctx < 0) {
@@ -164,7 +165,7 @@ int *update_ep_1_svc(rpc_trn_endpoint_batch_t *batch, struct svc_req *rqstp)
 		rc = trn_update_endpoint(ctx, &ep->xdp_ep.key, &ep->xdp_ep.val);
 		if (rc) {
 			TRN_LOG_ERROR("Failed to update endpoint %d %08x",
-				ep->xdp_ep.key.vni, ep->xdp_ep.key.ip);
+				      ep->xdp_ep.key.vni, ep->xdp_ep.key.ip);
 			result = RPC_TRN_ERROR;
 			goto error;
 		}
@@ -250,13 +251,13 @@ int *delete_ep_1_svc(rpc_endpoint_key_t *argp, struct svc_req *rqstp)
 	static int result;
 	int rc;
 
-	TRN_LOG_DEBUG("delete_ep_1 ep vni: %ld, ip: 0x%x",
-		      argp->vni, argp->ip);
+	TRN_LOG_DEBUG("delete_ep_1 ep vni: %ld, ip: 0x%x", argp->vni, argp->ip);
 
 	rc = trn_delete_endpoint((endpoint_key_t *)argp);
 
 	if (rc != 0) {
-		TRN_LOG_ERROR("Failure deleting ep %d - %d", argp->vni, argp->ip);
+		TRN_LOG_ERROR("Failure deleting ep %d - %d", argp->vni,
+			      argp->ip);
 		result = RPC_TRN_ERROR;
 		goto error;
 	}
@@ -313,6 +314,9 @@ rpc_trn_chain_t *get_chain_1_svc(rpc_trn_zeta_key_t *argp,
 	}
 	result.id = argp->id;
 	result.tail_ftn = chain_val.tail_ftn;
+	result.tail_ftn_ip = chain_val.tail_ftn_ip;
+	memcpy(result.tail_ftn_mac, chain_val.tail_ftn_mac,
+	       sizeof(chain_val.tail_ftn_mac));
 
 	return &result;
 
@@ -357,16 +361,14 @@ rpc_trn_endpoint_t *get_ep_1_svc(rpc_endpoint_key_t *argp,
 	UNUSED(rqstp);
 	static trn_ep_t result;
 	int rc;
-	
-	TRN_LOG_DEBUG("get_ep_1 ep vni: %ld, ip: 0x%x",
-		      argp->vni, argp->ip);
+
+	TRN_LOG_DEBUG("get_ep_1 ep vni: %ld, ip: 0x%x", argp->vni, argp->ip);
 
 	rc = trn_get_endpoint((endpoint_key_t *)argp, &result.xdp_ep.val);
 
 	if (rc != 0) {
-		TRN_LOG_ERROR(
-			"Cannot find ep %d - %d from XDP map",
-			argp->vni, argp->ip);
+		TRN_LOG_ERROR("Cannot find ep %d - %d from XDP map", argp->vni,
+			      argp->ip);
 		goto error;
 	}
 
@@ -390,7 +392,7 @@ int *update_droplet_1_svc(rpc_trn_droplet_t *droplet, struct svc_req *rqstp)
 	eth = trn_get_itf_context(droplet->interface);
 	if (!eth) {
 		TRN_LOG_ERROR("Failed to get droplet interface context %s",
-			droplet->interface);
+			      droplet->interface);
 		result = RPC_TRN_ERROR;
 		goto error;
 	}
@@ -398,7 +400,7 @@ int *update_droplet_1_svc(rpc_trn_droplet_t *droplet, struct svc_req *rqstp)
 	for (unsigned int i = 0; i < droplet->num_entrances; i++) {
 		itf.entrances[i].ip = droplet->entrances[i].ip;
 		memcpy(itf.entrances[i].mac, droplet->entrances[i].mac,
-			sizeof(droplet->entrances[i].mac));
+		       sizeof(droplet->entrances[i].mac));
 		itf.entrances[i].announced = 0;
 	}
 	itf.num_entrances = droplet->num_entrances;
@@ -409,7 +411,8 @@ int *update_droplet_1_svc(rpc_trn_droplet_t *droplet, struct svc_req *rqstp)
 
 	rc = trn_update_itf_config(&itf);
 	if (rc) {
-		TRN_LOG_ERROR("Failed to update droplet %s", droplet->interface);
+		TRN_LOG_ERROR("Failed to update droplet %s",
+			      droplet->interface);
 		result = RPC_TRN_ERROR;
 		goto error;
 	}
@@ -424,9 +427,10 @@ int *load_transit_xdp_1_svc(rpc_trn_xdp_intf_t *xdp_intf, struct svc_req *rqstp)
 {
 	UNUSED(rqstp);
 	static int result;
-	bool debug = xdp_intf->debug_mode == 0? false:true;
+	bool debug = xdp_intf->debug_mode == 0 ? false : true;
 
-	if (trn_transit_xdp_load(xdp_intf->interfaces, xdp_intf->ibo_port, debug)) {
+	if (trn_transit_xdp_load(xdp_intf->interfaces, xdp_intf->ibo_port,
+				 debug)) {
 		TRN_LOG_ERROR("Failed to load transit XDP");
 		result = RPC_TRN_FATAL;
 	} else {
@@ -437,7 +441,8 @@ int *load_transit_xdp_1_svc(rpc_trn_xdp_intf_t *xdp_intf, struct svc_req *rqstp)
 }
 
 /* RPC backend to unload transit XDP from interfaces */
-int *unload_transit_xdp_1_svc(rpc_trn_xdp_intf_t *xdp_intf, struct svc_req *rqstp)
+int *unload_transit_xdp_1_svc(rpc_trn_xdp_intf_t *xdp_intf,
+			      struct svc_req *rqstp)
 {
 	UNUSED(rqstp);
 	static int result;
@@ -452,7 +457,8 @@ int *unload_transit_xdp_1_svc(rpc_trn_xdp_intf_t *xdp_intf, struct svc_req *rqst
 	return &result;
 }
 
-int *load_transit_xdp_ebpf_1_svc(rpc_trn_ebpf_prog_t *argp, struct svc_req *rqstp)
+int *load_transit_xdp_ebpf_1_svc(rpc_trn_ebpf_prog_t *argp,
+				 struct svc_req *rqstp)
 {
 	UNUSED(rqstp);
 
@@ -472,7 +478,7 @@ int *load_transit_xdp_ebpf_1_svc(rpc_trn_ebpf_prog_t *argp, struct svc_req *rqst
 }
 
 int *unload_transit_xdp_ebpf_1_svc(rpc_trn_ebpf_prog_t *argp,
-					     struct svc_req *rqstp)
+				   struct svc_req *rqstp)
 {
 	UNUSED(rqstp);
 	static int result;

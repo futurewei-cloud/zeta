@@ -6,6 +6,7 @@
 import logging
 from common.constants import *
 from store.operator_store import OprStore
+from common.id_allocator import IdAllocator
 
 logger = logging.getLogger()
 
@@ -15,6 +16,7 @@ class ObjectOperator(object):
     def __init__(self, **kwargs):
         logger.info(kwargs)
         self.store = OprStore()
+        self.id_allocator = IdAllocator()
 
     def store_get_obj(self, name, kind, spec):
         obj = self.store.get_obj(name, kind)

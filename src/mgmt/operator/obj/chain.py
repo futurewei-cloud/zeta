@@ -16,8 +16,6 @@ class Chain(KubeObject):
         super().__init__(name, obj_api, opr_store, spec)
         self.kind = "Chain"
         self.plural = "chains"
-        self.head = ""
-        self.tail = ""
         self.dft = ""
         self.size = 0
         self.ftns = []
@@ -26,9 +24,8 @@ class Chain(KubeObject):
 
     def get_obj_spec(self):
         self.obj = {
+            "id": self.id,
             "status": self.status,
-            "head": self.head,
-            "tail": self.tail,
             "ftns": self.ftns,
             "dft": self.dft,
             "size": self.size
@@ -37,6 +34,7 @@ class Chain(KubeObject):
 
     def set_obj_spec(self, spec):
         # K8s APIs
+        self.id = get_spec_val('id', spec)
         self.status = get_spec_val('status', spec)
         self.head = get_spec_val('head', spec)
         self.tail = get_spec_val('tail', spec)

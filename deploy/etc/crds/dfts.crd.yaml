@@ -28,6 +28,14 @@ spec:
           type: array
           items:
             type: string
+        chains:
+          type: array
+          items:
+            type: string
+        fwds:
+          type: array
+          items:
+            type: string
   additionalPrinterColumns:
     - name: Status
       type: string
@@ -39,11 +47,11 @@ spec:
       priority: 0
       JSONPath: .spec.numchains
       description: The number of chains in the DFT
-    - name: Numchainreplicas
+    - name: Numfwds
       type: integer
       priority: 0
-      JSONPath: .spec.numchainreplicas
-      description: The number of replica ftns in each chain
+      JSONPath: .spec.numfwds
+      description: The number of fwds in the DFT
     - name: CreateTime
       type: string
       priority: 0

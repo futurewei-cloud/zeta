@@ -22,20 +22,19 @@
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 # THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-
-# Enforce minimal KIND version to support using "kind" network with customized MTU instead of the "bridge" 
+# Enforce minimal KIND version to support using "kind" network with customized MTU instead of the "bridge"
 kindver="$(kind version | head -n1 | cut -d" " -f2)"
 kindrequired="v0.8.0"
-if [ "$(printf '%s\n' "$kindrequired" "$kindver" | sort -V | head -n1)" != "$kindrequired" ]; then 
-    echo " --> Minimal KIND version is $kindrequired, running version is $kindver, Please upgrade before proceed!"
-    exit 1
+if [ "$(printf '%s\n' "$kindrequired" "$kindver" | sort -V | head -n1)" != "$kindrequired" ]; then
+  echo " --> Minimal KIND version is $kindrequired, running version is $kindver, Please upgrade before proceed!"
+  exit 1
 fi
 kind_network='kind'
 zgc_network="zgc_network"
 tenant_network="tenant_network"
 
 # Get full path of current ROOT no matter where it's placed and invoked
-ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." >/dev/null 2>&1 && pwd )"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." >/dev/null 2>&1 && pwd)"
 KINDCONF="${HOME}/.kube/config.kind"
 ZETACONF="${HOME}/.kube/zeta.config"
 KINDHOME="${HOME}/.kube/config"
@@ -51,14 +50,14 @@ docker network disconnect $kind_network $reg_name &>/dev/null
 docker network rm $kind_network &>/dev/null
 # Remove existing droplet containers and tenant network
 DROPLETS=$(docker ps -a --format "{{.Names}}" | grep zeta-node)
-docker network rm $zgc_network > /dev/null 2>&1
-docker network rm $tenant_network > /dev/null 2>&1
+docker network rm $zgc_network >/dev/null 2>&1
+docker network rm $tenant_network >/dev/null 2>&1
 echo "Deleting existing zeta-node containers"
-docker stop $DROPLETS > /dev/null 2>&1
-docker rm -f $DROPLETS > /dev/null 2>&1
-docker container prune -f > /dev/null 2>&1
-docker network prune -f > /dev/null 2>&1
-docker volume prune -f > /dev/null 2>&1
+docker stop $DROPLETS >/dev/null 2>&1
+docker rm -f $DROPLETS >/dev/null 2>&1
+docker container prune -f >/dev/null 2>&1
+docker network prune -f >/dev/null 2>&1
+docker volume prune -f >/dev/null 2>&1
 
 # All interfaces in the network have an MTU of 9000 to
 # simulate a real datacenter. Since all container traffic
@@ -88,14 +87,14 @@ if [[ "$STAGE" == "development" ]]; then
   # create local registry container unless it already exists
   running="$(docker inspect -f '{{.State.Running}}' ${reg_name})"
   if [[ "${running}" != 'true' ]]; then
-      echo "Install local registry..."
-      docker run \
-          -d --restart=always -p "${reg_port}:5000" --name "${reg_name}" \
-          --network=$kind_network \
-          registry:2 >/dev/null
+    echo "Install local registry..."
+    docker run \
+      -d --restart=always -p "${reg_port}:5000" --name "${reg_name}" \
+      --network=$kind_network \
+      registry:2 >/dev/null
   else
-      # Make sure the existing local registry is connected with KIND network 
-      docker network connect $kind_network $reg_name >/dev/null
+    # Make sure the existing local registry is connected with KIND network
+    docker network connect $kind_network $reg_name >/dev/null
   fi
 
   reg_ip="$(docker inspect -f '{{.NetworkSettings.Networks.kind.IPAddress}}' ${reg_name})"
@@ -119,8 +118,7 @@ NODE_TEMPLATE="  - role: worker
 "
 FINAL_NODES=""
 
-for ((i=1; i<=NODES; i++));
-do
+for ((i = 1; i <= NODES; i++)); do
   FINAL_NODES=$FINAL_NODES$NODE_TEMPLATE
 done
 
@@ -149,8 +147,8 @@ nodes:
 ${FINAL_NODES}
 EOF
 
-api_ip=`docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' kind-control-plane`
-sed "s/server: https:\/\/127.0.0.1:[[:digit:]]\+/server: https:\/\/$api_ip:6443/" $KINDCONF > $ZETACONF
+api_ip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' kind-control-plane)
+sed "s/server: https:\/\/127.0.0.1:[[:digit:]]\+/server: https:\/\/$api_ip:6443/" $KINDCONF >$ZETACONF
 ln -snf $KINDCONF $KINDHOME
 
 if [[ $STAGE == "development" ]]; then

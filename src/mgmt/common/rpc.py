@@ -109,10 +109,14 @@ class TrnRpc:
         returncode, text = run_cmd(cmd)
         logger.info("returns {} {}".format(returncode, text))
 
-    def update_chain(self, chain):
+    def update_chain(self, chain, ftn_droplet_obj, ftn_id):
+        ip = ftn_droplet_obj.ip[0]
+        mac = ftn_droplet_obj.mac[0]
         jsonconf = {
             "id": chain.id,
-            "tail_ftn": chain.tail
+            "tail_ftn": ftn_id,
+            "tail_ftn_ip": ip,
+            "tail_ftn_mac": mac
         }
 
         jsonconf = json.dumps(jsonconf)
@@ -121,16 +125,21 @@ class TrnRpc:
         returncode, text = run_cmd(cmd)
         logger.info("returns {} {}".format(returncode, text))
 
-    def update_ftn(self, ftn, ftn_next):
-        ftn_droplet = ftn.droplet
-        ftn_next_droplet = ftn_next.droplet
+    def update_ftn(self, ftn_id, ftn_droplet_obj, ftn_next_droplet_obj, position):
+        ip = ftn_droplet_obj.ip[0]
+        mac = ftn_droplet_obj.mac[0]
+        next_ip = ""
+        next_mac = ""
+        if ftn_next_droplet_obj:
+            next_ip = ftn_next_droplet_obj.ip[0]
+            next_mac = ftn_next_droplet_obj.mac[0]
         jsonconf = {
-            "id": ftn.id,
-            "ftn_position": ftn.position,
-            "ip": ftn.store.get_obj(KIND.droplet, ftn_droplet).ip,
-            "mac": ftn.store.get_obj(KIND.droplet, ftn_droplet).mac,
-            "next_ip": ftn_next.store.get_obj(KIND.droplet, ftn_next_droplet).ip,
-            "next_mac": ftn_next.store.get_obj(KIND.droplet, ftn_next_droplet).mac
+            "id": ftn_id,
+            "position": str(position),
+            "ip": ip,
+            "mac": mac,
+            "next_ip": next_ip,
+            "next_mac": next_mac
         }
         jsonconf = json.dumps(jsonconf)
         cmd = f'''{self.trn_cli_update_ftn} \'{jsonconf}\''''
@@ -138,9 +147,9 @@ class TrnRpc:
         returncode, text = run_cmd(cmd)
         logger.info("returns {} {}".format(returncode, text))
 
-    def get_dft(self, dft_id):
+    def get_dft(self, dft):
         jsonconf = {
-            "id": dft_id,
+            "id": dft.id,
         }
 
         jsonconf = json.dumps(jsonconf)
@@ -149,9 +158,9 @@ class TrnRpc:
         returncode, text = run_cmd(cmd)
         logger.info("returns {} {}".format(returncode, text))
 
-    def get_chain(self, chain_id):
+    def get_chain(self, chain):
         jsonconf = {
-            "id": chain_id,
+            "id": chain.id,
         }
 
         jsonconf = json.dumps(jsonconf)
@@ -160,9 +169,9 @@ class TrnRpc:
         returncode, text = run_cmd(cmd)
         logger.info("returns {} {}".format(returncode, text))
 
-    def get_ftn(self, ftn_id):
+    def get_ftn(self, ftn):
         jsonconf = {
-            "id": ftn_id,
+            "id": ftn.id,
         }
 
         jsonconf = json.dumps(jsonconf)
@@ -171,9 +180,9 @@ class TrnRpc:
         returncode, text = run_cmd(cmd)
         logger.info("returns {} {}".format(returncode, text))
 
-    def delete_dft(self, dft_id):
+    def delete_dft(self, dft):
         jsonconf = {
-            "id": dft_id,
+            "id": dft.id,
         }
 
         jsonconf = json.dumps(jsonconf)
@@ -182,9 +191,9 @@ class TrnRpc:
         returncode, text = run_cmd(cmd)
         logger.info("returns {} {}".format(returncode, text))
 
-    def delete_chain(self, chain_id):
+    def delete_chain(self, chain):
         jsonconf = {
-            "id": chain_id,
+            "id": chain.id,
         }
 
         jsonconf = json.dumps(jsonconf)

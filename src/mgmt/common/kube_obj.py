@@ -18,6 +18,7 @@ class KubeObject(object):
         self.obj_api = obj_api
         self.store = opr_store
         self.status = OBJ_STATUS.obj_status_init
+        self.id = ""
         self.plural = ""
         self.kind = ""
 

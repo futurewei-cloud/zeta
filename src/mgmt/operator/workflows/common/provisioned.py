@@ -18,6 +18,6 @@ class CommonProvisioned(WorkflowTask):
         obj = objs_opr.store_get_obj(
             self.param.name, self.param.body["kind"], self.param.spec)
         self.param.workflow_func(self, obj, self.param.name,
-                                 self.param.body, self.param.spec)
+                                 self.param.body, self.param.spec, self.param.diff)
         objs_opr.store.update_obj(obj)
         self.finalize()

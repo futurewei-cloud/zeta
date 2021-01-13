@@ -35,6 +35,7 @@ def chain_opr_on_chain_provisioned(body, spec, **kwargs):
     param.name = kwargs['name']
     param.body = body
     param.spec = spec
+    param.diff = kwargs['diff']
     param.workflow_func = chain_provisioned
     run_workflow(wffactory().CommonProvisioned(param=param))
 

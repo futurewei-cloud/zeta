@@ -24,6 +24,7 @@ import random
 from common.constants import *
 from common.common import *
 from common.object_operator import ObjectOperator
+from common.id_allocator import IdAllocator
 from kubernetes import client, config
 from obj.droplet import Droplet
 from store.operator_store import OprStore
@@ -43,6 +44,7 @@ class DropletOperator(ObjectOperator):
     def __init__(self, **kwargs):
         logger.info(kwargs)
         self.store = OprStore()
+        self.id_allocator = IdAllocator()
         config.load_incluster_config()
         self.obj_api = client.CustomObjectsApi()
         self.allocated_droplets = set()
@@ -66,9 +68,8 @@ class DropletOperator(ObjectOperator):
                 return self.store.store["Droplet"][d]
         return None
 
-    def assign_droplet(self, obj):
-        droplets = set(self.store.get_all_obj_type(
-            KIND.droplet)) - self.allocated_droplets
+    def assign_droplet(self, obj, network):
+        droplets = self.get_network_unallocated_droplets(network)
         if len(droplets) == 0:
             return False
         d = random.sample(droplets, 1)[0]
@@ -81,10 +82,15 @@ class DropletOperator(ObjectOperator):
         if obj.droplet == "":
             return False
         self.allocated_droplets.remove(obj.droplet)
+        logger.info("Unassigned droplet {} from {}".format(
+            obj.droplet, obj.name))
         obj.droplet = ""
-        logger.info("Unassigned droplet {} from {}".format(d, obj.name))
         return True
 
     def get_unallocated_droplets(self):
-        return set(self.store.get_all_obj_type(
+        return set(self.store.get_all_obj_type_name(
             KIND.droplet)) - self.allocated_droplets
+
+    def get_network_unallocated_droplets(self, network):
+        return set(self.store.get_all_network_droplets(
+            network)) - self.allocated_droplets

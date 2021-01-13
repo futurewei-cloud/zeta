@@ -9,5 +9,4 @@ metadata:
   name: dft0
 spec:
   numchains: 2
-  numchainreplicas: 2
   status: "Init"

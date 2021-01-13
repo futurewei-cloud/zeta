@@ -20,15 +20,18 @@ from project.api.utils import getGWsFromIpRange
 import time
 import logging
 
-logger = logging.getLogger('gunicorn.error')
+logger = logging.getLogger()
 
 vpcs_blueprint = Blueprint('vpcs', __name__)
+
 
 def extendVpcResp(vpc):
     respond = vpc.to_json()
     respond['port_ibo'] = settings.activeZgc["port_ibo"]
-    respond['gws'] = getGWsFromIpRange(settings.activeZgc["ip_start"], settings.activeZgc["ip_end"])
+    respond['gws'] = getGWsFromIpRange(
+        settings.activeZgc["ip_start"], settings.activeZgc["ip_end"])
     return respond
+
 
 @vpcs_blueprint.route('/vpcs', methods=['GET', 'POST'])
 def all_vpcs():
@@ -36,14 +39,15 @@ def all_vpcs():
         logger.debug('Start to make a VPC.')
         start_time = time.time()
         post_data = request.get_json()
-        vpc = Vpc(zgc_id = settings.activeZgc["zgc_id"], **post_data)
+        vpc = Vpc(zgc_id=settings.activeZgc["zgc_id"], **post_data)
         db.session.add(vpc)
         db.session.commit()
         settings.vnis[post_data.get('vpc_id')] = post_data.get('vni')
 
         response_object = extendVpcResp(vpc)
         end_time = time.time()
-        logger.debug(f'Zeta took {end_time - start_time} seconds to make a VPC')
+        logger.debug(
+            f'Zeta took {end_time - start_time} seconds to make a VPC')
     else:
         response_object = []
         for vpc in Vpc.query.all():

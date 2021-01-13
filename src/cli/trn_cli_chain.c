@@ -11,6 +11,8 @@ int trn_cli_parse_chain(const cJSON *jsonobj, struct rpc_trn_chain_t *chain)
 {
 	cJSON *id = cJSON_GetObjectItem(jsonobj, "id");
 	cJSON *tail_ftn = cJSON_GetObjectItem(jsonobj, "tail_ftn");
+	cJSON *tail_ftn_ip = cJSON_GetObjectItem(jsonobj, "tail_ftn_ip");
+	cJSON *tail_ftn_mac = cJSON_GetObjectItem(jsonobj, "tail_ftn_mac");
 
 	if (id == NULL) {
 		print_err("Error: Chain ID Error\n");
@@ -31,6 +33,30 @@ int trn_cli_parse_chain(const cJSON *jsonobj, struct rpc_trn_chain_t *chain)
 		print_err("Error: Tail FTN Error\n");
 		return -EINVAL;
 	}
+	if (tail_ftn_ip != NULL && cJSON_IsString(tail_ftn_ip)) {
+		struct sockaddr_in sa;
+		inet_pton(AF_INET, tail_ftn_ip->valuestring, &(sa.sin_addr));
+		chain->tail_ftn_ip = sa.sin_addr.s_addr;
+	} else {
+		print_err("Error: IP is missing or non-string\n");
+		return -EINVAL;
+	}
+	if (tail_ftn_mac != NULL && cJSON_IsString(tail_ftn_mac)) {
+		if (6 ==
+		    sscanf(tail_ftn_mac->valuestring,
+			   "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx%*c",
+			   &chain->tail_ftn_mac[0], &chain->tail_ftn_mac[1],
+			   &chain->tail_ftn_mac[2], &chain->tail_ftn_mac[3],
+			   &chain->tail_ftn_mac[4], &chain->tail_ftn_mac[5])) {
+		} else {
+			print_err("Error: Invalid MAC\n");
+			return -EINVAL;
+		}
+	} else {
+		print_err("MAC is missing or non-string\n");
+		return -EINVAL;
+	}
+
 	return 0;
 }
 
@@ -179,4 +205,6 @@ void dump_chain(struct rpc_trn_chain_t *chain)
 {
 	print_msg("Chain ID: %d\n", chain->id);
 	print_msg("Chain Tail FTN: %d\n", chain->tail_ftn);
+	print_msg("Chain Tail FTN IP: %x\n", chain->tail_ftn_ip);
+	print_msg("Chain Tail FTN MAC: %s\n", chain->tail_ftn_mac);
 }

@@ -115,7 +115,7 @@ def kube_create_obj(obj):
             plural=obj.get_plural(),
             body=body,
         )
-        logger.debug("Created {} {}".format(obj.get_kind(), obj.get_name()))
+        logger.info("Created {} {}".format(obj.get_kind(), obj.get_name()))
     obj.store_update_obj()
 
 
@@ -154,9 +154,9 @@ def kube_update_obj(obj):
                 body=body)
             obj.store_update_obj()
             get_body = False
-        except:
-            logger.debug("Retry updating {} {}".format(
-                obj.get_kind(), obj.get_name()))
+        except Exception as e:
+            logger.info("Exception {}: Retry updating {} {}".format(
+                e, obj.get_kind(), obj.get_name()))
             get_body = True
 
 
@@ -170,9 +170,9 @@ def kube_delete_obj(obj):
             name=obj.name,
             body=client.V1DeleteOptions(),
             propagation_policy="Orphan")
-    except:
-        logger.debug("Failed to delete {} {}".format(
-            obj.get_kind(), obj.get_name()))
+    except Exception as e:
+        logger.info("Exception {} Failed to delete {} {}".format(e,
+                                                                 obj.get_kind(), obj.get_name()))
 
 
 def kube_watch_obj(obj, watch_callback):
@@ -307,6 +307,4 @@ def reset_param(param):
     param.body = {}
     param.spec = {}
     param.diff = {}
-    param.extra = None
-    param.return_message = None
     return param

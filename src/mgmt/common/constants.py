@@ -47,12 +47,17 @@ class OBJ_DEFAULTS:
     kopf_max_retries = 10
 
     default_dft = "dft0"
+    default_dft_id = "0"
     default_n_chains = 3
-    default_n_replicas = 3
+    default_n_ftns = 1
+    default_n_fwds = 3
 
     # Some good prime numbers: 101, 211, 307, 401, 503, 601, 701, 809, 907, 1009, 2003
     # at least 100x greater than size and prime.
     default_maglev_table_size = 307
+
+    tenant_net = "tenant"
+    zgc_net = "zgc"
 
 
 class RESOURCES:

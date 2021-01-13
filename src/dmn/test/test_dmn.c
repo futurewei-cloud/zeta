@@ -371,6 +371,8 @@ static int check_chain_equal(rpc_trn_chain_t *chain, rpc_trn_chain_t *c_chain)
 {
 	assert_int_equal(chain->id, c_chain->id);
 	assert_int_equal(chain->tail_ftn, c_chain->tail_ftn);
+	assert_int_equal(chain->tail_ftn_ip, c_chain->tail_ftn_ip);
+	assert_string_equal(chain->tail_ftn_mac, c_chain->tail_ftn_mac);
 
 	return true;
 }
@@ -434,11 +436,15 @@ static void test_update_chain_1_svc(void **state)
 	UNUSED(state);
 	uint32_t id = 3;
 	uint32_t tail_ftn = 1;
+	uint32_t tail_ftn_ip = 0x100000a;
+	char tail_ftn_mac[6] = { 1, 2, 3, 4, 5, 6 };
 
 	struct rpc_trn_chain_t chain = {
 		.id = id,
 		.tail_ftn = tail_ftn,
+		.tail_ftn_ip = tail_ftn_ip,
 	};
+	memcpy(chain.tail_ftn_mac, tail_ftn_mac, sizeof(char) * 6);
 
 	int *rc;
 	expect_function_calls(__wrap_bpf_map_update_elem, 1);
@@ -545,17 +551,23 @@ static void test_get_chain_1_svc(void **state)
 
 	uint32_t id = 3;
 	uint32_t tail_ftn = 1;
+	uint32_t tail_ftn_ip = 0x200000a;
+	char tail_ftn_mac[6] = { 1, 2, 3, 4, 5, 6 };
 
 	struct rpc_trn_chain_t chain1 = {
 		.id = id,
 		.tail_ftn = tail_ftn,
+		.tail_ftn_ip = tail_ftn_ip,
 	};
+	memcpy(chain1.tail_ftn_mac, tail_ftn_mac, sizeof(char) * 6);
 
 	struct rpc_trn_zeta_key_t chain_key1 = {
 		.id = id,
 	};
 
 	struct chain_t chain_val;
+	chain_val.tail_ftn_ip = 0x200000a;
+	memcpy(chain_val.tail_ftn_mac, tail_ftn_mac, sizeof(char) * 6);
 	chain_val.tail_ftn = 1;
 
 	/* Test get_chain with valid chain_key */
