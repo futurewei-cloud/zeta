@@ -50,7 +50,7 @@ class FwdOperator(ObjectOperator):
     def create_n_fwds(self, dft_obj, numfwds, task):
         avail_droplets = len(
             droplets_opr.get_network_unallocated_droplets(OBJ_DEFAULTS.tenant_net))
-        if avail_droplets < numfwds + 1:
+        if avail_droplets < numfwds:
             task.raise_temporary_error(
                 "Not enough droplets available for {} FWD(s), only {} available droplets.".format(numfwds, avail_droplets))
         for _ in range(numfwds):

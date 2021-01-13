@@ -18,8 +18,7 @@ from flask import (
 )
 from kubernetes.client.rest import ApiException
 from kubernetes import client, config
-from project.api.models import Node
-from project.api.models import Zgc
+from project.api.models import Node, Zgc
 from project.api.utils import getGWsFromIpRange, get_mac_from_ip
 from project.api.settings import activeZgc, zgc_cidr_range, node_ips
 from project import db

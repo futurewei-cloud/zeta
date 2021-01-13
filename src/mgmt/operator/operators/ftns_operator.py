@@ -50,7 +50,7 @@ class FtnOperator(ObjectOperator):
     def create_n_ftns(self, chain_obj, size, task):
         avail_droplets = len(
             droplets_opr.get_network_unallocated_droplets(OBJ_DEFAULTS.zgc_net))
-        if avail_droplets < size + 1:
+        if avail_droplets < size:
             task.raise_temporary_error(
                 "Not enough droplets available for {} FTN(s), only {} droplets available".format(size, avail_droplets))
         for i in range(size):

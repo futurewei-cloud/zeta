@@ -16,7 +16,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." >/dev/null 2>&1 && pwd)"
 . $ROOT/deploy/install/common.sh
 
 STAGE=${1:-dev}
-DROPLET_NODES=${2:-12}
+DROPLET_NODES=${2:-1}
 reg_name='local-kind-registry'
 reg_port='5000'
 
@@ -54,11 +54,12 @@ response=$(curl -H 'Content-Type: application/json' -X POST \
     -d '{"name":"zgc0",
             "description":"zgc0",
             "ip_start":"20.0.0.0",
-            "ip_end":"20.0.0.255",
-            "port_ibo":"8300"}' \
+            "ip_end":"20.0.0.15",
+            "port_ibo":"8300",
+            "overlay_type": "vxlan"}' \
     $manager_ip:80/zgcs)
 
-zgc_id=$(echo $response | sed 's/\\[tn]//g' | cut -d':' -f 7 | tr -d '"}' | xargs)
+zgc_id=$(echo $response | sed 's/\\[tn]//g' | cut -d':' -f 8 | tr -d '"}' | xargs)
 tenant_network="tenant_network"
 zgc_network="zgc_network"
 
@@ -86,7 +87,7 @@ for node in "${nodes[@]}"; do
         "inf_zgc":"'"$inf_zgc"'",
         "mac_zgc":"'"$mac_zgc"'"}'
     curl -H 'Content-Type: application/json' -X POST -d "$body" $manager_ip:80/nodes
-    echo "REST API: ZGC node $node registered to zgc0"
+    echo "REST API: ZGC node $node registered to $zgc_id"
 done
 
 objects=("dfts" "chains" "ftns" "fwds" "droplets")
