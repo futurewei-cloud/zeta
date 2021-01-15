@@ -18,14 +18,13 @@ from flask import (
 )
 from kubernetes.client.rest import ApiException
 from kubernetes import client, config
-from project.api.models import Node
-from project.api.models import Zgc
+from project.api.models import Node, Zgc
+from project import db
 from project.api.utils import getGWsFromIpRange, get_mac_from_ip
 from project.api.settings import activeZgc, zgc_cidr_range, node_ips
 from common.rpc import TrnRpc
 
-logger = logging.getLogger('gunicorn.error')
-
+logger = logging.getLogger()
 config.load_incluster_config()
 obj_api = client.CustomObjectsApi()
 nodes_blueprint = Blueprint('nodes', __name__)

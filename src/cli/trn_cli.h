@@ -31,6 +31,7 @@
 #include <stdint.h>
 #include <arpa/inet.h>
 #include <errno.h>
+#include <endian.h>
 #include "extern/cJSON.h"
 #include "extern/ketopt.h"
 
@@ -57,13 +58,16 @@ int trn_cli_read_conf_str(ketopt_t *om, int argc, char *argv[],
 
 cJSON *trn_cli_parse_json(const char *buf);
 int trn_cli_parse_json_string(const cJSON *jsonobj, const char *const key, char *buf);
-int trn_cli_parse_json_number_ip(const cJSON *jsonobj, const char *const key,
+int trn_cli_parse_json_number_u16n(const cJSON *jsonobj, const char *const key,
+	unsigned short *buf);
+int trn_cli_parse_json_number_u32n(const cJSON *jsonobj, const char *const key,
 	unsigned int *buf);
 int trn_cli_parse_json_number_mac(const cJSON *jsonobj, const char *const key,
 	unsigned char *buf);
-int trn_cli_parse_json_number(const cJSON *jsonobj, const char *const key, int *buf);
-int trn_cli_parse_json_ip(const cJSON *jsonobj, const char *const key, unsigned int *buf);
-int trn_cli_parse_json_mac(const cJSON *jsonobj, const char *const key, unsigned char *buf);
+int trn_cli_parse_json_number_u32(const cJSON *jsonobj, const char *const key,
+	unsigned int *buf);
+int trn_cli_parse_json_str_ip(const cJSON *jsonobj, const char *const key, unsigned int *buf);
+int trn_cli_parse_json_str_mac(const cJSON *jsonobj, const char *const key, unsigned char *buf);
 int trn_cli_parse_zeta_key(const cJSON *jsonobj,
 			   struct rpc_trn_zeta_key_t *zeta_key);
 

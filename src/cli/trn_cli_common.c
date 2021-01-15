@@ -53,7 +53,28 @@ int trn_cli_parse_json_string(const cJSON *jsonobj, const char *const key, char 
 	return 0;
 }
 
-int trn_cli_parse_json_number_ip(const cJSON *jsonobj, const char *const key,
+int trn_cli_parse_json_number_u16n(const cJSON *jsonobj, const char *const key,
+	unsigned short *buf)
+{
+	cJSON *item = cJSON_GetObjectItem(jsonobj, key);
+
+	if (item == NULL) {
+		print_err("Missing %s\n", key);
+		return -EINVAL;
+	} else if (!cJSON_IsNumber(item)) {
+		print_err("Invalid %s type, should be number\n", key);
+		return -EINVAL;
+	}
+	unsigned short tmp = (unsigned short)item->valuedouble;
+	*buf = 0;
+	for (unsigned int i = 0; i < sizeof(unsigned short); i++) {
+		*buf = (*buf << 8) | (tmp & 0xFF);
+		tmp >>= 8;
+	}
+	return 0;
+}
+
+int trn_cli_parse_json_number_u32n(const cJSON *jsonobj, const char *const key,
 	unsigned int *buf)
 {
 	cJSON *item = cJSON_GetObjectItem(jsonobj, key);
@@ -65,7 +86,12 @@ int trn_cli_parse_json_number_ip(const cJSON *jsonobj, const char *const key,
 		print_err("Invalid %s type, should be number\n", key);
 		return -EINVAL;
 	}
-	*buf = (unsigned int)item->valuedouble;
+	unsigned int tmp = (unsigned int)item->valuedouble;
+	*buf = 0;
+	for (unsigned int i = 0; i < sizeof(unsigned int); i++) {
+		*buf = (*buf << 8) | (tmp & 0xFF);
+		tmp >>= 8;
+	}
 	return 0;
 }
 
@@ -83,13 +109,14 @@ int trn_cli_parse_json_number_mac(const cJSON *jsonobj, const char *const key,
 	}
 	uint64_t vd = ((uint64_t)item->valuedouble & 0xFFFFFFFFFFFF);
 	for (int i = 0; i < 6; i++) {
-		buf[i] = (unsigned char)vd;
+		buf[5 - i] = (unsigned char)vd;
 		vd >>= 8;
 	}
 	return 0;
 }
 
-int trn_cli_parse_json_number(const cJSON *jsonobj, const char *const key, int *buf)
+int trn_cli_parse_json_number_u32(const cJSON *jsonobj, const char *const key,
+	unsigned int *buf)
 {
 	cJSON *item = cJSON_GetObjectItem(jsonobj, key);
 
@@ -100,11 +127,11 @@ int trn_cli_parse_json_number(const cJSON *jsonobj, const char *const key, int *
 		print_err("Invalid %s type, should be number\n", key);
 		return -EINVAL;
 	}
-	*buf = (int)item->valuedouble;
+	*buf = (unsigned int)item->valuedouble;
 	return 0;
 }
 
-int trn_cli_parse_json_ip(const cJSON *jsonobj, const char *const key, unsigned int *buf)
+int trn_cli_parse_json_str_ip(const cJSON *jsonobj, const char *const key, unsigned int *buf)
 {
 	cJSON *item = cJSON_GetObjectItem(jsonobj, key);
 
@@ -121,7 +148,7 @@ int trn_cli_parse_json_ip(const cJSON *jsonobj, const char *const key, unsigned 
 	return 0;
 }
 
-int trn_cli_parse_json_mac(const cJSON *jsonobj, const char *const key, unsigned char *buf)
+int trn_cli_parse_json_str_mac(const cJSON *jsonobj, const char *const key, unsigned char *buf)
 {
 	cJSON *item = cJSON_GetObjectItem(jsonobj, key);
 
