@@ -49,7 +49,8 @@ The recommended way to try out Zeta is with Kind.
 Kind can be used to run a multi-node Kubernetes cluster with Docker containers locally on your machine.
 You can find [instructions for installing Kind on it's official site here.](https://kind.sigs.k8s.io/docs/user/quick-start/)
 
-#### New Kind Cluster
+### Kind Cluster Environment
+##### Deployment
 **Note**: Before proceeding with the setup script below, please make sure you have [kind](https://kind.sigs.k8s.io/docs/user/quick-start/) and [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) installed.
 Validate your kind and kubectl installations by running:
 
@@ -85,7 +86,21 @@ To remove the cluster and all resources:
 $ ./deploy/full_deploy.sh -r kind
 ```
 
-### Deploy to AWS EC2 cloud
+#### Testing with Alcor-Control-Agent
+More information about the [Alcor-Control-Agent](https://github.com/futurewei-cloud/alcor-control-agent).
+Once Zeta has been fully deployed and ready, we can run a ping test with the help of the ACA (Alcor-Control-Agent).
+Before proceeding with the ACA test, first we will need to build its binaries.
+From the Zeta directory run the following
+```
+$ ./src/extern/alcor-control-agent/build/build.sh
+```
+Once ACA is done building, from the Zeta directory, you can now run a simple ping test with the command below.
+```
+python3 -W ignore -m unittest  src/mgmt/tests/test_zeta_aca_ping.py
+```
+### AWS EC2 Cloud Cluster Environment
+
+#### Deployment
 
 **Note**: Before proceeding with the setup script below, please make sure you have [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) installed and you have AWS credentials ready.
 
@@ -111,8 +126,8 @@ $ ./deploy/full_deploy.sh -r aws
 $ ./deploy/zeta_deploy.sh -d aws
 ```
 
-### Deploy to Remote K8S Cluster
-
+### Remote K8S Cluster Environment
+#### Deployment
 **Note**: Before proceeding with the setup script below, please make sure you have [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) installed and configured to access the remote K8S cluster.
 **Note**: Also, make sure postgres and ingress controller are enabled on remote K8S cluster.
 

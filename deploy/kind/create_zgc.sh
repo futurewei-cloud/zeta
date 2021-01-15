@@ -42,7 +42,6 @@ for ((i = 1; i <= $DROPLET_NODES; i++)); do
         --cap-add=NET_ADMIN \
         --cap-add=SYS_PTRACE \
         --security-opt seccomp=unconfined \
-        --pid=host \
         --network=$kind_network \
         --name zeta-node-$i \
         $REG/zeta_droplet:latest
@@ -60,7 +59,7 @@ response=$(curl -H 'Content-Type: application/json' -X POST \
             "overlay_type": "vxlan"}' \
     $manager_ip:80/zgcs)
 
-zgc_id=$(echo $response | sed 's/\\[tn]//g' | cut -d':' -f 7 | tr -d '"}' | xargs)
+zgc_id=$(echo $response | sed 's/\\[tn]//g' | cut -d':' -f 8 | tr -d '"}' | xargs)
 echo "REST API: Test ZGC zgc0 created with UUID: $zgc_id returned"
 
 # Register ZGC nodes containers in KIND deployment
