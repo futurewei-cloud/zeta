@@ -1,3 +1,8 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2020 The Authors.
+
+# Authors: Phu Tran          <@phudtran>
+
 import docker
 import os
 import logging
@@ -45,7 +50,7 @@ class Node:
                                            type='bind')
 
         # Create the container with necessary privileges
-        container = docker_client.containers.create(
+        self.container = docker_client.containers.create(
             docker_image,
             '/bin/bash',
             tty=True,
@@ -58,18 +63,17 @@ class Node:
             network=self.network,
             security_opt=["seccomp=unconfined"],
         )
-        container.start()
-        container.reload()
+        self.container.start()
+        self.container.reload()
 
         # Setup OVS on the ACA build container
-        container.exec_run("apt-get install -y openvswitch-switch")
-        container.exec_run("/etc/init.d/openvswitch-switch restart")
-        container.exec_run("ovs-vswitchd --pidfile --detach")
+        self.run("apt-get install -y openvswitch-switch")
+        self.run("/etc/init.d/openvswitch-switch restart")
+        self.run("ovs-vswitchd --pidfile --detach")
 
         # Run the aca in the background
-        container.exec_run(
+        self.run(
             "./mnt/Zeta/src/extern/alcor-control-agent/build/bin/AlcorControlAgent", detach=True)
-        self.container = container
         self.ip = self.container.attrs['NetworkSettings']["Networks"][self.network]['IPAddress']
         self.mac = self.container.attrs['NetworkSettings']["Networks"][self.network]['MacAddress']
 

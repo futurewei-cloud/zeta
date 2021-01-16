@@ -71,8 +71,8 @@ docker network create -d bridge \
   $kind_network >/dev/null
 
 docker network create -d bridge \
-  --subnet=10.0.0.0/24 \
-  --gateway=10.0.0.1 \
+  --subnet=192.168.100.0/24 \
+  --gateway=192.168.100.1 \
   --opt com.docker.network.driver.mtu=9000 \
   $zgc_network >/dev/null
 

@@ -1,3 +1,8 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2020 The Authors.
+
+# Authors: Phu Tran          <@phudtran>
+
 import unittest
 import os
 import json

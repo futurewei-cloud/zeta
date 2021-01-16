@@ -1,3 +1,8 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2020 The Authors.
+
+# Authors: Phu Tran          <@phudtran>
+
 import requests
 import json
 from src.mgmt.tests.common.common import run_cmd, logger

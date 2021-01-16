@@ -1,3 +1,8 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2020 The Authors.
+
+# Authors: Phu Tran          <@phudtran>
+
 from src.mgmt.tests.common.common import logger
 
 
