@@ -10,8 +10,12 @@ before_script:
   - sudo systemctl start docker
   - sudo systemctl enable docker
   - printf 'y\nn\n' | sudo ./tools/kernelupdate.sh
+  - ver=$(curl -s https://api.github.com/repos/kubernetes-sigs/kind/releases/latest | grep -oP '"tag_name": "\K(.*)(?=")')
+  - sudo curl -Lo kind "https://github.com/kubernetes-sigs/kind/releases/download/$ver/kind-$(uname)-amd64"
+  - sudo chmod +x kind
+  - sudp mv kind /usr/local/bin
 
 jobs:
   include:
     - stage: "Compile & test"
-      script: ./build.sh debug
+      script: ./build.sh debug && ./src/extern/alcor-control-agent/build/build.sh && ./deploy/full_deploy.sh -d kind && python3 -W ignore -m unittest  src/mgmt/tests/test_zeta_aca_ping.py
