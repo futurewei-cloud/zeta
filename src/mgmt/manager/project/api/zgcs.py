@@ -25,6 +25,7 @@ zgcs_blueprint = Blueprint('zgcs', __name__)
 
 @zgcs_blueprint.route('/zgcs', methods=['GET', 'POST'])
 def all_zgcs():
+    status_code = 200
     if request.method == 'POST':
         logger.debug('Start to make a ZGC',)
         start_time = time.time()
@@ -41,9 +42,10 @@ def all_zgcs():
             settings.activeZgc["port_ibo"] = post_data["port_ibo"]
         end_time = time.time()
         logger.debug(f'Zeta took {end_time - start_time} seconds to make a ZGC')
+        status_code = 201
     else:
         response_object = [zgc.to_json() for zgc in Zgc.query.all()]
-    return jsonify(response_object)
+    return jsonify(response_object), status_code
 
 
 @zgcs_blueprint.route('/zgcs/ping', methods=['GET'])
@@ -58,6 +60,7 @@ def ping_zgcs():
 @zgcs_blueprint.route('/zgcs/<zgc_id>', methods=['GET', 'PUT', 'DELETE'])
 def single_zgc(zgc_id):
     zgc = Zgc.query.filter_by(zgc_id=zgc_id).first()
+    status_code = 200
     if request.method == 'GET':
         response_object = zgc.to_json()
     elif request.method == 'PUT':
@@ -82,7 +85,8 @@ def single_zgc(zgc_id):
                 settings.activeZgc["port_ibo"] = zgc.port_ibo
             else:
                 settings.activeZgc.clear()
-    return jsonify(response_object)
+        status_code = 204
+    return jsonify(response_object), status_code
 
 
 if __name__ == '__main__':

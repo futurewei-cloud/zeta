@@ -119,6 +119,7 @@ def node_unload_transit_xdp(ip, itf_tenant, itf_zgc):
     
 @nodes_blueprint.route('/nodes', methods=['GET', 'POST'])
 def all_nodes():
+    status_code = 200
     if request.method == 'POST':
         logger.debug('Start to make one node, and two droplets for this node.')
         start_time = time.time()
@@ -239,9 +240,10 @@ def all_nodes():
         response_object = post_data
         end_time = time.time()
         logger.debug(f'Zeta took {end_time - start_time} seconds to make a node and its two droplets.')
+        status_code = 201
     else:
         response_object = [node.to_json() for node in Node.query.all()]
-    return jsonify(response_object)
+    return jsonify(response_object), status_code
 
 @nodes_blueprint.route('/nodes/ping', methods=['GET'])
 def ping_nodes():
@@ -255,6 +257,7 @@ def ping_nodes():
 @nodes_blueprint.route('/nodes/<node_id>', methods=['GET', 'PUT', 'DELETE'])
 def single_node(node_id):
     node = Node.query.filter_by(node_id=node_id).first()
+    status_code = 200
     if request.method == 'GET':
         response_object = node.to_json()
     elif request.method == 'PUT':
@@ -323,7 +326,8 @@ def single_node(node_id):
         db.session.delete(node)
         db.session.commit()
         response_object = {}
-    return jsonify(response_object)
+        status_code = 204
+    return jsonify(response_object), status_code
 
 
 if __name__ == '__main__':

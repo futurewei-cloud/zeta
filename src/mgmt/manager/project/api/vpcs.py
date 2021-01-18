@@ -32,6 +32,7 @@ def extendVpcResp(vpc):
 
 @vpcs_blueprint.route('/vpcs', methods=['GET', 'POST'])
 def all_vpcs():
+    status_code = 200
     if request.method == 'POST':
         logger.debug('Start to make a VPC.')
         start_time = time.time()
@@ -44,13 +45,14 @@ def all_vpcs():
         response_object = extendVpcResp(vpc)
         end_time = time.time()
         logger.debug(f'Zeta took {end_time - start_time} seconds to make a VPC')
+        status_code = 201
     else:
         response_object = []
         for vpc in Vpc.query.all():
             resp = extendVpcResp(vpc)
             response_object.append(resp)
 
-    return jsonify(response_object)
+    return jsonify(response_object), status_code
 
 
 @vpcs_blueprint.route('/vpcs/ping', methods=['GET'])
@@ -65,6 +67,7 @@ def ping_vpcs():
 @vpcs_blueprint.route('/vpcs/<vpc_id>', methods=['GET', 'PUT', 'DELETE'])
 def single_vpc(vpc_id):
     vpc = Vpc.query.filter_by(vpc_id=vpc_id).first()
+    status_code = 200
     if request.method == 'GET':
         response_object = extendVpcResp(vpc)
     elif request.method == 'PUT':
@@ -76,7 +79,8 @@ def single_vpc(vpc_id):
         db.session.delete(vpc)
         db.session.commit()
         response_object = {}
-    return jsonify(response_object)
+        status_code = 204
+    return jsonify(response_object), status_code
 
 
 if __name__ == '__main__':
