@@ -1,17 +1,33 @@
 language: c
 
 dist: bionic
-
+addons:
+  apt:
+    packages:
+      - "python3"
+      - "python3-pip"
+      - "python3-setuptools"
+      - "docker.io"
 before_script:
   - sudo apt-get update
-  - sudo apt install docker.io
   - sudo systemctl unmask docker.service
   - sudo systemctl unmask docker.socket
   - sudo systemctl start docker
   - sudo systemctl enable docker
+  # Install Kind
+  - curl -Lo kind https://github.com/kubernetes-sigs/kind/releases/download/v0.9.0/kind-linux-amd64 && chmod +x kind && sudo mv kind /usr/local/bin/
+  # Install Kubectl
+  - curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
+  - pip3 install ansible
+  - pip3 install docker
   - printf 'y\nn\n' | sudo ./tools/kernelupdate.sh
+  # Build Zeta
+  - ./build.sh debug
+  # Build ACA
+  - ./src/extern/alcor-control-agent/build/build.sh
+  - yes | ./deploy/env_setup.sh
 
 jobs:
   include:
     - stage: "Compile & test"
-      script: ./build.sh debug
+      script: ./deploy/full_deploy.sh -d kind && python3 -W ignore -m unittest src/mgmt/tests/test_zeta_aca_ping.py
