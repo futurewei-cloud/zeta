@@ -19,6 +19,7 @@ from project import db
 from project.api.models import Port, Host, EP
 from project.api.settings import node_ips, vnis
 from project.api.utils import ip_to_int, mac_to_int
+from project import db
 from common.rpc import TrnRpc
 
 # Make sure matching TRAN_MAX_EP_BATCH_SIZE in trn_datamodel.h

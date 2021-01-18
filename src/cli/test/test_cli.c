@@ -506,12 +506,12 @@ static void test_trn_cli_update_ep_subcmd(void **state)
 				]
 			  	}) };
 
-	char mac[6] = { 0x60, 0x50, 0x40, 0x30, 0x20, 0x10 };
-	char hmac[6] = { 0x10, 0x20, 0x30, 0x40, 0x50, 0x60 };
+	char hmac[6] = { 0x60, 0x50, 0x40, 0x30, 0x20, 0x10 };
+	char mac[6] = { 0x10, 0x20, 0x30, 0x40, 0x50, 0x60 };
 	trn_ep_t ep = {
 		.xdp_ep.key.vni = 3,
-		.xdp_ep.key.ip = 0x908E926C,
-		.xdp_ep.val.hip = 0x908E926D,
+		.xdp_ep.key.ip = 0x6c928E90,
+		.xdp_ep.val.hip = 0x6D928E90,
 	};
 	memcpy(ep.xdp_ep.val.mac, mac, sizeof(mac));
 	memcpy(ep.xdp_ep.val.hmac, hmac, sizeof(hmac));

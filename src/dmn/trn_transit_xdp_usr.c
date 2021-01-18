@@ -933,8 +933,8 @@ int trn_transit_dp_assistant(void)
 	oam_fd = trn_transit_map_get_fd("oam_queue_map");
 
 	/* Open RAW socket to send on */
-	if ((sockfd = socket(AF_PACKET, SOCK_RAW, IPPROTO_RAW)) == -1) {
-	    TRN_LOG_ERROR("DPA failed to open raw socket!");
+	if ((sockfd = socket(AF_PACKET, SOCK_RAW, IPPROTO_RAW)) < 0) {
+	    TRN_LOG_ERROR("DPA failed to open raw socket! Err: %s", strerror(errno));
 		return 1;
 	}
 
@@ -953,8 +953,8 @@ int trn_transit_dp_assistant(void)
 				sizeof(sendbuf.eth.h_dest));
 			if (sendto(sockfd, &sendbuf.eth, sendbuf.len, 0,
 				(struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0) {
-				TRN_LOG_ERROR("DPA failed to send oam packet to 0x%08x.",
-					sendbuf.ip.daddr);
+				TRN_LOG_ERROR("DPA failed to send oam packet to 0x%08x, err: %s",
+					sendbuf.ip.daddr, strerror(errno));
 			}
 		}
 	}

@@ -19,7 +19,7 @@ int trn_cli_parse_droplet(const cJSON *jsonobj, struct rpc_trn_droplet_t *drople
 		return -EINVAL;
 	}
 
-	if (trn_cli_parse_json_number(jsonobj, "num_entrances", (int *)&droplet->num_entrances)) {
+	if (trn_cli_parse_json_number_u32(jsonobj, "num_entrances", &droplet->num_entrances)) {
 		return -EINVAL;
 	} else if ( droplet->num_entrances > TRAN_MAX_ZGC_ENTRANCES) {
 		print_err("Error: num_entrances over limit %d\n", TRAN_MAX_ZGC_ENTRANCES);
@@ -40,11 +40,11 @@ int trn_cli_parse_droplet(const cJSON *jsonobj, struct rpc_trn_droplet_t *drople
 	int i = 0;
 	cJSON *entrance;
 	cJSON_ArrayForEach(entrance, entrances)	{
-		if (trn_cli_parse_json_ip(entrance, "ip", &droplet->entrances[i].ip)) {
+		if (trn_cli_parse_json_str_ip(entrance, "ip", &droplet->entrances[i].ip)) {
 			return -EINVAL;
 		}
 
-		if (trn_cli_parse_json_mac(entrance, "mac", &droplet->entrances[i].mac[0])) {
+		if (trn_cli_parse_json_str_mac(entrance, "mac", &droplet->entrances[i].mac[0])) {
 			return -EINVAL;
 		}
 		i++;

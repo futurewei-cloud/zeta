@@ -9,9 +9,9 @@ of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:The above copyright
+furnished to do so, subject to the following conditions: The above copyright
 notice and this permission notice shall be included in all copies or
-substantial portions of the Software.THE SOFTWARE IS PROVIDED "AS IS",
+substantial portions of the Software. THE SOFTWARE IS PROVIDED "AS IS",
 WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
 TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
 NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
@@ -22,7 +22,7 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 # Zeta System Design Document
 
-Version 0.4
+Version 0.5
 
 Table of Contents
 
@@ -303,10 +303,9 @@ Responsibilities
 | Role                  | Name          | Contact |
 | --------------------- | ------------- | ------- |
 | Product Owner         | Ying Xiong    |         |
-| Project Manager       |               |         |
+| Project Manager       | Bin Liang     |         |
 | Team Lead - Zeta      | Bin Liang     |         |
 | Team Lead – USTC      | Gongming Zhao |         |
-| Team Lead - Mizar     |               |         |
 | Team Lead – Alcor     | Liguang Xie   |         |
 
 ### 1.3 Terminology and Abbreviations
@@ -340,10 +339,10 @@ Next is a list of abbreviations used within this document.
 | ZGC          | Zeta Gateway Cluster                                                       |
 | ZGS          | Zeta Gateway Service                                                       |
 | vIP          | Service Virtual IP                                                         |
-| FWD          | Zeta Gateway Service Forwarding Node                                       |
-| FTN          | Zeta Gateway Service                                                       |
+| FWD          | Forwarding service node in ZGC                                             |
+| FTN          | DFT service node in ZGC                                                    |
 | OVS          | Open vSwitch                                                               |
-| VM           | Tenant Virtual Compute Instance, including Virtual Machine, Container etc. |
+| VM           | Tenant Compute Instance such as Virtual Machine, Container etc.            |
 
 
 ## 2 General Overview and Design Guidelines/Approach
@@ -353,10 +352,10 @@ guidelines when designing and implementing the Zeta Gateway service.
 
 ### 2.1 General Overview
 
-#### 2.1.1 What is designed by Zeta project
+#### 2.1.1 What is Zeta
 
-What we are designing in Zeta project is a common Networking Service Gateway (NSG for short) in
-Cloud and Data Center virtual networking environment.
+Zeta is a common Gateway platform deployable to public Cloud or private Data Center offering scalable
+on-demand networking services and service chaining end-to-end with minimal latency.
 
 - To existing virtual networking infrastructure, Zeta NSG serves as a common proxy for offloaded
 or additional virtual networking functions (VNF for short) in the form of XDP programs
@@ -364,11 +363,11 @@ or additional virtual networking functions (VNF for short) in the form of XDP pr
 into the overall virtual networking environment
 - Zeta NSG offers performance, scalability and fault-tolerance for both Gateway service itself and
 the VNFs it hosts
-- Depends on capability and availability of hosted networking functions, Zeta NSG service extends
-from most basic "Encapsulation proxy" all the way up to complete End-to-End networking service chain.
-- Zeta NSG can operate in a standalone mode using dedicated networking nodes, or extends even fully
-distributes its framework into Compute nodes to carry out some or complete networking services chain
-in a distributed fashion
+- Depends on policy and interdependencies of hosted networking functions, Zeta NSG offers service from
+basic "Forwarding Encapsulation proxy" all the way to complete End-to-End networking services chain.
+- Zeta NSG can operate in a centralized mode using only dedicated networking nodes, a fully distributed
+mode where connected compute nodes become edges of extended ZSG platform hosting networking services, or
+more often a hybrid mode between the two modes to achieve best latency and resource efficiency.
 
 #### 2.1.2 What values Zeta project brings in
 
@@ -378,24 +377,34 @@ Compares to traditional central hosted virtual networking solutions, Zeta NSG so
 - XDP/eBPF based VNF for maximal performance and minimal forwarding overhead
 
 Compares to distributed virtual networking solutions, Zeta NSG solution offers:
-- Support large compute node mesh, scaling up to tens of thousands
+- Support mega sized compute mesh, scaling up to tens of thousands of nodes, millions compute instances
 - Achieves same even better performance and latency characteristics
 - XDP/eBPF based VNF for maximal performance and minimal forwarding overhead
+
+A new eBPF based micro-service architecture offers:
+- Same modularity and no lock-in benefits like current container or serverless based micro-services architectures
+- Much better latency and performance over current container or serverless based micro-services architectures
+- Much reduced inter-connections and artificially bloated cloud scale caused by current micro-services architectures
+- Applicable to both networking and compute services, deployable in-network
 
 #### 2.1.3 Scope of Zeta's initial release
 
 In the initial release, Zeta NSG will include following capabilities to demonstrate the framework with
-some basic network functionalities, deployed in a standalone fashion:
+some basic network functionalities, deployed in standalone mode:
 - Zeta Network Service Gateway framework
-  - Deployment environment: OpenStack Cloud
-  - Zeta Control plane peered with Alcor networking controller
-  - Zeta NSG on dedicated Network nodes
-- VNF to offer: Instance Proxy Service
-  - Offering scalable proxy service to deliver Tenant traffic to target compute instance
-  - Enable host to host Direct Path after initial packet in the flow goes through ZGC
-  - Transparent load balancing for tenant compute service backed by multiple instances 
+  - Deployment environment: OpenStack Private Cloud
+  - Zeta Control plane peered with Alcor networking controller (equivalent of Neutron)
+  - Zeta NSG on dedicated Network nodes (ZGC, aka Zeta Gateway Cluster)
+- Initial virtual networking service to offer: Global Forwarding Proxy Service
+  - Distributed switch/routing without the need for distributed instance/neighbor database which
+  is both large scale and highly dynamic
+  - Global Forwarding Proxy Service with client-side load balancing
+  - Initial packet in tenant flow is forwarded by ZGC to target compute instance
+  - Host to host Direct Path injection to bypass ZGC after initial packet in tenant flow
+  - Avoid propagating compute instance placement and mobility info among compute nodes
+  - Transparent ZGC scaling without the need for compute nodes update
 
-Detailed use cases supported in initial Zeta release will be covered in detail in Chapter 7
+Detailed use cases supported in initial Zeta release are covered in detail in Chapter 7
 
 ### 2.2 Assumptions/Constraints/Risks
 
@@ -430,7 +439,7 @@ Detailed use cases supported in initial Zeta release will be covered in detail i
 
 4.  **Compute Node OVS supports punt rules for user space processing**  
     Because of OVS limitation, the design may need user space assistance
-    to handle special frames for in-band flow table operation, such
+    to handle OAM frames for in-band flow table operation, such
     as flow entry injection and invalidation. Neutron OVS doesn't support
     GPE extension or Geneve option header. Without this assumption, some
     Zeta networking feature will be limited. Preliminary research shows
@@ -452,18 +461,18 @@ the following constraints have been identified:
   - Zeta Phase I must avoid or minimize changes on existing compute
     nodes, especially to avoid requirement for kernel patch or upgrade.
 
-  - Zeta Phase I relies on another open source project, code name
+  - Zeta Phase I relies on another open-source project, code name
     “Alcor”, dependencies and scheduling commitment must meet Zeta
     Phase I initial release target which is end of year 2020.
 
 #### 2.2.3 Risks Analysis
 
-Zeta Phase I project is an Open Source project heavily relies on
+Zeta Phase I project is an Open-Source project heavily relies on
 community contribution cross multiple projects and teams. At the time of
 writing, we have identified following teams identified as stakeholders
 for the success of Zeta project:
 
-  - Futurewei Zeta team
+  - Zeta team
 
   - Mizar team
 
@@ -541,7 +550,7 @@ Zeta Gateway Service interacts with Alcor and Compute nodes components
 through control messages or data packets, there is no tight coupling.
 This is not the case regarding Mizar project. Zeta Gateway software will
 be built on top of Mizar Codebase so they are tightly coupled. Within
-the Zeta phase I time frame, both projects will undergo active
+the Zeta phase I timeframe, both projects will undergo active
 development with different agenda and schedule. It is considered high
 risky trying to coordinate between the two projects under the resource
 and schedule constraints.
@@ -740,7 +749,7 @@ listed here:
 
 3.  How to avoid Split-brain condition when Alcor owns Compute Node OVS?
 
-    The user space handling of such special frames must coordinated with agent
+    The user space handling of such special frames must coordinate with agent
     of OpenStack networking controller on each Compute Node, which is ACA for
     Alcor controller. Some conflict handling logic should be developed in ACA
     to merge or reject such modification from Zeta Gateway service.  
@@ -833,7 +842,7 @@ same “networking concept”, derived from years of education and practice.
 This is what’s natural to our users and we have no intention or power to
 change that.
 
-But, as we are building a service to actually implement the networking
+But as we are building a service to actually implement the networking
 blueprint in a virtual environment, we must understand the fundamental
 differences with physical networking, to name a few:
 
@@ -890,7 +899,7 @@ networking model when we describe Zeta internal implementation details.
 
 Zeta logical networking model supports following common cloud networking
 concepts:
-* Tenant/Project - which represents an tenant administrative domain.
+* Tenant/Project - which represents a tenant administrative domain.
 * VPC - Virtual Private Cluster, which represents a private networking space
 within an administrative domain.
   * Each Project can have multiple VPCs in it
@@ -902,19 +911,19 @@ within an administrative domain.
   * networks within a VPC can be connected or isolated
 * Subnet - Layer 2 forwarding domain within a Network
   * Tenant/project compute instances are attached to subnet
-  * Communication within subnet are L2 switched
-  * Communication beyond subnet are L3 routed
-  * Each network have at least one subnet or child network
+  * Communication within subnet is L2 switched
+  * Communication beyond subnet is L3 routed
+  * Each network has at least one subnet or child network
 * Port/Endpoint - Point where a Tenant compute instance (VM/Container)
-atteched to subnet
+attached to subnet
   * A compute instance has at least one port
-  * A compute instance may have multiple ports, each attaches to **different** subnet
+  * A compute instance may have multiple ports, each attach to **different** subnet
 
 ### 4.2 Hardware Architecture
 
 ### 4.3 Software Architecture
 
-Zeta Gateway software leverages existing “Mizar” Open Source project as
+Zeta Gateway software leverages existing “Mizar” Open-Source project as
 control plane framework with extension and enhancement described in this
 chapter. For Mizar project and its design documentation, please refer to
 reference \[2\] for detail.
@@ -927,7 +936,7 @@ Architecture
 ![](.//png/zeta_sdd_logical_architecture.png)
 
 The scope of Zeta Phase I design is colored Purple in Architecture
-diagram above. We will leverage Open Source project “Alcor” for
+diagram above. We will leverage Open-Source project “Alcor” for
 networking service API proxy to the rest of OpenStack control plane.
 
 Zeta control plane is based on the management service of Open Source
@@ -1038,7 +1047,7 @@ support:
     instance’s default gateway VIP if it was not added before and fill
     the gateway VIP mapping bucket with the entry point list stored for
     the instance’s ZGC. Since no remote communication required for this
-    step, the overhead for flow table update during instance on-boarding
+    step, the overhead for flow table updates during instance on-boarding
     is negligible. To further reduce it to zero overhead, default flow
     entries to each ZGC can be pre-installed at compute node
     provisioning time. This design minimizes the default flow table
@@ -1134,23 +1143,23 @@ Best Practice
 
 2.  Minimal requirements for Zeta control nodes:
     
-    1.  Minimal 3 nodes, 1 as K8S master and 2 as worker nodes
+    1.  Minimal 1 node for both K8S master and workers
     
     2.  Minimal hardware configuration:
         
-        1.  4 cores
+        1.  8 cores
         
-        2.  RAM: 16 GB Fully Buffered
+        2.  RAM: 32 GB Fully Buffered
         
-        3.  80GB 15,000 RPM Hard Drive
+        3.  128GB 15,000 RPM Hard Drive
         
-        4.  1x GE management port
+        4.  1x GE management port/public network access
         
         5.  1x GE for control network
 
 3.  Minimal requirements for Zeta network nodes:
     
-    1.  Minimal 6 nodes, 2 host FWD and 4 host FTN
+    1.  Minimal 3 nodes
     
     2.  Minimal hardware configuration:
         
@@ -1160,7 +1169,7 @@ Best Practice
         
         3.  40GB 15,000 RPM Hard Drive
         
-        4.  1x GE management port
+        4.  1x GE management port/public network access
         
         5.  1x GE for control network
         
@@ -1170,29 +1179,24 @@ Best Practice
 
 5.  Environment and Initial Configuration
 
-#### 4.4.3 Zeta Control Plane installation
-1. Clone Zeta from [Github](https://github.com/futurewei-cloud/zeta)
+#### 4.4.3 Zeta Deployment
+1. Up-to-date instructions are provided in our [getting started guide](https://github.com/futurewei-cloud/zeta/blob/main/docs/user/getting_started.md)
 
-2. Run the bootstrap.sh script to install the prerequisites for Zeta.
+2. For PoC or quick demo, use "Deploy to Local Kind Cluster" scenario
 
-3. Zeta will be installed on all nodes via the deployment step.
-##### 4.4.3.1 K8S Cluster Setup
+3. For public Cloud deployment , please refer to "AWS EC2 Cloud Cluster Environment" as reference
 
-##### 4.4.3.2 Zeta Control Plan deployment
+4. For Bare-metal deployment, please refer to "Bare-metal lab Environment" as reference
 
-#### 4.4.4 Zeta Network Node Installation
-
-#### 4.4.5 Nova Compute Node Installation
-
-No Zeta specific changes are expected for Nova compute node
-installation. Follow normal procedure as documented in OpenStack
-Documentation.
 
 ## 5 External Interfaces
 
 ### 5.1 Interface Architecture
+Zeta provides:
+- RESTful Northbound interface for management and control
+- Streaming Northbound interface for statistic/telemetry export (post phase I)
 
-### 5.2 Interface Detailed Design
+### 5.2 NB RESTful Interface Detailed Design
 Please refer to [Chapter 7.3](#73-external-apis) for Phase I API design
 
 ## 6 Operational Scenarios
@@ -1376,7 +1380,7 @@ FTN Create workflow
 
 1. As a provider admin, I want to be able to change Tenant/Project network and ZGC affiliation through Zeta Control Plane NBI API
 2. As a provider admin, I want the switch over to be synchronized cross affected Compute Nodes at scheduled time
-3. As a provider admin, I want the switch over be have minimal to zero impact to existing networking services
+3. As a provider admin, I want the switch over to have minimal to zero impact to existing networking services
 3. As a provider admin, I want to see new Tenant/Project network traffic flows use newly affiliated ZGC as network service gateway
 
 #### 7.1.7 Deploy VNF to ZGC  
@@ -1440,9 +1444,9 @@ FTN Create workflow
 
 **Expectations**
 
-1. As a provider admin, I want to see flow is locally switched in the compute node if the two instances belongs to same subnet, without going through ZGC
-2. As a provider admin, I want to see flow is locally routed in the compute node if the two instances belongs to different subnet but under same Tenant network, without going through ZGC
-3. As a provider admin, I want to see flow is routed through external provider gateway if the two instances belongs to different Tenant network, without going through ZGC
+1. As a provider admin, I want to see flow is locally switched in the compute node if the two instances belong to same subnet, without going through ZGC
+2. As a provider admin, I want to see flow is locally routed in the compute node if the two instances belong to different subnet but under same Tenant network, without going through ZGC
+3. As a provider admin, I want to see flow is routed through external provider gateway if the two instances belong to different Tenant network, without going through ZGC
 
 #### 7.1.12 East West Flow Between Instances On different Node
 
@@ -1456,7 +1460,7 @@ FTN Create workflow
 
 1. As a provider admin, I want to see flow switched/routed then tunneled to end host through one of ZGC entry points initially, then bypassing ZGC for the rest of the flow.
 2. As a provider admin, I want to see this behavior for both in-subnet flows and between-subnet flows under same Tenant network
-3. As a provider admin, I want to see flow is routed through external provider gateway if the two instances belongs to different Tenant network, without going through ZGC
+3. As a provider admin, I want to see flow is routed through external provider gateway if the two instances belong to different Tenant network, without going through ZGC
 4. As a provider admin, I want to see load balancing across ZGC entry points for Tenant network flows initiated from the same compute node.
 
 #### 7.1.13 North South Flow Initiated From External
@@ -1492,7 +1496,7 @@ FTN Create workflow
 - Existing Zeta Control Plane and ZGC
 - Instance Proxy VNF has been deployed on ZGC
 - Alcor/Neutron provides security/switching/routing/NAT services
-- Service has floating IP assigned if it serve external requests
+- Service has floating IP assigned if it serves external requests
 
 **Expectations**
 
@@ -1550,7 +1554,8 @@ External API definitions are based on phase I use cases and related system param
         {
             "name": "ZGC_test",
             "description": "ZGC 1",
-            "cidr": "192.168.0.0/28",
+            "ip_start": "192.168.0.1",
+            "ip_end": "192.168.0.11",
             "port_ibo": "8300",
             "overlay_type": "vxlan"
         }
@@ -2069,19 +2074,20 @@ messages to OpenFlow controller on compute node in order to support "Direct Path
 
 <span id="_Toc51312765" class="anchor"></span>Table 6 Flow Injection Op
 
-| Field                 | Offset (Byte) | Value   |
+| Field                 | Offset/size (Byte) | Value   |
 | --------------------- | ------------- | ------- |
-| Matcher_SIP           | 0             | Inner Packet SIP      |
-| Matcher_DIP           | 4             | Inner Packet DIP      |
-| Matcher_SPORT         | 8             | Inner Packet SPort    |
-| Matcher_DPORT         | 10            | Inner Packet DPort    |
-| Matcher_Protocol      | 12            | Inner Packet Protocol |
-| Matcher_VNI           | 13            | VxLAN/Geneve vni      |
-| DestInst_IP           | 16            | Destination Inst IP   |
-| DestNode_IP           | 20            | Destination Node IP   |
-| DestInst_MAC          | 24            | Destination Inst MAC  |
-| DestNode_MAC          | 30            | Destination Node MAC  |
-| Idle_Timeout          | 36            | 0 - 65536s            |
+| Matcher_SIP           | 0/4           | Inner Packet SIP      |
+| Matcher_DIP           | 4/4           | Inner Packet DIP      |
+| Matcher_SPORT         | 8/2           | Inner Packet SPort    |
+| Matcher_DPORT         | 10/2          | Inner Packet DPort    |
+| Matcher_Protocol      | 12/1          | Inner Packet Protocol |
+| Matcher_VNI           | 13/3          | VxLAN/Geneve vni      |
+| DestInst_IP           | 16/4          | Destination Inst IP   |
+| DestNode_IP           | 20/4          | Destination Node IP   |
+| DestInst_MAC          | 24/6          | Destination Inst MAC  |
+| DestNode_MAC          | 30/6          | Destination Node MAC  |
+| Idle_Timeout          | 36/2          | 0 - 65536 in seconds  |
+| Reserved              | 38/2          | Reserved, all Zeros   |
 
 #### 7.3.5.2 Flow Deletion 
 - Destination Port: port_ibo (8300)
@@ -2090,14 +2096,14 @@ messages to OpenFlow controller on compute node in order to support "Direct Path
 
 <span id="_Toc51312766" class="anchor"></span>Table 7 Flow Deletion Op
 
-| Field                 | Offset (Byte) | Value   |
+| Field                 | Offset/size (Byte) | Value   |
 | --------------------- | ------------- | ------- |
-| Matcher_SIP           | 0             | Inner Packet SIP      |
-| Matcher_DIP           | 4             | Inner Packet DIP      |
-| Matcher_SPORT         | 8             | Inner Packet SPort    |
-| Matcher_DPORT         | 10            | Inner Packet DPort    |
-| Matcher_Protocol      | 12            | Inner Packet Protocol |
-| Matcher_VNI           | 13            | VxLAN/Geneve vni      |
+| Matcher_SIP           | 0/4           | Inner Packet SIP      |
+| Matcher_DIP           | 4/4           | Inner Packet DIP      |
+| Matcher_SPORT         | 8/2           | Inner Packet SPort    |
+| Matcher_DPORT         | 10/2          | Inner Packet DPort    |
+| Matcher_Protocol      | 12/1          | Inner Packet Protocol |
+| Matcher_VNI           | 13/3          | VxLAN/Geneve vni      |
 
 ### 7.4 Control Workflows
 
@@ -2149,6 +2155,12 @@ Changes
 <td>10/13/2020</td>
 <td>Bin Liang</td>
 <td>Added External APIs Chapter 7.3</td>
+</tr>
+<tr class="odd">
+<td>0.5</td>
+<td>01/10/2021</td>
+<td>Bin Liang</td>
+<td>Minor update for Zeta phase I release (v0.1.0)</td>
 </tr>
 </tbody>
 </table>

@@ -49,8 +49,8 @@ int trn_cli_parse_ebpf_prog(const cJSON *jsonobj, rpc_trn_ebpf_prog_t *prog)
 		}
 	}
 
-	if (trn_cli_parse_json_number(jsonobj,
-		"debug_mode", (int *)&prog->debug_mode)) {
+	if (trn_cli_parse_json_number_u32(jsonobj,
+		"debug_mode", &prog->debug_mode)) {
 		return -EINVAL;
 	}
 
@@ -71,12 +71,9 @@ int trn_cli_parse_xdp(const cJSON *jsonobj, rpc_trn_xdp_intf_t *xdp_intf)
 		return -EINVAL;
 	}
 
-	if (trn_cli_parse_json_number(jsonobj, "ibo_port", &tmp)) {
+	if (trn_cli_parse_json_number_u16n(jsonobj,
+		"ibo_port", &xdp_intf->ibo_port)) {
 		return -EINVAL;
-	} else if (tmp & 0xFFFF0000) {
-		return -EINVAL;
-	} else {
-		xdp_intf->ibo_port = (uint16_t)tmp;
 	}
 
 	cJSON *debug_mode = cJSON_GetObjectItem(jsonobj, "debug_mode");
@@ -84,8 +81,8 @@ int trn_cli_parse_xdp(const cJSON *jsonobj, rpc_trn_xdp_intf_t *xdp_intf)
 		/* Make debug_mode optional */
 		xdp_intf->debug_mode = 1;
 	} else {
-		if (trn_cli_parse_json_number(jsonobj,
-			"debug_mode", (int *)&xdp_intf->debug_mode)) {
+		if (trn_cli_parse_json_number_u32(jsonobj,
+			"debug_mode", &xdp_intf->debug_mode)) {
 			return -EINVAL;
 		}
 	}

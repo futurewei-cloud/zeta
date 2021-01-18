@@ -11,4 +11,4 @@ FROM fwnetworking/zeta_droplet:latest
 
 COPY build/bin /trn_bin
 COPY build/xdp /trn_xdp
-CMD /etc/init.d/rpcbind restart && /trn_bin/transitd
+CMD /etc/init.d/rsyslog restart && /etc/init.d/rpcbind restart && /trn_bin/transitd

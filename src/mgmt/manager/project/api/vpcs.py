@@ -20,7 +20,7 @@ from project.api.utils import getGWsFromIpRange
 import time
 import logging
 
-logger = logging.getLogger('gunicorn.error')
+logger = logging.getLogger()
 
 vpcs_blueprint = Blueprint('vpcs', __name__)
 

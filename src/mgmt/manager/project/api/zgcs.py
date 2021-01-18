@@ -19,7 +19,7 @@ from project import db
 import time
 import logging
 
-logger = logging.getLogger('gunicorn.error')
+logger = logging.getLogger()
 zgcs_blueprint = Blueprint('zgcs', __name__)
 
 
