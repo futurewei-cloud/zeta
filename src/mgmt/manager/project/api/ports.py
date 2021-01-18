@@ -77,7 +77,7 @@ def all_ports():
                 host_ip_node_lookup_set.add(ip_node_to_find)
             elif (host is not None):
                 port['host_id'] = host.host_id
-            elif (ip_node_to_find in host_ip_node_lookup_set):
+            else:
                 for host_to_add in hosts_to_add:
                     if host_to_add['ip_node'] == ip_node_to_find:
                         port['host_id'] = host_to_add['host_id']
