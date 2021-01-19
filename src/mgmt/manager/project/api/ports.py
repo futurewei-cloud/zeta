@@ -54,7 +54,7 @@ def all_ports():
         logger.debug(f'Start to make {amount_of_ports} ports.')
         start_time = time.time()
         ports_to_add = []
-        eps_to_add = []
+        eps_to_add_to_db = []
         hosts_to_add = []
         host_ip_node_lookup_set = set()
         for post_data in portList:
@@ -83,28 +83,27 @@ def all_ports():
                         port['host_id'] = host_to_add['host_id']
                         break
             for ip in post_data['ips_port']:
-                ep_to_add = {
+                ep_to_add_to_db = {
                                 'ip': ip['ip'],
                                 'vip': ip['vip'],
                                 'port_id': post_data['port_id']
                             }
-                eps_to_add.append(ep_to_add)
+                eps_to_add_to_db.append(ep_to_add_to_db)
             ports_to_add.append(port)
+            ep_rpc = {
+                    "vni": int(vnis.get(post_data.get('vpc_id'))),
+                    "ip": ip_to_int(post_data['ips_port'][0]['ip']),
+                    "hip": ip_to_int(post_data.get('ip_node')),
+                    "mac": mac_to_int(post_data.get('mac_port')),
+                    "hmac": mac_to_int(post_data.get('mac_node'))
+                }
+            eps.append(ep_rpc)
         db.session.bulk_insert_mappings(Host, hosts_to_add)
         db.session.commit()
         db.session.bulk_insert_mappings(Port, ports_to_add)
         db.session.commit()
-        db.session.bulk_insert_mappings(EP, eps_to_add)
+        db.session.bulk_insert_mappings(EP, eps_to_add_to_db)
         db.session.commit()
-        response_object = portList
-        ep = {
-                "vni": int(vnis.get(post_data.get('vpc_id'))),
-                "ip": ip_to_int(post_data['ips_port'][0]['ip']),
-                "hip": ip_to_int(post_data.get('ip_node')),
-                "mac": mac_to_int(post_data.get('mac_port')),
-                "hmac": mac_to_int(post_data.get('mac_node'))
-            }
-        eps.append(ep)
         response_object = portList
         end_time = time.time()
         logger.debug(f'Zeta took {end_time - start_time} seconds to make {amount_of_ports} ports')
