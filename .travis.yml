@@ -21,8 +21,7 @@ before_script:
   - pip3 install ansible
   - pip3 install docker
   - printf 'y\nn\n' | sudo ./tools/kernelupdate.sh
-  # Build Zeta
-  - ./build.sh debug
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ACCOUNT" --password-stdin
   # Build ACA
   - ./src/extern/alcor-control-agent/build/build.sh
   - yes | ./deploy/env_setup.sh
@@ -30,4 +29,4 @@ before_script:
 jobs:
   include:
     - stage: "Compile & test"
-      script: ./deploy/full_deploy.sh -d kind && python3 -W ignore -m unittest src/mgmt/tests/test_zeta_aca_ping.py
+      script: ./build.sh debug && ./deploy/full_deploy.sh -d kind && python3 -W ignore -m unittest src/mgmt/tests/test_zeta_aca_ping.py
