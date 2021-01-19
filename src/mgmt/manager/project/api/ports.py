@@ -90,21 +90,20 @@ def all_ports():
                             }
                 eps_to_add.append(ep_to_add)
             ports_to_add.append(port)
+            ep = {
+                    "vni": int(vnis.get(post_data.get('vpc_id'))),
+                    "ip": ip_to_int(post_data['ips_port'][0]['ip']),
+                    "hip": ip_to_int(post_data.get('ip_node')),
+                    "mac": mac_to_int(post_data.get('mac_port')),
+                    "hmac": mac_to_int(post_data.get('mac_node'))
+                }
+            eps.append(ep)
         db.session.bulk_insert_mappings(Host, hosts_to_add)
         db.session.commit()
         db.session.bulk_insert_mappings(Port, ports_to_add)
         db.session.commit()
         db.session.bulk_insert_mappings(EP, eps_to_add)
         db.session.commit()
-        response_object = portList
-        ep = {
-                "vni": int(vnis.get(post_data.get('vpc_id'))),
-                "ip": ip_to_int(post_data['ips_port'][0]['ip']),
-                "hip": ip_to_int(post_data.get('ip_node')),
-                "mac": mac_to_int(post_data.get('mac_port')),
-                "hmac": mac_to_int(post_data.get('mac_node'))
-            }
-        eps.append(ep)
         response_object = portList
         end_time = time.time()
         logger.debug(f'Zeta took {end_time - start_time} seconds to make {amount_of_ports} ports')
