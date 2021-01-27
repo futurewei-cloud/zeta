@@ -1562,7 +1562,7 @@ External API definitions are based on phase I use cases and related system param
     Response:
         data:
         {
-            "id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
+            "zgc_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
             "name": "ZGC_test",
             "description": "ZGC 1",
             "ip_start": "192.168.0.1",
@@ -1787,6 +1787,7 @@ External API definitions are based on phase I use cases and related system param
     Response:
         data:
         {
+            "id": 1,
             "vpc_id": "3dda2801-d675-4688-a63f-dcda8d327f50",
             "vni": "12345",
             "zgc_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
@@ -1806,7 +1807,8 @@ External API definitions are based on phase I use cases and related system param
                 "mac": "37.02.ff.cc.65.89"
               }
             ],
-            "port_ibo": "8300"
+            "port_ibo": "8300",
+            "ports": []
         }
     ```
 
@@ -1857,7 +1859,9 @@ External API definitions are based on phase I use cases and related system param
             "mac_tenant": "11:22:33:44:55:66",
             "inf_zgc": "eth2",
             "mac_zgc": "11:22:33:44:55:67",
-            "zgc_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
+            "zgc_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
+            "id_control": "user_name_of_node",
+            "pwd_control": "password_of_id_control"
         }
     Response:
         data:
@@ -1870,7 +1874,9 @@ External API definitions are based on phase I use cases and related system param
             "mac_tenant": "11:22:33:44:55:66",
             "inf_zgc": "eth2",
             "mac_zgc": "11:22:33:44:55:67",
-            "zgc_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
+            "zgc_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
+            "id_control": "user_name_of_node",
+            "pwd_control": "password_of_id_control"
         }
     ```
 
