@@ -3,14 +3,14 @@
 kernel_ver=`uname -r`
 echo "Running kernel version: $kernel_ver"
 
-if [ "$kernel_ver" != "5.6.0-rc2" ]; then
-  kernel_dir="linux-5.6-rc2"
+if [ "$kernel_ver" != "5.10.4" ]; then
+  kernel_dir="linux-5.10.4"
   mkdir -p $kernel_dir
 
-  wget https://mizar.s3.amazonaws.com/linux-5.6-rc2/linux-headers-5.6.0-rc2_5.6.0-rc2-1_amd64.deb -P $kernel_dir
-  wget https://mizar.s3.amazonaws.com/linux-5.6-rc2/linux-image-5.6.0-rc2-dbg_5.6.0-rc2-1_amd64.deb -P $kernel_dir
-  wget https://mizar.s3.amazonaws.com/linux-5.6-rc2/linux-image-5.6.0-rc2_5.6.0-rc2-1_amd64.deb -P $kernel_dir
-  wget https://mizar.s3.amazonaws.com/linux-5.6-rc2/linux-libc-dev_5.6.0-rc2-1_amd64.deb -P $kernel_dir
+  wget https://mizar.s3.amazonaws.com/linux-5.10.4/linux-headers-5.10.4_5.10.4-1_amd64.deb -P $kernel_dir
+  wget https://mizar.s3.amazonaws.com/linux-5.10.4/linux-image-5.10.4-dbg_5.10.4-1_amd64.deb -P $kernel_dir
+  wget https://mizar.s3.amazonaws.com/linux-5.10.4/linux-image-5.10.4_5.10.4-1_amd64.deb -P $kernel_dir
+  wget https://mizar.s3.amazonaws.com/linux-5.10.4/linux-libc-dev_5.10.4-1_amd64.deb -P $kernel_dir
 
   read -p "Continue kernel update (y/n)?" choice
   case "$choice" in
