@@ -1562,7 +1562,7 @@ External API definitions are based on phase I use cases and related system param
     Response:
         data:
         {
-            "id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
+            "zgc_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
             "name": "ZGC_test",
             "description": "ZGC 1",
             "ip_start": "192.168.0.1",
@@ -1787,6 +1787,7 @@ External API definitions are based on phase I use cases and related system param
     Response:
         data:
         {
+            "id": 1,
             "vpc_id": "3dda2801-d675-4688-a63f-dcda8d327f50",
             "vni": "12345",
             "zgc_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
@@ -1806,7 +1807,8 @@ External API definitions are based on phase I use cases and related system param
                 "mac": "37.02.ff.cc.65.89"
               }
             ],
-            "port_ibo": "8300"
+            "port_ibo": "8300",
+            "ports": []
         }
     ```
 
@@ -1973,8 +1975,7 @@ multiple IP addresses per port.
             "mac_port": "cc:dd:ee:ff:11:22",
             "ip_node": "192.168.10.27",
             "mac_node": "ee:dd:ee:ff:22:11",
-            "zgc_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
-            "status": "pending"
+            "zgc_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
           },
           {
             "port_id": "99976feae-7dec-11d0-a765-00a0c9341111",
@@ -1993,8 +1994,7 @@ multiple IP addresses per port.
             "mac_port": "6c:dd:ee:ff:11:32",
             "ip_node": "192.168.10.33",
             "mac_node": "ee:dd:ee:ff:33:11",
-            "zgc_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
-            "status": "pending"
+            "zgc_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
           }
         ]
     ```
