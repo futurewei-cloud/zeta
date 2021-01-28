@@ -1859,9 +1859,7 @@ External API definitions are based on phase I use cases and related system param
             "mac_tenant": "11:22:33:44:55:66",
             "inf_zgc": "eth2",
             "mac_zgc": "11:22:33:44:55:67",
-            "zgc_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
-            "id_control": "user_name_of_node",
-            "pwd_control": "password_of_id_control"
+            "zgc_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
         }
     Response:
         data:
@@ -1874,9 +1872,7 @@ External API definitions are based on phase I use cases and related system param
             "mac_tenant": "11:22:33:44:55:66",
             "inf_zgc": "eth2",
             "mac_zgc": "11:22:33:44:55:67",
-            "zgc_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
-            "id_control": "user_name_of_node",
-            "pwd_control": "password_of_id_control"
+            "zgc_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
         }
     ```
 
