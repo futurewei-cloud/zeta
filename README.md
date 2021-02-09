@@ -30,7 +30,7 @@ Zeta.
 
 At high level, we hope Zeta will be able to accomplish the following:
 1. Modular middleboxes with XDP programs that are chained to form various types of network service decisions
-2. Local shared configuration across multiple XDP programs that reduces the need for a packet to traverse multiplenodes to make a decision on a new flow
+2. Local shared configuration across multiple XDP programs that reduces the need for a packet to traverse multiple nodes to make a decision on a new flow
 3. Overlay protocol integrated within the data-plane to provide consistent connection state
 4. Built-in multi-tenancy that allows infrastructure sharing of network services and middleboxes without the
 need to isolate middleboxes in virtual machines or containers, hence improves cost

@@ -17,11 +17,11 @@ To demonstrate Zeta functionality End-to-end without the burden of complicated e
 To start developing/deploying Zeta, you will need:
 - a host as **deployer**:
   - to build and package Zeta system
-  - to deploy zeta system to remote site or local as in container based "Kind" scenario
+  - to deploy zeta system to target site
   - to manage or interact with deployed Zeta system
   - For reference we are using Ubuntu Bionic VM
 - a target site to deploy Zeta into as **site**:
-  - The site has dedicated bare-metal servers/VMs for zeta control plane cluster and data plane ZGC cluster
+  - The site has dedicated bare-metal servers/VMs for zeta control plane cluster and data plane zeta gateway cluster (ZGC)
   - the target site can be implemented fully containerized and co-hosted with **deployer** as in the [**Kind** deployment scenario](https://github.com/futurewei-cloud/zeta/blob/main/docs/user/getting_started.
   - Zeta **deployer** script will deploy and provision the two Zeta clusters on the target Zeta servers/VMs
 
@@ -51,7 +51,7 @@ To start developing/deploying Zeta, you will need:
   ```
 - Python modules for remote deployment:
   ```
-  pip3 install boto boto3 ansible
+  pip3 install boto boto3 botocore ansible
   ```
 
 Target **site** host Linux environment:
@@ -90,8 +90,7 @@ $ kind --version
 $ kubectl version --client
 ```
 
-If you are testing out Zeta with Kind, a script has been included to setup a local Kubernetes cluster, and install all of the components needed to run Zeta.
-Simply run the script below in the Zeta directory.
+If you are testing out Zeta with Kind, a script has been included to setup a local Kubernetes cluster, and install all of the components needed to run Zeta. Simply run the script below in the Zeta directory.
 
 ```
 $ ./deploy/full_deploy.sh -d kind
@@ -99,15 +98,18 @@ $ ./deploy/full_deploy.sh -d kind
 
 This script does the following:
 
-* Create a multi-node (default is 3) local Kubernetes cluster with Kind.
-* Build the Kind-Node, and Zeta-Operator docker images
+* Create a multi-node (default is 3) local Kubernetes cluster with Kind. By default following 3 pods are created:
+  - postgres
+  - zeta-manager
+  - zeta-operator
+* Build the Kind-Node (zeta_node), and Zeta-Operator (zeta_droplet) docker images
 * Apply all of the Zeta [CRDs](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/).
 * Deploy the Zeta [Operators](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/).
 * You can customize kind cluster by modifying deploy/playbooks/inventories/vars/site_kind.yml
 * Note: First time you deploy, the tool will ask you to setup deploy secrets, follow instruction and press "enter" if you don't have the info asked.
 
-Once deployed, local kubeconfig is automatically updated for the new cluster, so you can use kubectl to manage the cluster
-If you made some changes to Zeta, you can re-deploy zeta services on the AWS cluster created in step 3, this will be much faster
+Once deployed, local kubeconfig is automatically updated for the new cluster, so you can use kubectl to manage the cluster.
+If you made some changes to Zeta, you can re-deploy zeta services cluster created above using following script. This will be much faster.
 ```
 $ ./deploy/zeta_deploy.sh -d kind
 ```
@@ -124,9 +126,11 @@ From the Zeta directory run the following
 ```
 $ ./src/extern/alcor-control-agent/build/build.sh
 ```
-Once ACA is done building, from the Zeta directory, you can now run a simple ping test with the command below.
+Once ACA is done building successfully, the docker image aca_build0 is created. From the Zeta directory, you can now run a simple ping test with the command below.
 ```
 python3 -W ignore -m unittest  src/mgmt/tests/test_zeta_aca_ping.py
+
+Above test creates two containers (aca_node_1 & aca_node_2) from the aca_build0 image. These two container nodes will ping each other handful of times. A successful run of the test shows the time in seconds it took to complete the test.
 ```
 ### Remote public Cloud deployment
 
