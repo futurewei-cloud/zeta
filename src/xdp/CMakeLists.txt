@@ -7,9 +7,9 @@
 
 message("Processing src/xdp/CMakeList.txt")
 
-set(LLC llc-7)
+set(LLC llc-10)
 set(LLC_FLAGS -march=bpf -filetype=obj)
-set(CLANG clang-7)
+set(CLANG clang-10)
 set(CLANG_FLAGS -I.
     -I${CMAKE_SOURCE_DIR}/src
     -I${CMAKE_SOURCE_DIR}/src/include
