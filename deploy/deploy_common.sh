@@ -21,11 +21,6 @@ myloc=$(pwd)
 # Get full path of this script no matter where it's placed and invoked
 MY_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-if [[ ! -f $MY_PATH/playbooks/inventories/vars/.vault.yml ]]; then
-  echo -n " Can't find your vault, run $MY_PATH/env_setup.sh as normal user first!"
-  exit 1
-fi
-
 # Check inline arguments, otherwise interactive
 if [ "$#" -eq 0 ] || [ "$1" == "" ] ; then
   # print a pretty header
@@ -45,7 +40,7 @@ if [ "$#" -eq 0 ] || [ "$1" == "" ] ; then
     echo
     read -p " please enter your preference: [d|p|u|r]: " opt
     case $opt in
-      [d]* )  
+      [d]* )
             stage="development"
             break
             ;;
@@ -100,12 +95,13 @@ else
     esac
   done
 
-  if ! $dpur_opt 
+  if ! $dpur_opt
   then
     echo " must enter operation!" >&2
     exit 1
   fi
 fi
+
 
 if [[ ! -f $MY_PATH/playbooks/inventories/vars/site_$site.yml ]]; then
     echo "Please add site specific variables to $MY_PATH/playbooks/inventories/vars/site_$site.yml first" >&2
@@ -124,12 +120,22 @@ fi
 # Capture detailed script output for trouble shooting
 ANSIBLE_DBG_LOG="/tmp/ansible_debug.log"
 echo "" > $ANSIBLE_DBG_LOG
-echo "Detailed deployment output are available at $ANSIBLE_DBG_LOG and /var/log/ansible.log"
+echo -e "Detailed deployment output are available at $ANSIBLE_DBG_LOG and /var/log/ansible.log\n"
 
 ## compose play options
 PLAY_CMD="ansible-playbook ${ANSIBLE_VERBOSE} \
 -i inventories/hosts_${site} \
 -e \"site=${site} stage=${stage} reg=${reg} DBG_LOG=$ANSIBLE_DBG_LOG\" \
--e \"@inventories/vars/.vault.yml\" \
 -e \"@inventories/vars/site_${site}.yml\" \
 "
+
+if [[ $site == "aws" ]]; then
+  if [[ ! -f $MY_PATH/playbooks/inventories/vars/.vault.yml ]]; then
+    echo -en " Can't find your vault, run $MY_PATH/env_setup.sh as normal user first!\n\n"
+    exit 1
+  else
+    PLAY_CMD="${PLAY_CMD} -e \"@inventories/vars/.vault.yml\" \
+    "
+  fi
+fi
+
