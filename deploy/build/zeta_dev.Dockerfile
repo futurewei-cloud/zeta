@@ -34,8 +34,8 @@ RUN apt-get update && \
     libssl-dev \
     libelf-dev \
     libcap-dev \
-    clang-7 \
-    llvm-7 \
+    clang-10 \
+    llvm-10 \
     libncurses5-dev \
     git \
     pkg-config \
